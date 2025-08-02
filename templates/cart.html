@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cart - TG's Kitchen</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding-bottom: 120px;
+    }
+
+    .cart-bg {
+      background-image: url('https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
+
+    .cart-container {
+      background-color: rgba(255, 255, 255, 0.95);
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 2;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: flex-start;
+      border-bottom: 1px solid #ccc;
+      padding: 12px 0;
+      gap: 15px;
+    }
+
+    .item-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .item-info strong {
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 6px 0;
+    }
+
+    .quantity-controls button {
+      background-color: #ff6600;
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .quantity-controls span {
+      min-width: 22px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .price {
+      font-size: 14px;
+      font-weight: bold;
+      color: #444;
+    }
+
+    .remove {
+      background-color: crimson;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      font-size: 12px;
+      border-radius: 5px;
+      margin-top: 6px;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
+    .summary {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .summary h3 {
+      font-size: 16px;
+      margin-bottom: 14px;
+    }
+
+    .summary a button {
+      padding: 12px;
+      font-size: 15px;
+      background-color: #ff6600;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      width: 100%;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .summary a button:hover {
+      background-color: #e65c00;
+    }
+
+    .flames {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      height: 90px;
+      background: url('https://i.postimg.cc/jS9vLFCR/firegif.gif') repeat-x;
+      background-size: contain;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    @media (max-width: 600px) {
+      .cart-container {
+        margin: 20px 10px;
+        padding: 15px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+
+      .cart-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px 0;
+      }
+
+      .item-info strong {
+        font-size: 14px;
+      }
+
+      .quantity-controls button {
+        padding: 6px 12px;
+        font-size: 14px;
+      }
+
+      .price {
+        font-size: 14px;
+      }
+
+      .summary h3 {
+        font-size: 15px;
+      }
+
+      .summary a button {
+        padding: 12px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body class="cart-bg">
+  <div class="flames"></div>
+
+  <div class="cart-container">
+    <h2>Your Cart</h2>
+    <div id="cartItems"></div>
+
+    <div class="summary">
+      <h3>Total: ₦<span id="totalPrice">0.00</span></h3>
+      <a href="/checkout"><button>Proceed to Checkout</button></a>
+    </div>
+  </div>
+
+  <script>
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    function renderCart() {
+      const cartItems = document.getElementById("cartItems");
+      let totalPrice = 0;
+      cartItems.innerHTML = "";
+
+      if (cart.length === 0) {
+        cartItems.innerHTML = "<p>Your cart is empty.</p>";
+        document.getElementById("totalPrice").textContent = "0.00";
+        return;
+      }
+
+      cart.forEach((item, index) => {
+        const itemTotal = item.price * item.quantity;
+        totalPrice += itemTotal;
+
+        cartItems.innerHTML += `
+          <div class="cart-item">
+            <div class="item-info">
+              <strong>${item.name}</strong>
+              <div class="quantity-controls">
+                <button onclick="decrease(${index})">−</button>
+                <span>${item.quantity}</span>
+                <button onclick="increase(${index})">+</button>
+              </div>
+              <div class="price">₦${itemTotal.toFixed(2)}</div>
+              <button class="remove" onclick="removeItem(${index})">Remove</button>
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById("totalPrice").textContent = totalPrice.toFixed(2);
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+
+    function increase(index) {
+      if (cart[index].quantity < 10) {
+        cart[index].quantity++;
+        renderCart();
+      }
+    }
+
+    function decrease(index) {
+      if (cart[index].quantity > 1) {
+        cart[index].quantity--;
+      } else {
+        cart.splice(index, 1);
+      }
+      renderCart();
+    }
+
+    function removeItem(index) {
+      cart.splice(index, 1);
+      renderCart();
+    }
+
+    renderCart();
+  </script>
+</body>
+</html>

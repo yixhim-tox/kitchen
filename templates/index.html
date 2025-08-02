@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to TG's Kitchen</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-image: url('https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: #fff;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    .welcome-container {
+      position: absolute;
+      top: 10px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      z-index: 10;
+      pointer-events: none;
+      padding: 0 10px;
+    }
+
+    .welcome-letter {
+      position: relative;
+      font-size: clamp(22px, 6vw, 48px);
+      font-weight: bold;
+      opacity: 0;
+      transition: transform 1s ease-out, opacity 1s ease-out;
+      display: inline-block;
+      white-space: pre;
+    }
+
+    .welcome-letter.arrived {
+      transform: translateY(0) !important;
+      opacity: 1 !important;
+    }
+
+    .menu-btn {
+      padding: 15px 30px;
+      font-size: 20px;
+      color: white;
+      background-color: #8B4513;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      animation: glow 2s ease-in-out infinite;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+      transition: transform 0.2s ease;
+      margin: 280px auto 0 auto;
+      display: block;
+      max-width: 90%;
+    }
+
+    .menu-btn:hover {
+      transform: scale(1.05);
+    }
+
+    @keyframes glow {
+      0% { box-shadow: 0 0 5px #fff, 0 0 10px #FFD700, 0 0 15px #FFA500; }
+      50% { box-shadow: 0 0 20px #fff, 0 0 30px #FFD700, 0 0 40px #FFA500; }
+      100% { box-shadow: 0 0 5px #fff, 0 0 10px #FFD700, 0 0 15px #FFA500; }
+    }
+
+    @media (max-width: 500px) {
+      .menu-btn {
+        font-size: 16px;
+        padding: 12px 24px;
+        margin-top: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Welcome Text Animation -->
+  <div class="welcome-container" id="welcomeContainer"></div>
+
+  <!-- Menu Button -->
+  <a href="{{ url_for('menu') }}">
+    <button class="menu-btn">View Full Menu</button>
+  </a>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const text = "Welcome to TG's Kitchen";
+      const container = document.getElementById("welcomeContainer");
+      const letters = [];
+
+      for (let i = 0; i < text.length; i++) {
+        const span = document.createElement("span");
+        span.textContent = text[i];
+        span.className = "welcome-letter";
+        container.appendChild(span);
+        letters.push(span);
+      }
+
+      letters.forEach((span, index) => {
+        const randX = (Math.random() - 0.5) * window.innerWidth;
+        const randY = (Math.random() - 0.5) * 100;
+
+        span.style.transform = `translate(${randX}px, ${randY}px)`;
+      });
+
+      setTimeout(() => {
+        letters.forEach(span => {
+          span.classList.add("arrived");
+        });
+      }, 100);
+    });
+  </script>
+
+</body>
+</html>

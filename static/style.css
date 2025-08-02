@@ -1,0 +1,140 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: url('https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg') no-repeat center center fixed;
+  background-size: cover;
+  animation: fadeIn 1s ease-in;
+  min-height: 100vh;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+header {
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 20px;
+  text-align: center;
+  color: white;
+  font-size: 2em;
+}
+
+.container {
+  background-color: rgba(255, 255, 255, 0.9);
+  margin: 40px auto;
+  padding: 20px;
+  max-width: 800px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+input[type="text"],
+input[type="number"],
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0 20px;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+a {
+  color: #007BFF;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* 🔥 Flame effect for cart and checkout */
+@keyframes flame {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+  100% { filter: brightness(1); }
+}
+
+.cart-bg, .checkout-bg {
+  animation: flame 3s infinite;
+  background-size: cover;
+  background-position: center;
+  backdrop-filter: blur(3px);
+}
+
+/* 🌟 Fade-in on meals and buttons */
+.fade-in {
+  animation: fadeIn 0.8s ease-in;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ✨ Glow effect for buttons */
+.glow-btn {
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 0 8px #fca311;
+}
+
+.glow-btn:hover {
+  box-shadow: 0 0 15px #fca311, 0 0 25px #ffdd57;
+}
+
+/* 🪄 Smooth hover on meals */
+.meal-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  transition: 0.3s ease;
+}
+
+/* ✅ Mobile Responsiveness */
+@media (max-width: 600px) {
+  header {
+    font-size: 1.4em;
+    padding: 15px;
+  }
+
+  .container {
+    margin: 20px 10px;
+    padding: 15px;
+    max-width: 95%;
+  }
+
+  button {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  textarea {
+    font-size: 16px;
+  }
+
+  .meal-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}

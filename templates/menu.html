@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TG's Kitchen Menu</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      padding-top: 200px;
+      font-family: 'Segoe UI', sans-serif;
+      background-image: url('https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(219, 216, 216, 0.95);
+      color: #000;
+      padding: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      z-index: 1000;
+    }
+
+    .header-actions {
+      position: fixed;
+      top: 85px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 15px;
+      z-index: 1000;
+    }
+
+    .center-select-wrapper {
+      position: fixed;
+      top: 135px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      z-index: 999;
+    }
+
+    #category-select {
+      padding: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 2px solid #333;
+      background-color: #fff;
+      max-width: 300px;
+      width: 80%;
+    }
+
+    .edge-button {
+      padding: 10px 18px;
+      font-size: 14px;
+      border-radius: 8px;
+      font-weight: bold;
+      background-color: #f3ebeb;
+      color: #333;
+      text-decoration: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      cursor: pointer;
+    }
+
+    #menu-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px;
+      justify-content: center;
+    }
+
+    .meal {
+      background-color: #f1eeee;
+      color: #000;
+      border-radius: 10px;
+      padding: 15px;
+      max-width: 300px;
+      width: 100%;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .meal img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      object-fit: cover;
+      max-height: 200px;
+    }
+
+    .meal-info {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .meal-name {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+
+    .meal-desc {
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .meal-price {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .cart-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .cart-buttons button {
+      padding: 10px 15px;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .quantity-controls {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .quantity-controls button {
+      padding: 5px 10px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #1b1a1a;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .quantity-controls .quantity {
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding-top: 230px;
+      }
+
+      .header-actions {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 10px;
+      }
+
+      .edge-button {
+        font-size: 13px;
+        padding: 8px 12px;
+      }
+
+      .center-select-wrapper {
+        top: 140px;
+      }
+
+      #category-select {
+        width: 90%;
+      }
+
+      .meal {
+        max-width: 100%;
+      }
+
+      .cart-buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>TG's Kitchen Menu</header>
+
+  <div class="header-actions">
+    <button onclick="history.back()" class="edge-button">← Back</button>
+    <a href="{{ url_for('cart') }}" class="edge-button">🛒 Go to Cart</a>
+  </div>
+
+  <div class="center-select-wrapper">
+    <select id="category-select">
+      <option disabled selected>Select Category</option>
+      <option value="Meat">Meat</option>
+      <option value="Swallow">Swallow</option>
+      <option value="Soft foods">Soft foods</option>
+      <option value="Beverages">Beverages</option>
+      <option value="All in one">All in one</option>
+      <option value="Snacks">Snacks</option>
+    </select>
+  </div>
+
+  <div id="menu-container"></div>
+
+  <script>
+    let allMeals = [];
+    const menuContainer = document.getElementById("menu-container");
+    const categorySelect = document.getElementById("category-select");
+
+    function renderMeals(meals) {
+      menuContainer.innerHTML = '';
+      if (meals.length === 0) {
+        menuContainer.innerHTML = '<p style="color:#555;font-size:18px;text-align:center;margin-top:20px;">Currently not available</p>';
+        return;
+      }
+
+      meals.forEach(meal => {
+        const div = document.createElement("div");
+        div.className = "meal";
+        div.innerHTML = `
+          <img src="${meal.image}" alt="${meal.name}">
+          <div class="meal-info">
+            <div class="meal-name">${meal.name}</div>
+            <div class="meal-desc">${meal.description || 'No description available.'}</div>
+            <div class="meal-price">₦${meal.price}</div>
+            <div class="cart-buttons">
+              <button onclick="addToCart(this)">Add to Cart</button>
+              <div class="quantity-controls">
+                <button onclick="decreaseQty(this)">−</button>
+                <span class="quantity">1</span>
+                <button onclick="increaseQty(this)">+</button>
+              </div>
+            </div>
+          </div>
+        `;
+        menuContainer.appendChild(div);
+      });
+    }
+
+    categorySelect.addEventListener('change', () => {
+      const selected = categorySelect.value;
+      const filtered = allMeals.filter(meal => meal.category === selected);
+      renderMeals(filtered);
+    });
+
+    function addToCart(btn) {
+      const cartBox = btn.parentElement;
+      const mealInfo = cartBox.parentElement;
+      const name = mealInfo.querySelector('.meal-name').textContent.trim();
+      const description = mealInfo.querySelector('.meal-desc').textContent.trim();
+      const price = parseFloat(mealInfo.querySelector('.meal-price').textContent.replace(/[^\d.]/g, ''));
+      const image = mealInfo.parentElement.querySelector('img').src;
+
+      const controls = cartBox.querySelector('.quantity-controls');
+      let quantity = 1;
+
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const index = cart.findIndex(item => item.name === name);
+      if (index > -1) {
+        cart[index].quantity = Math.min(cart[index].quantity + quantity, 10);
+      } else {
+        cart.push({ name, description, price, image, quantity });
+      }
+
+      localStorage.setItem('cart', JSON.stringify(cart));
+      btn.style.display = 'none';
+      controls.style.display = 'flex';
+    }
+
+    function increaseQty(btn) {
+      const qtySpan = btn.parentElement.querySelector('.quantity');
+      let qty = parseInt(qtySpan.textContent);
+      if (qty < 10) {
+        qtySpan.textContent = qty + 1;
+        updateCartQty(btn, qty + 1);
+      }
+    }
+
+    function decreaseQty(btn) {
+      const controls = btn.parentElement;
+      const qtySpan = controls.querySelector('.quantity');
+      let qty = parseInt(qtySpan.textContent);
+      if (qty > 1) {
+        qtySpan.textContent = qty - 1;
+        updateCartQty(btn, qty - 1);
+      } else {
+        controls.style.display = 'none';
+        controls.parentElement.querySelector('button').style.display = 'inline-block';
+        updateCartQty(btn, 0, true);
+      }
+    }
+
+    function updateCartQty(btn, qty, remove = false) {
+      const name = btn.closest('.meal-info').querySelector('.meal-name').textContent.trim();
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const index = cart.findIndex(item => item.name === name);
+      if (index > -1) {
+        if (remove) {
+          cart.splice(index, 1);
+        } else {
+          cart[index].quantity = qty;
+        }
+        localStorage.setItem('cart', JSON.stringify(cart));
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const res = await fetch('/api/meals');
+        allMeals = await res.json();
+        renderMeals(allMeals);
+      } catch (e) {
+        menuContainer.innerHTML = "<p style='color:red;'>Failed to load meals.</p>";
+        console.error(e);
+      }
+    });
+  </script>
+</body>
+</html>

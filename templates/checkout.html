@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Checkout - TG's Kitchen</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-image: url('https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: #fff;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .checkout-container {
+      max-width: 600px;
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 30px;
+      border-radius: 10px;
+      box-sizing: border-box;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ffd700;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    .order-summary {
+      background-color: rgba(255,255,255,0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      color: #fff;
+    }
+
+    .order-summary p {
+      margin: 8px 0;
+      font-size: 16px;
+    }
+
+    .submit-btn {
+      margin-top: 25px;
+      background-color: #ff9800;
+      color: #000;
+      padding: 12px 20px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      background-color: #e68a00;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      .checkout-container {
+        padding: 20px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      input, textarea, select {
+        font-size: 14px;
+        padding: 8px;
+      }
+
+      .order-summary p {
+        font-size: 14px;
+      }
+
+      .submit-btn {
+        font-size: 16px;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="checkout-container">
+    <h2>Checkout</h2>
+
+    <div class="order-summary" id="orderSummary">
+      <p>Subtotal: ₦<span id="subtotal">0</span></p>
+      <p>Delivery Fee: ₦<span id="deliveryFee">0</span></p>
+      <p><strong>Total: ₦<span id="grandTotal">0</span></strong></p>
+    </div>
+
+    <form id="checkoutForm">
+      <label for="fullName">Full Name</label>
+      <input type="text" id="fullName" name="fullName" required />
+
+      <label for="phoneNumber">Phone Number</label>
+      <input type="tel" id="phoneNumber" name="phoneNumber" required />
+
+      <label for="deliveryOption">Delivery Location</label>
+      <select id="deliveryOption" name="deliveryOption" required>
+        <option value="">Select Delivery Option</option>
+        <option value="Inside Town" data-fee="1500">Inside Town – ₦1500</option>
+        <option value="Bonsaac" data-fee="1000">Bonsaac – ₦1000</option>
+        <option value="Ogwashi" data-fee="4000">Ogwashi – ₦4000</option>
+        <option value="Ibuzor" data-fee="2500">Ibuzor – ₦2500</option>
+      </select>
+
+      <label for="address">Exact Delivery Address</label>
+      <textarea id="address" name="address" rows="3" required></textarea>
+
+      <button type="submit" class="submit-btn">Place Order</button>
+    </form>
+  </div>
+
+  <script>
+    function updateSummary() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      let subtotal = 0;
+      cart.forEach(item => {
+        subtotal += item.quantity * parseFloat(item.price);
+      });
+      document.getElementById('subtotal').textContent = subtotal.toFixed(0);
+
+      const select = document.getElementById('deliveryOption');
+      const fee = select.selectedOptions[0]?.dataset.fee || 0;
+      document.getElementById('deliveryFee').textContent = parseInt(fee);
+
+      const grand = subtotal + parseInt(fee);
+      document.getElementById('grandTotal').textContent = grand.toFixed(0);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateSummary();
+
+      document.getElementById('deliveryOption').addEventListener('change', updateSummary);
+
+      document.getElementById('checkoutForm').addEventListener('submit', e => {
+        e.preventDefault();
+
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const fullName = document.getElementById('fullName').value;
+        const phoneNumber = document.getElementById('phoneNumber').value;
+        const deliveryOption = document.getElementById('deliveryOption').value;
+        const address = document.getElementById('address').value;
+        const subtotal = document.getElementById('subtotal').textContent;
+        const deliveryFee = document.getElementById('deliveryFee').textContent;
+        const total = document.getElementById('grandTotal').textContent;
+
+        let message = `*TG's Kitchen Order*\n\n`;
+        message += `*Customer Info:*\nName: ${fullName}\nPhone: ${phoneNumber}\nDelivery: ${deliveryOption}\nAddress: ${address}\n\n`;
+        message += `*Order Summary:*\n`;
+
+        cart.forEach((item, index) => {
+          message += `${index + 1}. ${item.name} x${item.quantity} = ₦${item.quantity * parseFloat(item.price)}\n`;
+        });
+
+        message += `\nSubtotal: ₦${subtotal}\nDelivery: ₦${deliveryFee}\n*Total: ₦${total}*`;
+
+        const whatsappUrl = `https://wa.me/2349061120754?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+      });
+    });
+  </script>
+</body>
+</html>
