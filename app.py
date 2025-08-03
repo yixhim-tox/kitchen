@@ -28,7 +28,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 USE_MONGO = os.getenv('MONGODB_URL') is not None
 if USE_MONGO:
     mongo_client = MongoClient(os.getenv('MONGODB_URL'))
-    mongo_db = mongo_client.get_database()
+    mongo_db = mongo_client['tgs_kitchen']
     mongo_meals = mongo_db['meals']
 
 def init_db():
