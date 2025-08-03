@@ -230,6 +230,53 @@ def upload_image():
         return jsonify({'url': upload_result['secure_url']})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+# === Add Meal via JavaScript (Cloudinary/localStorage replacement) ===
+@app.route('/api/add_meal', methods=['POST'])
+def api_add_meal():
+    data = request.get_json()
+    name = data.get('name')
+    description = data.get('description', '')
+    price = float(data.get('price', 0))
+    image = data.get('image', '')
+    category = data.get('category', 'Meals')
+
+    if USE_MONGO:
+        mongo_meals.insert_one({
+            'name': name,
+            'description': description,
+            'price': price,
+            'image': image,
+            'category': category
+        })
+        return jsonify({'message': 'Meal added successfully'})
+    return jsonify({'error': 'MongoDB not available'}), 500
+
+
+# === Update Meal via JavaScript ===
+@app.route('/api/update_meal/<meal_id>', methods=['POST'])
+def api_update_meal(meal_id):
+    data = request.get_json()
+    update_fields = {
+        'name': data.get('name'),
+        'description': data.get('description'),
+        'price': float(data.get('price')),
+        'image': data.get('image'),
+        'category': data.get('category')
+    }
+
+    if USE_MONGO:
+        mongo_meals.update_one({'_id': ObjectId(meal_id)}, {'$set': update_fields})
+        return jsonify({'message': 'Meal updated successfully'})
+    return jsonify({'error': 'MongoDB not available'}), 500
+
+
+# === Delete Meal via JavaScript ===
+@app.route('/api/delete_meal/<meal_id>', methods=['DELETE'])
+def api_delete_meal(meal_id):
+    if USE_MONGO:
+        mongo_meals.delete_one({'_id': ObjectId(meal_id)})
+        return jsonify({'message': 'Meal deleted successfully'})
+    return jsonify({'error': 'MongoDB not available'}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))

@@ -243,17 +243,34 @@
             <div class="meal-desc">${meal.description || 'No description available.'}</div>
             <div class="meal-price">₦${meal.price}</div>
             <div class="cart-buttons">
-              <button onclick="addToCart(this)">Add to Cart</button>
+              <button class="add-btn">Add to Cart</button>
               <div class="quantity-controls">
-                <button onclick="decreaseQty(this)">−</button>
+                <button class="decrease-btn">−</button>
                 <span class="quantity">1</span>
-                <button onclick="increaseQty(this)">+</button>
+                <button class="increase-btn">+</button>
               </div>
             </div>
           </div>
         `;
         menuContainer.appendChild(div);
       });
+
+      // Add event listeners
+      menuContainer.querySelectorAll('.add-btn').forEach(btn =>
+        btn.addEventListener('click', function () {
+          addToCart(this);
+        })
+      );
+      menuContainer.querySelectorAll('.increase-btn').forEach(btn =>
+        btn.addEventListener('click', function () {
+          increaseQty(this);
+        })
+      );
+      menuContainer.querySelectorAll('.decrease-btn').forEach(btn =>
+        btn.addEventListener('click', function () {
+          decreaseQty(this);
+        })
+      );
     }
 
     categorySelect.addEventListener('change', () => {
@@ -304,7 +321,7 @@
         updateCartQty(btn, qty - 1);
       } else {
         controls.style.display = 'none';
-        controls.parentElement.querySelector('button').style.display = 'inline-block';
+        controls.parentElement.querySelector('.add-btn').style.display = 'inline-block';
         updateCartQty(btn, 0, true);
       }
     }
