@@ -2,205 +2,228 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Checkout - TG's Kitchen</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
-    html {
-      scroll-behavior: smooth;
-    }
-
     body {
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      font-family: Arial, sans-serif;
-      background-image: url('https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg');
+      padding: 0 15px 140px;
+      background: url('https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg') no-repeat center center fixed;
       background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      color: #fff;
-      padding: 20px;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
 
     .checkout-container {
-      max-width: 600px;
-      width: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      padding: 30px;
-      border-radius: 10px;
-      box-sizing: border-box;
+      background: rgba(255, 255, 255, 0.95);
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
     h2 {
       text-align: center;
-      margin-bottom: 20px;
-      color: #ffd700;
-    }
-
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 8px;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
-
-    textarea {
-      resize: vertical;
+      margin-bottom: 25px;
     }
 
     .order-summary {
-      background-color: rgba(255,255,255,0.1);
-      padding: 15px;
-      border-radius: 8px;
-      margin-top: 20px;
-      color: #fff;
+      margin-bottom: 20px;
     }
 
-    .order-summary p {
-      margin: 8px 0;
-      font-size: 16px;
+    .order-summary ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
     }
 
-    .submit-btn {
-      margin-top: 25px;
-      background-color: #ff9800;
-      color: #000;
-      padding: 12px 20px;
+    .order-summary li {
+      padding: 10px 0;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .total {
+      text-align: right;
+      font-weight: bold;
       font-size: 18px;
+      margin-top: 15px;
+    }
+
+    .customer-info input, .customer-info textarea, .customer-info select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .pay-btn {
+      margin-top: 25px;
+      padding: 14px;
+      width: 100%;
+      background-color: #ff6600;
+      color: white;
+      font-size: 16px;
       font-weight: bold;
       border: none;
       border-radius: 8px;
       cursor: pointer;
+    }
+
+    .pay-btn:hover {
+      background-color: #e65c00;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
       width: 100%;
-      transition: background-color 0.3s ease;
+      background: red;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 10px 0;
+      color: white;
+      font-size: 13px;
+      z-index: 999;
     }
 
-    .submit-btn:hover {
-      background-color: #e68a00;
+    .bottom-nav div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
     }
 
-    @media (max-width: 600px) {
-      body {
-        padding: 10px;
-      }
-
-      .checkout-container {
-        padding: 20px;
-      }
-
-      h2 {
-        font-size: 24px;
-      }
-
-      input, textarea, select {
-        font-size: 14px;
-        padding: 8px;
-      }
-
-      .order-summary p {
-        font-size: 14px;
-      }
-
-      .submit-btn {
-        font-size: 16px;
-        padding: 10px;
-      }
+    .bottom-nav i {
+      font-size: 18px;
+      margin-bottom: 3px;
     }
   </style>
 </head>
 <body>
+
   <div class="checkout-container">
     <h2>Checkout</h2>
 
-    <div class="order-summary" id="orderSummary">
-      <p>Subtotal: ₦<span id="subtotal">0</span></p>
-      <p>Delivery Fee: ₦<span id="deliveryFee">0</span></p>
-      <p><strong>Total: ₦<span id="grandTotal">0</span></strong></p>
+    <div class="order-summary">
+      <ul id="orderList"></ul>
+      <div class="total">Meals Total: ₦<span id="mealsTotal">0.00</span></div>
+      <div class="total">Delivery: ₦<span id="deliveryFee">0.00</span></div>
+      <div class="total">Grand Total: ₦<span id="grandTotal">0.00</span></div>
     </div>
 
-    <form id="checkoutForm">
-      <label for="fullName">Full Name</label>
-      <input type="text" id="fullName" name="fullName" required />
+    <div class="customer-info">
+      <input type="text" id="fullName" placeholder="Full Name" required>
+      <input type="text" id="phoneNumber" placeholder="Phone Number" required>
+      <textarea id="deliveryAddress" rows="3" placeholder="Delivery Address" required></textarea>
 
-      <label for="phoneNumber">Phone Number</label>
-      <input type="tel" id="phoneNumber" name="phoneNumber" required />
-
-      <label for="deliveryOption">Delivery Location</label>
-      <select id="deliveryOption" name="deliveryOption" required>
-        <option value="">Select Delivery Option</option>
-        <option value="Inside Town" data-fee="1500">Inside Town – ₦1500</option>
-        <option value="Bonsaac" data-fee="1000">Bonsaac – ₦1000</option>
-        <option value="Ogwashi" data-fee="4000">Ogwashi – ₦4000</option>
-        <option value="Ibuzor" data-fee="2500">Ibuzor – ₦2500</option>
+      <select id="deliveryArea" onchange="updateDeliveryFee()" required>
+        <option value="">Select Delivery Area</option>
+        <option value="Ibuzor-2500">Ibuzor - ₦2500</option>
+        <option value="Inside town-1500">Inside town - ₦1500</option>
+        <option value="Bonsac-1000">Bonsac - ₦1000</option>
+        <option value="Ogwashi-4000">Ogwashi - ₦4000</option>
       </select>
+    </div>
 
-      <label for="address">Exact Delivery Address</label>
-      <textarea id="address" name="address" rows="3" required></textarea>
+    <button class="pay-btn" onclick="completeOrder()">Complete Order</button>
+  </div>
 
-      <button type="submit" class="submit-btn">Place Order</button>
-    </form>
+  <div class="bottom-nav">
+    <div onclick="window.location.href='/'">
+      <i class="fas fa-home"></i>Home
+    </div>
+    <div onclick="window.location.href='/cart'">
+      <i class="fas fa-shopping-cart"></i>Cart
+    </div>
+    <div onclick="window.location.href='/menu'">
+      <i class="fas fa-utensils"></i>Menu
+    </div>
+    <div onclick="window.location.href='/checkout'">
+      <i class="fas fa-check-circle"></i>Checkout
+    </div>
   </div>
 
   <script>
-    function updateSummary() {
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      let subtotal = 0;
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    let mealsTotal = 0;
+    let deliveryAmount = 0;
+
+    function renderCheckout() {
+      const list = document.getElementById("orderList");
+      const mealsTotalDisplay = document.getElementById("mealsTotal");
+
+      if (cart.length === 0) {
+        list.innerHTML = "<li>Your cart is empty.</li>";
+        mealsTotalDisplay.textContent = "0.00";
+        return;
+      }
+
+      list.innerHTML = "";
+      mealsTotal = 0;
       cart.forEach(item => {
-        subtotal += item.quantity * parseFloat(item.price);
+        const itemTotal = item.price * item.quantity;
+        mealsTotal += itemTotal;
+        list.innerHTML += `<li><span>${item.name} (x${item.quantity})</span><span>₦${itemTotal.toFixed(2)}</span></li>`;
       });
-      document.getElementById('subtotal').textContent = subtotal.toFixed(0);
 
-      const select = document.getElementById('deliveryOption');
-      const fee = select.selectedOptions[0]?.dataset.fee || 0;
-      document.getElementById('deliveryFee').textContent = parseInt(fee);
-
-      const grand = subtotal + parseInt(fee);
-      document.getElementById('grandTotal').textContent = grand.toFixed(0);
+      mealsTotalDisplay.textContent = mealsTotal.toFixed(2);
+      updateDeliveryFee(); // recalculate on load
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      updateSummary();
+    function updateDeliveryFee() {
+      const feeDisplay = document.getElementById("deliveryFee");
+      const grandDisplay = document.getElementById("grandTotal");
+      const select = document.getElementById("deliveryArea");
 
-      document.getElementById('deliveryOption').addEventListener('change', updateSummary);
+      if (!select.value) {
+        deliveryAmount = 0;
+        feeDisplay.textContent = "0.00";
+        grandDisplay.textContent = mealsTotal.toFixed(2);
+        return;
+      }
 
-      document.getElementById('checkoutForm').addEventListener('submit', e => {
-        e.preventDefault();
+      deliveryAmount = parseInt(select.value.split("-")[1]);
+      feeDisplay.textContent = deliveryAmount.toFixed(2);
+      grandDisplay.textContent = (mealsTotal + deliveryAmount).toFixed(2);
+    }
 
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        const fullName = document.getElementById('fullName').value;
-        const phoneNumber = document.getElementById('phoneNumber').value;
-        const deliveryOption = document.getElementById('deliveryOption').value;
-        const address = document.getElementById('address').value;
-        const subtotal = document.getElementById('subtotal').textContent;
-        const deliveryFee = document.getElementById('deliveryFee').textContent;
-        const total = document.getElementById('grandTotal').textContent;
+    function completeOrder() {
+      const name = document.getElementById("fullName").value.trim();
+      const phone = document.getElementById("phoneNumber").value.trim();
+      const address = document.getElementById("deliveryAddress").value.trim();
+      const areaSelect = document.getElementById("deliveryArea");
+      const area = areaSelect.options[areaSelect.selectedIndex].text;
 
-        let message = `*TG's Kitchen Order*\n\n`;
-        message += `*Customer Info:*\nName: ${fullName}\nPhone: ${phoneNumber}\nDelivery: ${deliveryOption}\nAddress: ${address}\n\n`;
-        message += `*Order Summary:*\n`;
+      if (!name || !phone || !address || !areaSelect.value) {
+        alert("Please fill in all fields and select a delivery area.");
+        return;
+      }
 
-        cart.forEach((item, index) => {
-          message += `${index + 1}. ${item.name} x${item.quantity} = ₦${item.quantity * parseFloat(item.price)}\n`;
-        });
+      if (cart.length === 0) {
+        alert("No items to checkout.");
+        return;
+      }
 
-        message += `\nSubtotal: ₦${subtotal}\nDelivery: ₦${deliveryFee}\n*Total: ₦${total}*`;
+      const message = cart.map(item =>
+        `${item.name} (x${item.quantity}) - ₦${(item.price * item.quantity).toFixed(2)}`
+      ).join('%0A');
 
-        const whatsappUrl = `https://wa.me/2349061120754?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
-      });
-    });
+      const mealsOnly = mealsTotal.toFixed(2);
+      const grandTotal = (mealsTotal + deliveryAmount).toFixed(2);
+
+      const whatsappMessage = `Hello TG's Kitchen,%0AI want to place this order:%0A%0A${message}%0A%0AMeals Total: ₦${mealsOnly}%0ADelivery (${area})%0AGrand Total: ₦${grandTotal}%0A%0AFull Name: ${name}%0APhone: ${phone}%0AAddress: ${address}`;
+
+      window.open(`https://wa.me/2349061120754?text=${whatsappMessage}`, '_blank');
+    }
+
+    renderCheckout();
   </script>
 </body>
 </html>

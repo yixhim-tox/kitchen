@@ -2,32 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cart - TG's Kitchen</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
+    * {
+      box-sizing: border-box;
       margin: 0;
-      padding-bottom: 120px;
+      padding: 0;
     }
 
-    .cart-bg {
-      background-image: url('https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg');
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg') no-repeat center center fixed;
       background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
+    }
+
+    .cart-wrapper {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 100vh;
+      padding-bottom: 60px;
     }
 
     .cart-container {
       background-color: rgba(255, 255, 255, 0.95);
       max-width: 700px;
-      margin: 40px auto;
+      margin: 20px auto 0;
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      position: relative;
-      z-index: 2;
     }
 
     h2 {
@@ -47,7 +54,6 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
     }
 
     .item-info strong {
@@ -108,7 +114,7 @@
       margin-bottom: 14px;
     }
 
-    .summary a button {
+    .summary button {
       padding: 12px;
       font-size: 15px;
       background-color: #ff6600;
@@ -120,71 +126,82 @@
       cursor: pointer;
     }
 
-    .summary a button:hover {
+    .summary button:hover {
       background-color: #e65c00;
     }
 
-    .flames {
+    .bottom-nav {
       position: fixed;
       bottom: 0;
+      left: 0;
       width: 100%;
-      height: 90px;
-      background: url('https://i.postimg.cc/jS9vLFCR/firegif.gif') repeat-x;
-      background-size: contain;
-      pointer-events: none;
-      z-index: 1;
+      background: red;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 10px 0;
+      color: white;
+      font-size: 13px;
+      z-index: 999;
+    }
+
+    .bottom-nav div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .bottom-nav i {
+      font-size: 18px;
+      margin-bottom: 3px;
     }
 
     @media (max-width: 600px) {
       .cart-container {
-        margin: 20px 10px;
+        margin: 20px 10px 0;
         padding: 15px;
       }
 
-      h2 {
-        font-size: 20px;
-      }
-
-      .cart-item {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 10px 0;
-      }
-
-      .item-info strong {
+      .summary button {
         font-size: 14px;
       }
 
-      .quantity-controls button {
-        padding: 6px 12px;
-        font-size: 14px;
+      .bottom-nav {
+        font-size: 12px;
       }
 
-      .price {
-        font-size: 14px;
-      }
-
-      .summary h3 {
-        font-size: 15px;
-      }
-
-      .summary a button {
-        padding: 12px;
+      .bottom-nav i {
         font-size: 16px;
       }
     }
   </style>
 </head>
-<body class="cart-bg">
-  <div class="flames"></div>
+<body>
+  <div class="cart-wrapper">
+    <div class="cart-container">
+      <h2>Your Cart</h2>
+      <div id="cartItems"></div>
 
-  <div class="cart-container">
-    <h2>Your Cart</h2>
-    <div id="cartItems"></div>
+      <div class="summary">
+        <h3>Total: ₦<span id="totalPrice">0.00</span></h3>
+        <button onclick="goToCheckout()">Proceed to Checkout</button>
+      </div>
+    </div>
+  </div>
 
-    <div class="summary">
-      <h3>Total: ₦<span id="totalPrice">0.00</span></h3>
-      <a href="/checkout"><button>Proceed to Checkout</button></a>
+  <div class="bottom-nav">
+    <div onclick="window.location.href='/'">
+      <i class="fas fa-home"></i>Home
+    </div>
+    <div onclick="window.location.href='/cart'">
+      <i class="fas fa-shopping-cart"></i>Cart
+    </div>
+    <div onclick="window.location.href='/menu'">
+      <i class="fas fa-layer-group"></i>Menu
+    </div>
+    <div onclick="window.location.href='/checkout'">
+      <i class="fas fa-check-circle"></i>Checkout
     </div>
   </div>
 
@@ -245,6 +262,14 @@
     function removeItem(index) {
       cart.splice(index, 1);
       renderCart();
+    }
+
+    function goToCheckout() {
+      if (cart.length === 0) {
+        alert("Your cart is empty.");
+        return;
+      }
+      window.location.href = "/checkout";
     }
 
     renderCart();
