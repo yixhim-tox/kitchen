@@ -218,9 +218,22 @@
       const mealsOnly = mealsTotal.toFixed(2);
       const grandTotal = (mealsTotal + deliveryAmount).toFixed(2);
 
-      const whatsappMessage = `Hello TG's Kitchen,%0AI want to place this order:%0A%0A${message}%0A%0AMeals Total: ₦${mealsOnly}%0ADelivery (${area})%0AGrand Total: ₦${grandTotal}%0A%0AFull Name: ${name}%0APhone: ${phone}%0AAddress: ${address}`;
+      const whatsappMessage = `Hello TG's Kitchen,
+I want to place this order:
 
-      window.open(`https://wa.me/2349061120754?text=${whatsappMessage}`, '_blank');
+${cart.map(item =>
+  `${item.name} (x${item.quantity}) - ₦${(item.price * item.quantity).toFixed(2)}`
+).join('\n')}
+
+Meals Total: ₦${mealsOnly}
+Delivery (${area})
+Grand Total: ₦${grandTotal}
+
+Full Name: ${name}
+Phone: ${phone}
+Address: ${address}`;
+
+window.open(`https://wa.me/2349061120754?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
     }
 
     renderCheckout();
