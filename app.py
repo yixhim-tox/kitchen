@@ -51,11 +51,13 @@ init_db()
 
 def get_all_meals():
     if USE_MONGO:
-        return list(mongo_meals.find())
+        # Sort by newest first
+        return list(mongo_meals.find().sort("_id", -1))
     else:
         conn = sqlite3.connect(DB_NAME)
         conn.row_factory = sqlite3.Row
-        meals = conn.execute('SELECT * FROM meals').fetchall()
+        # Sort by newest first
+        meals = conn.execute('SELECT * FROM meals ORDER BY id DESC').fetchall()
         conn.close()
         return meals
 
