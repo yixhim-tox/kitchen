@@ -205,7 +205,22 @@ def checkout():
         conn.close()
         total = sum(meal['price'] * cart[str(meal['id'])] for meal in meals)
 
-    return render_template('checkout.html', meals=meals, cart=cart, total=total)
+    # === Send order to WhatsApp ===
+    import urllib.parse
+    order_details = "\n".join([
+        f"{meal['name']} x{cart[str(meal['_id'])] if USE_MONGO else cart[str(meal['id'])]} = ₦{meal['price'] * (cart[str(meal['_id'])] if USE_MONGO else cart[str(meal['id'])]):,.2f}"
+        for meal in meals
+    ])
+    message = f"New Order:\n{order_details}\n\nTotal: ₦{total:,.2f}"
+    encoded_message = urllib.parse.quote(message)
+    whatsapp_url = f"https://wa.me/2349061120754?text={encoded_message}"
+
+    # Clear the cart BEFORE redirect
+    session.pop('cart', None)
+
+    return redirect(whatsapp_url)
+
+
 
 @app.route('/api/meals')
 def api_meals():
