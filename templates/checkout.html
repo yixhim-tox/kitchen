@@ -10,7 +10,7 @@
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      padding: 0 15px 140px;
+      padding: 0 15px 160px; /* space for bottom nav + WhatsApp buttons */
       background: url('https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg') no-repeat center center fixed;
       background-size: cover;
     }
@@ -53,7 +53,9 @@
       margin-top: 15px;
     }
 
-    .customer-info input, .customer-info textarea, .customer-info select {
+    .customer-info input,
+    .customer-info textarea,
+    .customer-info select {
       width: 100%;
       padding: 10px;
       margin: 10px 0;
@@ -62,22 +64,30 @@
       border-radius: 6px;
     }
 
-    .pay-btn {
-      margin-top: 25px;
-      padding: 14px;
+    .whatsapp-buttons {
+      position: fixed;
+      bottom: 60px; /* above bottom nav */
       width: 100%;
-      background-color: #ff6600;
-      color: white;
-      font-size: 16px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      z-index: 999;
+    }
+
+    .whatsapp-buttons button {
+      padding: 12px 20px;
+      font-size: 15px;
       font-weight: bold;
       border: none;
       border-radius: 8px;
       cursor: pointer;
+      color: white;
     }
 
-    .pay-btn:hover {
-      background-color: #e65c00;
-    }
+    .whatsapp-messenger { background-color: #25D366; }
+    .whatsapp-business { background-color: #128C7E; }
+
+    .whatsapp-buttons button:hover { opacity: 0.9; }
 
     .bottom-nav {
       position: fixed;
@@ -90,7 +100,7 @@
       padding: 10px 0;
       color: white;
       font-size: 13px;
-      z-index: 999;
+      z-index: 998;
     }
 
     .bottom-nav div {
@@ -131,8 +141,12 @@
         <option value="Ogwashi-4000">Ogwashi - ₦4000</option>
       </select>
     </div>
+  </div>
 
-    <button class="pay-btn" onclick="completeOrder()">Complete Order</button>
+  <!-- WhatsApp Choice Buttons -->
+  <div class="whatsapp-buttons">
+    <button class="whatsapp-messenger" onclick="sendWhatsApp('messenger')">WhatsApp Messenger</button>
+    <button class="whatsapp-business" onclick="sendWhatsApp('business')">WhatsApp Business</button>
   </div>
 
   <div class="bottom-nav">
@@ -162,6 +176,8 @@
       if (cart.length === 0) {
         list.innerHTML = "<li>Your cart is empty.</li>";
         mealsTotalDisplay.textContent = "0.00";
+        document.getElementById("deliveryFee").textContent = "0.00";
+        document.getElementById("grandTotal").textContent = "0.00";
         return;
       }
 
@@ -174,7 +190,7 @@
       });
 
       mealsTotalDisplay.textContent = mealsTotal.toFixed(2);
-      updateDeliveryFee(); // recalculate on load
+      updateDeliveryFee();
     }
 
     function updateDeliveryFee() {
@@ -194,7 +210,7 @@
       grandDisplay.textContent = (mealsTotal + deliveryAmount).toFixed(2);
     }
 
-    function completeOrder() {
+    function sendWhatsApp(type) {
       const name = document.getElementById("fullName").value.trim();
       const phone = document.getElementById("phoneNumber").value.trim();
       const address = document.getElementById("deliveryAddress").value.trim();
@@ -207,28 +223,14 @@
       }
 
       if (cart.length === 0) {
-        alert("No items to checkout.");
-        return;
-      }
-
-      const ua = navigator.userAgent.toLowerCase();
-
-      // Detect TikTok in-app browser only
-      const isTikTok = ua.includes("tiktok");
-
-      if (isTikTok) {
-        alert(
-          "Your browser does not support this. Please open this page in Chrome or Safari to order."
-        );
+        alert("Your cart is empty.");
         return;
       }
 
       const whatsappMessage = `Hello TG's Kitchen,
 I want to place this order:
 
-${cart.map(item =>
-  `${item.name} (x${item.quantity}) - ₦${(item.price * item.quantity).toFixed(2)}`
-).join('\n')}
+${cart.map(item => `${item.name} (x${item.quantity}) - ₦${(item.price * item.quantity).toFixed(2)}`).join('\n')}
 
 Meals Total: ₦${mealsTotal.toFixed(2)}
 Delivery (${area})
@@ -238,11 +240,13 @@ Full Name: ${name}
 Phone: ${phone}
 Address: ${address}`;
 
-      // Open WhatsApp for all other browsers
-      window.open(
-        `https://wa.me/2349061120754?text=${encodeURIComponent(whatsappMessage)}`,
-        '_blank'
-      );
+      let url = "https://wa.me/2349061120754?text=" + encodeURIComponent(whatsappMessage);
+
+      if (type === "business") {
+        url = "https://api.whatsapp.com/send?phone=2349061120754&text=" + encodeURIComponent(whatsappMessage);
+      }
+
+      window.open(url, "_blank");
     }
 
     renderCheckout();
