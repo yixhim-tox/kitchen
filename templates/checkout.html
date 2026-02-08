@@ -211,12 +211,17 @@
         return;
       }
 
-      const message = cart.map(item =>
-        `${item.name} (x${item.quantity}) - ₦${(item.price * item.quantity).toFixed(2)}`
-      ).join('%0A');
+      const ua = navigator.userAgent.toLowerCase();
 
-      const mealsOnly = mealsTotal.toFixed(2);
-      const grandTotal = (mealsTotal + deliveryAmount).toFixed(2);
+      // Detect TikTok in-app browser only
+      const isTikTok = ua.includes("tiktok");
+
+      if (isTikTok) {
+        alert(
+          "Your browser does not support this. Please open this page in Chrome or Safari to order."
+        );
+        return;
+      }
 
       const whatsappMessage = `Hello TG's Kitchen,
 I want to place this order:
@@ -225,15 +230,19 @@ ${cart.map(item =>
   `${item.name} (x${item.quantity}) - ₦${(item.price * item.quantity).toFixed(2)}`
 ).join('\n')}
 
-Meals Total: ₦${mealsOnly}
+Meals Total: ₦${mealsTotal.toFixed(2)}
 Delivery (${area})
-Grand Total: ₦${grandTotal}
+Grand Total: ₦${(mealsTotal + deliveryAmount).toFixed(2)}
 
 Full Name: ${name}
 Phone: ${phone}
 Address: ${address}`;
 
-window.open(`https://wa.me/2349061120754?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
+      // Open WhatsApp for all other browsers
+      window.open(
+        `https://wa.me/2349061120754?text=${encodeURIComponent(whatsappMessage)}`,
+        '_blank'
+      );
     }
 
     renderCheckout();
