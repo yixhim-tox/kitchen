@@ -7,6 +7,7 @@ import cloudinary.uploader
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+import urllib.parse
 
 load_dotenv()
 
@@ -30,6 +31,7 @@ if USE_MONGO:
     mongo_client = MongoClient(os.getenv('MONGODB_URL'))
     mongo_db = mongo_client['tgs_kitchen']
     mongo_meals = mongo_db['meals']
+    mongo_leaderboard = mongo_db['leaderboard']  # Added properly
 
 def init_db():
     if not USE_MONGO:
@@ -51,12 +53,10 @@ init_db()
 
 def get_all_meals():
     if USE_MONGO:
-        # Sort by newest first
         return list(mongo_meals.find().sort("_id", -1))
     else:
         conn = sqlite3.connect(DB_NAME)
         conn.row_factory = sqlite3.Row
-        # Sort by newest first
         meals = conn.execute('SELECT * FROM meals ORDER BY id DESC').fetchall()
         conn.close()
         return meals
@@ -205,8 +205,6 @@ def checkout():
         conn.close()
         total = sum(meal['price'] * cart[str(meal['id'])] for meal in meals)
 
-    # === Send order to WhatsApp ===
-    import urllib.parse
     order_details = "\n".join([
         f"{meal['name']} x{cart[str(meal['_id'])] if USE_MONGO else cart[str(meal['id'])]} = ₦{meal['price'] * (cart[str(meal['_id'])] if USE_MONGO else cart[str(meal['id'])]):,.2f}"
         for meal in meals
@@ -215,13 +213,10 @@ def checkout():
     encoded_message = urllib.parse.quote(message)
     whatsapp_url = f"https://wa.me/2349061120754?text={encoded_message}"
 
-    # Clear the cart BEFORE redirect
     session.pop('cart', None)
-
     return redirect(whatsapp_url)
 
-
-
+# === API routes ===
 @app.route('/api/meals')
 def api_meals():
     meals = get_all_meals()
@@ -247,7 +242,7 @@ def upload_image():
         return jsonify({'url': upload_result['secure_url']})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-# === Add Meal via JavaScript (Cloudinary/localStorage replacement) ===
+
 @app.route('/api/add_meal', methods=['POST'])
 def api_add_meal():
     data = request.get_json()
@@ -268,8 +263,6 @@ def api_add_meal():
         return jsonify({'message': 'Meal added successfully'})
     return jsonify({'error': 'MongoDB not available'}), 500
 
-
-# === Update Meal via JavaScript ===
 @app.route('/api/update_meal/<meal_id>', methods=['POST'])
 def api_update_meal(meal_id):
     data = request.get_json()
@@ -286,8 +279,6 @@ def api_update_meal(meal_id):
         return jsonify({'message': 'Meal updated successfully'})
     return jsonify({'error': 'MongoDB not available'}), 500
 
-
-# === Delete Meal via JavaScript ===
 @app.route('/api/delete_meal/<meal_id>', methods=['DELETE'])
 def api_delete_meal(meal_id):
     if USE_MONGO:
@@ -295,6 +286,26 @@ def api_delete_meal(meal_id):
         return jsonify({'message': 'Meal deleted successfully'})
     return jsonify({'error': 'MongoDB not available'}), 500
 
+# === Leaderboard API ===
+@app.route('/api/leaderboard', methods=['GET'])
+def get_leaderboard():
+    if USE_MONGO:
+        data = list(mongo_leaderboard.find().sort("rank", 1))
+        for d in data:
+            d['_id'] = str(d['_id'])
+        return jsonify(data)
+    return jsonify([])
+@app.route('/api/leaderboard', methods=['POST'])
+def save_leaderboard():
+    data = request.get_json()  # expect array of entries with rank, player, score, img
+    if USE_MONGO:
+        # Clear current leaderboard
+        mongo_leaderboard.delete_many({})
+        # Insert new leaderboard
+        for entry in data:
+            mongo_leaderboard.insert_one(entry)
+        return jsonify({'message': 'Leaderboard saved'})
+    return jsonify({'error': 'MongoDB not available'}), 500
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
