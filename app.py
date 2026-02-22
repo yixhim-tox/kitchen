@@ -306,23 +306,33 @@ def get_leaderboard():
 @app.route('/api/leaderboard', methods=['POST'])
 def save_leaderboard():
     data = request.get_json(force=True)
-    if not data:
-        return jsonify({'error': 'No data received'}), 400
-    if USE_MONGO:
-        try:
-            mongo_leaderboard.delete_many({})
-            for entry in data:
-                mongo_leaderboard.insert_one({
-                    'rank': entry.get('rank', 0),
-                    'player': entry.get('player', ''),
-                    'score': entry.get('score', 0),
-                    'img': entry.get('img', '')
-                })
-            return jsonify({'message': 'Leaderboard saved'})
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
-    return jsonify({'error': 'MongoDB not available'}), 500
+    if not data or not isinstance(data, list):
+        return jsonify({'error': 'No data or invalid format'}), 400
 
+    if not USE_MONGO:
+        return jsonify({'error': 'MongoDB not available'}), 500
+
+    try:
+        # Instead of using the global mongo_leaderboard, create a local client
+        with MongoClient(os.getenv('MONGODB_URL')) as client:
+            db = client['tgs_kitchen']
+            leaderboard = db['leaderboard']
+            
+            # Clear existing leaderboard
+            leaderboard.delete_many({})
+            
+            # Insert new data
+            for entry in data:
+                leaderboard.insert_one({
+                    'rank': int(entry.get('rank', 0)),
+                    'player': entry.get('player') or '',
+                    'score': int(entry.get('score', 0)),
+                    'img': entry.get('img') or ''
+                })
+        return jsonify({'message': 'Leaderboard saved'})
+    except Exception as e:
+        print("MongoDB insert error:", e)
+        return jsonify({'error': str(e)}), 500
 # === Leaderboard pages ===
 @app.route('/leaderboard')
 def leaderboard():
