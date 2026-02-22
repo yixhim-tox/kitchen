@@ -183,19 +183,31 @@ body{
   display:block;
   margin-bottom:3px;
 }
+/* ===== FADE IN ANIMATION ===== */
+.fade-in {
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.fade-in.show {
+  opacity: 1;
+  transform: translateY(0);
+}
 </style>
 </head>
 
 <body>
 
 <div class="top-area">
+  <p id="loadingText" style="margin-top:10px;">Loading leaderboard...</p>
   <h2>Top Food Orders</h2>
   <div class="top-three">
     <!-- Top 3 will be inserted here dynamically -->
   </div>
 </div>
 
-<div class="bottom-area">
+<div class="bottom-area fade-in" id="bottomArea" style="display:none;">
   <!-- Rank 4-20 HTML elements -->
   <div class="list-item" data-rank="4">
     <div class="left">
@@ -242,6 +254,7 @@ async function loadLeaderboard(){
 
   // Render Top 3
   topContainer.innerHTML = '';
+
   if(top3[1]){
     const div = document.createElement('div');
     div.className = 'person second';
@@ -253,6 +266,7 @@ async function loadLeaderboard(){
     `;
     topContainer.appendChild(div);
   }
+
   if(top3[0]){
     const div = document.createElement('div');
     div.className = 'person first';
@@ -265,6 +279,7 @@ async function loadLeaderboard(){
     `;
     topContainer.appendChild(div);
   }
+
   if(top3[2]){
     const div = document.createElement('div');
     div.className = 'person third';
@@ -295,11 +310,20 @@ async function loadLeaderboard(){
       el.style.display = 'none';
     }
   });
+
+  document.getElementById('loadingText').style.display = 'none';
+
+const bottom = document.getElementById('bottomArea');
+bottom.style.display = 'block';
+
+// small delay so browser registers display change
+setTimeout(() => {
+  bottom.classList.add('show');
+}, 50);
 }
 
 // Load leaderboard on page load
 window.onload = loadLeaderboard;
 </script>
-
 </body>
 </html>
