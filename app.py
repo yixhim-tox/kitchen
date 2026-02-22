@@ -26,13 +26,26 @@ UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-USE_MONGO = os.getenv('MONGODB_URL') is not None
-if USE_MONGO:
-    mongo_client = MongoClient(os.getenv('MONGODB_URL'))
-    mongo_db = mongo_client['tgs_kitchen']
-    mongo_meals = mongo_db['meals']
-    mongo_leaderboard = mongo_db['leaderboard']  # Added properly
+# === MongoDB setup ===
+USE_MONGO = bool(os.getenv('MONGODB_URL'))  # True if URL exists
+mongo_client = None
+mongo_db = None
+mongo_meals = None
+mongo_leaderboard = None
 
+if USE_MONGO:
+    try:
+        mongo_client = MongoClient(os.getenv('MONGODB_URL'))
+        mongo_client.server_info()  # Test connection immediately
+        mongo_db = mongo_client['tgs_kitchen']
+        mongo_meals = mongo_db['meals']
+        mongo_leaderboard = mongo_db['leaderboard']
+        print("✅ MongoDB connected successfully")
+    except Exception as e:
+        USE_MONGO = False
+        print("❌ MongoDB connection failed:", e)
+
+# === SQLite setup ===
 def init_db():
     if not USE_MONGO:
         with sqlite3.connect(DB_NAME) as conn:
@@ -51,6 +64,7 @@ def init_db():
 
 init_db()
 
+# === Helper function ===
 def get_all_meals():
     if USE_MONGO:
         return list(mongo_meals.find().sort("_id", -1))
@@ -61,6 +75,7 @@ def get_all_meals():
         conn.close()
         return meals
 
+# === Routes for meals/admin/cart ===
 @app.route('/')
 def home():
     meals = get_all_meals()
@@ -121,20 +136,13 @@ def edit_meal(meal_id):
 
     if USE_MONGO:
         mongo_meals.update_one({'_id': ObjectId(meal_id)}, {
-            '$set': {
-                'name': name,
-                'description': description,
-                'price': price,
-                'image': image,
-                'category': category
-            }
+            '$set': {'name': name, 'description': description, 'price': price, 'image': image, 'category': category}
         })
     else:
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
-        c.execute('''
-            UPDATE meals SET name = ?, description = ?, price = ?, image = ?, category = ? WHERE id = ?
-        ''', (name, description, price, image, category, meal_id))
+        c.execute('UPDATE meals SET name=?, description=?, price=?, image=?, category=? WHERE id=?',
+                  (name, description, price, image, category, meal_id))
         conn.commit()
         conn.close()
     return redirect(url_for('admin'))
@@ -146,7 +154,7 @@ def delete_meal(meal_id):
     else:
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
-        c.execute('DELETE FROM meals WHERE id = ?', (meal_id,))
+        c.execute('DELETE FROM meals WHERE id=?', (meal_id,))
         conn.commit()
         conn.close()
     return redirect(url_for('admin'))
@@ -162,7 +170,6 @@ def add_to_cart(meal_id):
 def cart():
     cart = session.get('cart', {})
     meal_ids = list(cart.keys())
-
     if not meal_ids:
         return render_template('cart.html', meals=[], total=0)
 
@@ -190,7 +197,6 @@ def remove_from_cart(meal_id):
 def checkout():
     cart = session.get('cart', {})
     meal_ids = list(cart.keys())
-
     if not meal_ids:
         return render_template('checkout.html', meals=[], total=0)
 
@@ -212,11 +218,10 @@ def checkout():
     message = f"New Order:\n{order_details}\n\nTotal: ₦{total:,.2f}"
     encoded_message = urllib.parse.quote(message)
     whatsapp_url = f"https://wa.me/2349061120754?text={encoded_message}"
-
     session.pop('cart', None)
     return redirect(whatsapp_url)
 
-# === API routes ===
+# === API routes for meals ===
 @app.route('/api/meals')
 def api_meals():
     meals = get_all_meals()
@@ -251,7 +256,6 @@ def api_add_meal():
     price = float(data.get('price', 0))
     image = data.get('image', '')
     category = data.get('category', 'Meals')
-
     if USE_MONGO:
         mongo_meals.insert_one({
             'name': name,
@@ -273,7 +277,6 @@ def api_update_meal(meal_id):
         'image': data.get('image'),
         'category': data.get('category')
     }
-
     if USE_MONGO:
         mongo_meals.update_one({'_id': ObjectId(meal_id)}, {'$set': update_fields})
         return jsonify({'message': 'Meal updated successfully'})
@@ -290,10 +293,14 @@ def api_delete_meal(meal_id):
 @app.route('/api/leaderboard', methods=['GET'])
 def get_leaderboard():
     if USE_MONGO:
-        data = list(mongo_leaderboard.find().sort("rank", 1))
-        for d in data:
-            d['_id'] = str(d['_id'])
-        return jsonify(data)
+        try:
+            data = list(mongo_leaderboard.find().sort("rank", 1))
+            for d in data:
+                d['_id'] = str(d['_id'])
+            return jsonify(data)
+        except Exception as e:
+            print("Error fetching leaderboard:", e)
+            return jsonify([])
     return jsonify([])
 
 @app.route('/api/leaderboard', methods=['POST'])
@@ -301,7 +308,6 @@ def save_leaderboard():
     data = request.get_json(force=True)
     if not data:
         return jsonify({'error': 'No data received'}), 400
-
     if USE_MONGO:
         try:
             mongo_leaderboard.delete_many({})
@@ -315,19 +321,18 @@ def save_leaderboard():
             return jsonify({'message': 'Leaderboard saved'})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-
     return jsonify({'error': 'MongoDB not available'}), 500
 
-# Public leaderboard (users)
+# === Leaderboard pages ===
 @app.route('/leaderboard')
 def leaderboard():
-    return render_template('leaderboard.html')  # user-facing page
+    return render_template('leaderboard.html')
 
-# Admin leaderboard (editing)
 @app.route('/leaderboardad')
 def leaderboard_admin_page():
-    return render_template('leaderboardad.html')  # admin page
+    return render_template('leaderboardad.html')
 
+# === Run app ===
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
