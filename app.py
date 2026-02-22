@@ -295,18 +295,30 @@ def get_leaderboard():
             d['_id'] = str(d['_id'])
         return jsonify(data)
     return jsonify([])
+
 @app.route('/api/leaderboard', methods=['POST'])
 def save_leaderboard():
-    data = request.get_json()  # expect array of entries with rank, player, score, img
+    data = request.get_json(force=True)
+    if not data:
+        return jsonify({'error': 'No data received'}), 400
+
     if USE_MONGO:
-        # Clear current leaderboard
-        mongo_leaderboard.delete_many({})
-        # Insert new leaderboard
-        for entry in data:
-            mongo_leaderboard.insert_one(entry)
-        return jsonify({'message': 'Leaderboard saved'})
+        try:
+            mongo_leaderboard.delete_many({})
+            for entry in data:
+                mongo_leaderboard.insert_one({
+                    'rank': entry.get('rank', 0),
+                    'player': entry.get('player', ''),
+                    'score': entry.get('score', 0),
+                    'img': entry.get('img', '')
+                })
+            return jsonify({'message': 'Leaderboard saved'})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
     return jsonify({'error': 'MongoDB not available'}), 500
-    # Public leaderboard (users)
+
+# Public leaderboard (users)
 @app.route('/leaderboard')
 def leaderboard():
     return render_template('leaderboard.html')  # user-facing page
@@ -315,6 +327,7 @@ def leaderboard():
 @app.route('/leaderboardad')
 def leaderboard_admin_page():
     return render_template('leaderboardad.html')  # admin page
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
