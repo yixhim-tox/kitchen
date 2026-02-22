@@ -303,23 +303,31 @@ def api_delete_meal(meal_id):
 
 @app.route('/api/leaderboard', methods=['GET'])
 def get_leaderboard():
-    if leaderboard_collection:
-        try:
-            data = list(leaderboard_collection.find().sort("rank", 1))
-            for d in data:
-                d['_id'] = str(d['_id'])
-            return jsonify(data)
-        except Exception as e:
-            print("Error fetching leaderboard:", e)
+    try:
+        if leaderboard_collection is None:
+            print("Leaderboard collection is None")
             return jsonify([])
-    return jsonify([])
+
+        data = list(leaderboard_collection.find())
+
+        print("Leaderboard raw data:", data)
+
+        for d in data:
+            d['_id'] = str(d['_id'])
+
+        return jsonify(data)
+
+    except Exception as e:
+        print("🔥 Error fetching leaderboard:", e)
+        return jsonify({"error": str(e)}), 500
 @app.route('/api/leaderboard', methods=['POST'])
 def save_leaderboard():
     data = request.get_json(force=True)
+
     if not data or not isinstance(data, list):
         return jsonify({'error': 'No data or invalid format'}), 400
 
-    if not leaderboard_collection:
+    if leaderboard_collection is None:
         return jsonify({'error': 'Leaderboard DB not available'}), 500
 
     try:
@@ -334,6 +342,7 @@ def save_leaderboard():
             })
 
         return jsonify({'message': 'Leaderboard saved'})
+
     except Exception as e:
         print("Leaderboard MongoDB error:", e)
         return jsonify({'error': str(e)}), 500
