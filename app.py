@@ -306,6 +306,15 @@ def save_leaderboard():
             mongo_leaderboard.insert_one(entry)
         return jsonify({'message': 'Leaderboard saved'})
     return jsonify({'error': 'MongoDB not available'}), 500
+    # Public leaderboard (users)
+@app.route('/leaderboard')
+def leaderboard():
+    return render_template('leaderboard.html')  # user-facing page
+
+# Admin leaderboard (editing)
+@app.route('/leaderboardad')
+def leaderboard_admin_page():
+    return render_template('leaderboardad.html')  # admin page
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
