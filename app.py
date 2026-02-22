@@ -32,7 +32,19 @@ mongo_client = None
 mongo_db = None
 mongo_meals = None
 mongo_leaderboard = None
+# === Separate Leaderboard MongoDB (NEW - does not touch meals) ===
+leaderboard_client = None
+leaderboard_collection = None
 
+if os.getenv('LEADERBOARD_MONGODB_URI'):
+    try:
+        leaderboard_client = MongoClient(os.getenv('LEADERBOARD_MONGODB_URI'))
+        leaderboard_client.server_info()
+        leaderboard_db = leaderboard_client['leaderboard_db']
+        leaderboard_collection = leaderboard_db['leaderboard']
+        print("✅ Leaderboard MongoDB connected successfully")
+    except Exception as e:
+        print("❌ Leaderboard MongoDB connection failed:", e)
 if USE_MONGO:
     try:
         mongo_client = MongoClient(os.getenv('MONGODB_URL'))
@@ -289,12 +301,11 @@ def api_delete_meal(meal_id):
         return jsonify({'message': 'Meal deleted successfully'})
     return jsonify({'error': 'MongoDB not available'}), 500
 
-# === Leaderboard API ===
 @app.route('/api/leaderboard', methods=['GET'])
 def get_leaderboard():
-    if USE_MONGO:
+    if leaderboard_collection:
         try:
-            data = list(mongo_leaderboard.find().sort("rank", 1))
+            data = list(leaderboard_collection.find().sort("rank", 1))
             for d in data:
                 d['_id'] = str(d['_id'])
             return jsonify(data)
@@ -302,36 +313,29 @@ def get_leaderboard():
             print("Error fetching leaderboard:", e)
             return jsonify([])
     return jsonify([])
-
 @app.route('/api/leaderboard', methods=['POST'])
 def save_leaderboard():
     data = request.get_json(force=True)
     if not data or not isinstance(data, list):
         return jsonify({'error': 'No data or invalid format'}), 400
 
-    if not USE_MONGO:
-        return jsonify({'error': 'MongoDB not available'}), 500
+    if not leaderboard_collection:
+        return jsonify({'error': 'Leaderboard DB not available'}), 500
 
     try:
-        # Instead of using the global mongo_leaderboard, create a local client
-        with MongoClient(os.getenv('MONGODB_URL')) as client:
-            db = client['tgs_kitchen']
-            leaderboard = db['leaderboard']
-            
-            # Clear existing leaderboard
-            leaderboard.delete_many({})
-            
-            # Insert new data
-            for entry in data:
-                leaderboard.insert_one({
-                    'rank': int(entry.get('rank', 0)),
-                    'player': entry.get('player') or '',
-                    'score': int(entry.get('score', 0)),
-                    'img': entry.get('img') or ''
-                })
+        leaderboard_collection.delete_many({})
+
+        for entry in data:
+            leaderboard_collection.insert_one({
+                'rank': int(entry.get('rank', 0)),
+                'player': entry.get('player') or '',
+                'score': int(entry.get('score', 0)),
+                'img': entry.get('img') or ''
+            })
+
         return jsonify({'message': 'Leaderboard saved'})
     except Exception as e:
-        print("MongoDB insert error:", e)
+        print("Leaderboard MongoDB error:", e)
         return jsonify({'error': str(e)}), 500
 # === Leaderboard pages ===
 @app.route('/leaderboard')
