@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top Orders</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+  background:#f2f2f2;
+}
+
+/* ===== TOP SECTION ===== */
+.top-area{
+  position:relative;
+  padding:40px 20px 170px;
+  text-align:center;
+  color:white;
+
+  background:
+    linear-gradient(rgba(255,60,40,0.75), rgba(255,30,20,0.5)),
+    url('https://i.postimg.cc/fbP16wcV/IMG-20260222-WA0015.jpg');
+
+  background-size:cover;
+  background-position:center;
+}
+
+.top-area h2{
+  font-size:26px;
+  margin-bottom:35px;
+  font-weight:bold;
+}
+
+/* ===== TOP 3 ===== */
+.top-three{
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  gap:25px;
+}
+
+.person{
+  text-align:center;
+  position:relative;
+  width:100px;
+}
+
+.person img{
+  width:95px;
+  height:95px;
+  border-radius:50%;
+  border:4px solid white;
+  object-fit:cover;
+  background:white;
+}
+
+.first{
+  transform:translateY(-20px);
+}
+
+.first img{
+  width:130px;
+  height:130px;
+}
+
+.crown{
+  position:absolute;
+  top:-25px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:30px;
+}
+
+.rank-circle{
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  font-weight:bold;
+  color:white;
+}
+
+.first .rank-circle{ background:#d4af37; }
+.second .rank-circle{ background:#c0c0c0; }
+.third .rank-circle{ background:#cd7f32; }
+
+.amount{
+  margin-top:12px;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.name{
+  font-size:14px;
+  margin-top:5px;
+}
+
+/* ===== BOTTOM LIST ===== */
+.bottom-area{
+  background:white;
+  margin-top:-30px;
+  border-radius:30px 30px 0 0;
+  padding:40px 20px;
+}
+
+.list-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px 0;
+  border-bottom:1px solid #eee;
+}
+
+.left{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.left img{
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+.order-amount{
+  font-weight:bold;
+  font-size:16px;
+}
+
+.rank-number{
+  width:35px;
+  height:35px;
+  border:2px solid #ff3d2e;
+  color:#ff3d2e;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+}
+/* ===== BOTTOM NAV ===== */
+
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  background:red;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 5px;
+  color:white;
+  font-size:13px;
+  z-index:999;
+}
+
+.bottom-nav div{
+  flex:1;
+  text-align:center;
+  cursor:pointer;
+}
+
+.bottom-nav i{
+  font-size:18px;
+  display:block;
+  margin-bottom:3px;
+}
+
+/* prevent content hiding behind nav */
+body{
+  padding-bottom:80px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top-area">
+  <h2>Top Food Orders</h2>
+
+  <div class="top-three">
+
+    <div class="person second">
+      <div class="rank-circle">2</div>
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg">
+      <div class="amount">18 Plates</div>
+      <div class="name">Victory</div>
+    </div>
+
+    <div class="person first">
+      <div class="crown">👑</div>
+      <div class="rank-circle">1</div>
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg">
+      <div class="amount">20 Plates</div>
+      <div class="name">Zayd</div>
+    </div>
+
+    <div class="person third">
+      <div class="rank-circle">3</div>
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg">
+      <div class="amount">15 Plates</div>
+      <div class="name">Ghost</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="bottom-area">
+
+  <!-- RANK 4 - 20 -->
+  <script>
+    const container = document.currentScript.parentElement;
+
+    const names = [
+      "Panda","Wilson","Daniel","Samuel","Michael",
+      "Aisha","David","Esther","Chris","Ruth",
+      "John","Mary","Alex","Bright","Queen",
+      "Henry","Faith","Kelvin","Joy","Grace","Tony"
+    ];
+
+    let rank = 4;
+
+    names.forEach((name,i)=>{
+      const plates = 20 - (i % 5);
+
+      const item = document.createElement("div");
+      item.className = "list-item";
+
+      item.innerHTML = `
+        <div class="left">
+          <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg">
+          <div>
+            <div class="order-amount">${plates} Plates</div>
+            <div>${name}</div>
+          </div>
+        </div>
+        <div class="rank-number">${rank}</div>
+      `;
+
+      container.appendChild(item);
+      rank++;
+    });
+  </script>
+
+</div>
+<div class="bottom-nav">
+
+  <div onclick="window.location.href='/'">
+    <i class="fas fa-home"></i>
+    Home
+  </div>
+
+  <div onclick="window.location.href='/cart'">
+    <i class="fas fa-shopping-cart"></i>
+    Cart
+  </div>
+
+  <div onclick="window.location.href='/'">
+    <i class="fas fa-layer-group"></i>
+    Categories
+  </div>
+
+  <div onclick="window.location.href='/leaderboard'">
+    <i class="fas fa-trophy"></i>
+    Leaderboard
+  </div>
+
+  <div onclick="window.location.href='/checkout'">
+    <i class="fas fa-check-circle"></i>
+    Checkout
+  </div>
+
+</div>
+</body>
+</html>

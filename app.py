@@ -30,6 +30,7 @@ if USE_MONGO:
     mongo_client = MongoClient(os.getenv('MONGODB_URL'))
     mongo_db = mongo_client['tgs_kitchen']
     mongo_meals = mongo_db['meals']
+    mongo_leaderboard = mongo_db['leaderboard']  # leaderboard collection
 
 def init_db():
     if not USE_MONGO:
@@ -51,12 +52,10 @@ init_db()
 
 def get_all_meals():
     if USE_MONGO:
-        # Sort by newest first
         return list(mongo_meals.find().sort("_id", -1))
     else:
         conn = sqlite3.connect(DB_NAME)
         conn.row_factory = sqlite3.Row
-        # Sort by newest first
         meals = conn.execute('SELECT * FROM meals ORDER BY id DESC').fetchall()
         conn.close()
         return meals
@@ -71,9 +70,11 @@ def menu():
     meals = get_all_meals()
     return render_template('menu.html', meals=meals)
 
+# === Admin page (meals + leaderboard together) ===
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    if request.method == 'POST':
+    if request.method == 'POST' and 'name' in request.form:
+        # Meal submission
         name = request.form['name']
         description = request.form['description']
         price = float(request.form['price'])
@@ -102,14 +103,18 @@ def admin():
         else:
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
-            c.execute("INSERT INTO meals (name, description, price, image, category) VALUES (?, ?, ?, ?, ?)",
-                      (name, description, price, image_path, category))
+            c.execute(
+                "INSERT INTO meals (name, description, price, image, category) VALUES (?, ?, ?, ?, ?)",
+                (name, description, price, image_path, category)
+            )
             conn.commit()
             conn.close()
         return redirect(url_for('admin'))
 
+    # Get meals and leaderboard data
     meals = get_all_meals()
-    return render_template('admin.html', meals=meals)
+    leaderboard = list(mongo_leaderboard.find().sort('plates', -1)) if USE_MONGO else []
+    return render_template('admin.html', meals=meals, leaderboard=leaderboard)
 
 @app.route('/edit/<meal_id>', methods=['POST'])
 def edit_meal(meal_id):
@@ -205,7 +210,6 @@ def checkout():
         conn.close()
         total = sum(meal['price'] * cart[str(meal['id'])] for meal in meals)
 
-    # === Send order to WhatsApp ===
     import urllib.parse
     order_details = "\n".join([
         f"{meal['name']} x{cart[str(meal['_id'])] if USE_MONGO else cart[str(meal['id'])]} = ₦{meal['price'] * (cart[str(meal['_id'])] if USE_MONGO else cart[str(meal['id'])]):,.2f}"
@@ -215,12 +219,13 @@ def checkout():
     encoded_message = urllib.parse.quote(message)
     whatsapp_url = f"https://wa.me/2349061120754?text={encoded_message}"
 
-    # Clear the cart BEFORE redirect
     session.pop('cart', None)
 
     return redirect(whatsapp_url)
 
-
+@app.route('/leaderboard')
+def leaderboard():
+    return render_template('leaderboard.html')
 
 @app.route('/api/meals')
 def api_meals():
@@ -247,7 +252,8 @@ def upload_image():
         return jsonify({'url': upload_result['secure_url']})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-# === Add Meal via JavaScript (Cloudinary/localStorage replacement) ===
+
+# === Add Meal via JavaScript ===
 @app.route('/api/add_meal', methods=['POST'])
 def api_add_meal():
     data = request.get_json()
@@ -268,7 +274,6 @@ def api_add_meal():
         return jsonify({'message': 'Meal added successfully'})
     return jsonify({'error': 'MongoDB not available'}), 500
 
-
 # === Update Meal via JavaScript ===
 @app.route('/api/update_meal/<meal_id>', methods=['POST'])
 def api_update_meal(meal_id):
@@ -286,7 +291,6 @@ def api_update_meal(meal_id):
         return jsonify({'message': 'Meal updated successfully'})
     return jsonify({'error': 'MongoDB not available'}), 500
 
-
 # === Delete Meal via JavaScript ===
 @app.route('/api/delete_meal/<meal_id>', methods=['DELETE'])
 def api_delete_meal(meal_id):
@@ -294,6 +298,39 @@ def api_delete_meal(meal_id):
         mongo_meals.delete_one({'_id': ObjectId(meal_id)})
         return jsonify({'message': 'Meal deleted successfully'})
     return jsonify({'error': 'MongoDB not available'}), 500
+
+# === Leaderboard API ===
+@app.route('/api/add_leaderboard', methods=['POST'])
+def api_add_leaderboard():
+    data = request.get_json()
+    user_name = data.get('user_name')
+    plates = int(data.get('plates', 0))
+    profile = data.get('profile', '')
+
+    mongo_leaderboard.insert_one({
+        'user_name': user_name,
+        'plates': plates,
+        'profile': profile
+    })
+    return jsonify({'message': 'Leaderboard user added successfully'})
+
+
+@app.route('/api/update_leaderboard/<user_id>', methods=['POST'])
+def api_update_leaderboard(user_id):
+    data = request.get_json()
+    update_fields = {
+        'user_name': data.get('user_name'),
+        'plates': int(data.get('plates', 0)),
+        'profile': data.get('profile', '')
+    }
+    mongo_leaderboard.update_one({'_id': ObjectId(user_id)}, {'$set': update_fields})
+    return jsonify({'message': 'Leaderboard user updated successfully'})
+
+
+@app.route('/api/delete_leaderboard/<user_id>', methods=['DELETE'])
+def api_delete_leaderboard(user_id):
+    mongo_leaderboard.delete_one({'_id': ObjectId(user_id)})
+    return jsonify({'message': 'Leaderboard user deleted successfully'})
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))

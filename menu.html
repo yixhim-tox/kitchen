@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TG's Kitchen Menu</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fff;
+      padding-top: 130px;
+      padding-bottom: 80px;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: #333;
+      color: #fff;
+      padding: 15px;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      z-index: 1000;
+    }
+
+    .search-bar {
+      position: fixed;
+      top: 55px;
+      width: 100%;
+      padding: 10px 15px;
+      z-index: 1000;
+      background: #333;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #111;
+      color: #fff;
+    }
+
+    .floating-bell {
+      position: fixed;
+      top: 65px;
+      right: 20px;
+      background: gold;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      z-index: 1001;
+    }
+
+    .floating-bell i {
+      font-size: 20px;
+      color: #000;
+    }
+
+    #menu-container {
+      padding: 15px;
+    }
+
+    .meal {
+      background-color: #ffcc00;
+      color: #000;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .meal .meal-name {
+      flex: 1;
+    }
+
+    .meal .meal-price {
+      margin: 0 10px;
+      white-space: nowrap;
+    }
+
+    .meal .add-btn {
+      background-color: red;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .quantity-controls {
+      display: none;
+      gap: 5px;
+    }
+
+    .quantity-controls button {
+      padding: 4px 8px;
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #1b1a1a;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .quantity-controls .quantity {
+      font-weight: bold;
+      font-size: 15px;
+      padding: 0 5px;
+    }
+
+    .bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: red;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 5px;
+  color: white;
+  font-size: 13px;
+  z-index: 999;
+}
+
+.bottom-nav div {
+  flex: 1;
+  text-align: center;
+}
+
+    .bottom-nav div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .bottom-nav i {
+      font-size: 18px;
+      margin-bottom: 3px;
+    }
+
+    .category-select-wrapper {
+      display: none;
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1002;
+    }
+
+    #category-select {
+      padding: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 2px solid #333;
+      background-color: #fff;
+      width: 250px;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body>
+
+  <header>TG's Kitchen Menu</header>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search Menu">
+  </div>
+
+  <div class="floating-bell">
+    <i class="fas fa-bell"></i>
+  </div>
+
+  <div class="category-select-wrapper" id="categoryWrapper">
+    <select id="category-select">
+      <option disabled selected>Select Category</option>
+      <option value="Meat">Meat</option>
+      <option value="Swallow">Swallow</option>
+      <option value="Soft foods">Soft foods</option>
+      <option value="Beverages">Beverages</option>
+      <option value="All in one">All in one</option>
+      <option value="Snacks">Snacks</option>
+    </select>
+  </div>
+
+  <div id="menu-container"></div>
+
+  <div class="bottom-nav">
+  <div onclick="window.location.href='/'">
+    <i class="fas fa-home"></i>Home
+  </div>
+
+  <div onclick="window.location.href='/cart'">
+    <i class="fas fa-shopping-cart"></i>Cart
+  </div>
+
+  <div onclick="toggleCategory()">
+    <i class="fas fa-layer-group"></i>Categories
+  </div>
+
+  <div onclick="window.location.href='/leaderboard'">
+    <i class="fas fa-trophy"></i>Leaderboard
+  </div>
+
+  <div onclick="window.location.href='/checkout'">
+    <i class="fas fa-check-circle"></i>Checkout
+  </div>
+</div>
+
+  <script>
+    let allMeals = [];
+    const menuContainer = document.getElementById("menu-container");
+    const searchInput = document.getElementById("searchInput");
+    const categorySelect = document.getElementById("category-select");
+    const categoryWrapper = document.getElementById("categoryWrapper");
+
+    function toggleCategory() {
+      categoryWrapper.style.display = (categoryWrapper.style.display === 'block') ? 'none' : 'block';
+    }
+
+    categorySelect.addEventListener('change', () => {
+      const selected = categorySelect.value;
+      const filtered = allMeals.filter(meal => meal.category === selected);
+      renderMeals(filtered);
+      categoryWrapper.style.display = 'none';
+    });
+
+    function renderMeals(meals) {
+      menuContainer.innerHTML = '';
+      if (meals.length === 0) {
+        menuContainer.innerHTML = '<p style="color:#555;font-size:18px;text-align:center;margin-top:20px;">Currently not available</p>';
+        return;
+      }
+
+      meals.forEach(meal => {
+        const div = document.createElement("div");
+        div.className = "meal";
+        div.innerHTML = `
+          <div class="meal-name">${meal.name}</div>
+          <div class="meal-price">₦${meal.price}</div>
+          <div class="cart-buttons">
+            <button class="add-btn">ADD</button>
+            <div class="quantity-controls">
+              <button class="decrease-btn">−</button>
+              <span class="quantity">1</span>
+              <button class="increase-btn">+</button>
+            </div>
+          </div>
+        `;
+        menuContainer.appendChild(div);
+      });
+
+      menuContainer.querySelectorAll('.add-btn').forEach(btn =>
+        btn.addEventListener('click', function () {
+          addToCart(this);
+        })
+      );
+      menuContainer.querySelectorAll('.increase-btn').forEach(btn =>
+        btn.addEventListener('click', function () {
+          increaseQty(this);
+        })
+      );
+      menuContainer.querySelectorAll('.decrease-btn').forEach(btn =>
+        btn.addEventListener('click', function () {
+          decreaseQty(this);
+        })
+      );
+    }
+
+    function addToCart(btn) {
+      const cartBox = btn.parentElement;
+      const mealBox = btn.closest('.meal');
+      const name = mealBox.querySelector('.meal-name').textContent.trim();
+      const price = parseFloat(mealBox.querySelector('.meal-price').textContent.replace(/[^\d.]/g, ''));
+      const image = '';
+      let quantity = 1;
+
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const index = cart.findIndex(item => item.name === name);
+      if (index > -1) {
+        cart[index].quantity = Math.min(cart[index].quantity + quantity, 10);
+      } else {
+        cart.push({ name, price, image, quantity });
+      }
+
+      localStorage.setItem('cart', JSON.stringify(cart));
+      btn.style.display = 'none';
+      cartBox.querySelector('.quantity-controls').style.display = 'flex';
+    }
+
+    function increaseQty(btn) {
+      const qtySpan = btn.parentElement.querySelector('.quantity');
+      let qty = parseInt(qtySpan.textContent);
+      if (qty < 10) {
+        qtySpan.textContent = qty + 1;
+        updateCartQty(btn, qty + 1);
+      }
+    }
+
+    function decreaseQty(btn) {
+      const controls = btn.parentElement;
+      const qtySpan = controls.querySelector('.quantity');
+      let qty = parseInt(qtySpan.textContent);
+      if (qty > 1) {
+        qtySpan.textContent = qty - 1;
+        updateCartQty(btn, qty - 1);
+      } else {
+        controls.style.display = 'none';
+        controls.parentElement.querySelector('.add-btn').style.display = 'inline-block';
+        updateCartQty(btn, 0, true);
+      }
+    }
+
+    function updateCartQty(btn, qty, remove = false) {
+      const name = btn.closest('.meal').querySelector('.meal-name').textContent.trim();
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const index = cart.findIndex(item => item.name === name);
+      if (index > -1) {
+        if (remove) {
+          cart.splice(index, 1);
+        } else {
+          cart[index].quantity = qty;
+        }
+        localStorage.setItem('cart', JSON.stringify(cart));
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const res = await fetch('/api/meals');
+        allMeals = await res.json();
+        renderMeals(allMeals);
+      } catch (e) {
+        menuContainer.innerHTML = "<p style='color:red;'>Failed to load meals.</p>";
+        console.error(e);
+      }
+    });
+
+    searchInput.addEventListener('input', () => {
+      const val = searchInput.value.toLowerCase();
+      const filtered = allMeals.filter(meal => meal.name.toLowerCase().includes(val));
+      renderMeals(filtered);
+    });
+  </script>
+</body>
+</html>
