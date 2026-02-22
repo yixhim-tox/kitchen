@@ -124,18 +124,23 @@
     }
 
     .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: red;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding: 10px 0;
-      color: white;
-      font-size: 13px;
-      z-index: 999;
-    }
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: red;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 5px;
+  color: white;
+  font-size: 13px;
+  z-index: 999;
+}
+
+.bottom-nav div {
+  flex: 1;
+  text-align: center;
+}
 
     .bottom-nav div {
       display: flex;
@@ -197,19 +202,26 @@
   <div id="menu-container"></div>
 
   <div class="bottom-nav">
-    <div onclick="window.location.href='/'">
-      <i class="fas fa-home"></i>Home
-    </div>
-    <div onclick="window.location.href='/cart'">
-      <i class="fas fa-shopping-cart"></i>Cart
-    </div>
-    <div onclick="toggleCategory()">
-      <i class="fas fa-layer-group"></i>Categories
-    </div>
-    <div onclick="window.location.href='/checkout'">
-      <i class="fas fa-check-circle"></i>Checkout
-    </div>
+  <div onclick="window.location.href='/'">
+    <i class="fas fa-home"></i>Home
   </div>
+
+  <div onclick="window.location.href='/cart'">
+    <i class="fas fa-shopping-cart"></i>Cart
+  </div>
+
+  <div onclick="toggleCategory()">
+    <i class="fas fa-layer-group"></i>Categories
+  </div>
+
+  <div onclick="window.location.href='/leaderboard'">
+    <i class="fas fa-trophy"></i>Leaderboard
+  </div>
+
+  <div onclick="window.location.href='/checkout'">
+    <i class="fas fa-check-circle"></i>Checkout
+  </div>
+</div>
 
   <script>
     let allMeals = [];
