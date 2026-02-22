@@ -15,6 +15,7 @@
 
 body{
   background:#f2f2f2;
+  padding-bottom:80px; /* prevent content hiding behind nav */
 }
 
 /* ===== TOP SECTION ===== */
@@ -23,11 +24,9 @@ body{
   padding:40px 20px 170px;
   text-align:center;
   color:white;
-
   background:
     linear-gradient(rgba(255,60,40,0.75), rgba(255,30,20,0.5)),
     url('https://i.postimg.cc/fbP16wcV/IMG-20260222-WA0015.jpg');
-
   background-size:cover;
   background-position:center;
 }
@@ -49,7 +48,6 @@ body{
 .person{
   text-align:center;
   position:relative;
-  width:100px;
 }
 
 .person img{
@@ -68,6 +66,11 @@ body{
 .first img{
   width:130px;
   height:130px;
+}
+
+.second img, .third img{
+  width:100px;
+  height:100px;
 }
 
 .crown{
@@ -153,8 +156,8 @@ body{
   justify-content:center;
   font-weight:bold;
 }
-/* ===== BOTTOM NAV ===== */
 
+/* ===== BOTTOM NAV ===== */
 .bottom-nav{
   position:fixed;
   bottom:0;
@@ -180,11 +183,6 @@ body{
   display:block;
   margin-bottom:3px;
 }
-
-/* prevent content hiding behind nav */
-body{
-  padding-bottom:80px;
-}
 </style>
 </head>
 
@@ -192,99 +190,116 @@ body{
 
 <div class="top-area">
   <h2>Top Food Orders</h2>
-
   <div class="top-three">
-
-    <div class="person second">
-      <div class="rank-circle">2</div>
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg">
-      <div class="amount">18 Plates</div>
-      <div class="name">Victory</div>
-    </div>
-
-    <div class="person first">
-      <div class="crown">👑</div>
-      <div class="rank-circle">1</div>
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg">
-      <div class="amount">20 Plates</div>
-      <div class="name">Zayd</div>
-    </div>
-
-    <div class="person third">
-      <div class="rank-circle">3</div>
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg">
-      <div class="amount">15 Plates</div>
-      <div class="name">Ghost</div>
-    </div>
-
+    <!-- Top 3 will be inserted here dynamically -->
   </div>
 </div>
 
 <div class="bottom-area">
-
-  <!-- RANK 4 - 20 -->
-  <script>
-    const container = document.currentScript.parentElement;
-
-    const names = [
-      "Panda","Wilson","Daniel","Samuel","Michael",
-      "Aisha","David","Esther","Chris","Ruth",
-      "John","Mary","Alex","Bright","Queen",
-      "Henry","Faith","Kelvin","Joy","Grace","Tony"
-    ];
-
-    let rank = 4;
-
-    names.forEach((name,i)=>{
-      const plates = 20 - (i % 5);
-
-      const item = document.createElement("div");
-      item.className = "list-item";
-
-      item.innerHTML = `
-        <div class="left">
-          <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg">
-          <div>
-            <div class="order-amount">${plates} Plates</div>
-            <div>${name}</div>
-          </div>
-        </div>
-        <div class="rank-number">${rank}</div>
-      `;
-
-      container.appendChild(item);
-      rank++;
-    });
-  </script>
-
+  <!-- Rank 4-20 HTML elements -->
+  <div class="list-item" data-rank="4">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
+    </div>
+    <div class="rank-number">4</div>
+  </div>
+  <div class="list-item" data-rank="5">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
+    </div>
+    <div class="rank-number">5</div>
+  </div>
+  <!-- Add more divs up to 20 as needed -->
 </div>
+
 <div class="bottom-nav">
-
-  <div onclick="window.location.href='/'">
-    <i class="fas fa-home"></i>
-    Home
-  </div>
-
-  <div onclick="window.location.href='/cart'">
-    <i class="fas fa-shopping-cart"></i>
-    Cart
-  </div>
-
-  <div onclick="window.location.href='/'">
-    <i class="fas fa-layer-group"></i>
-    Categories
-  </div>
-
-  <div onclick="window.location.href='/leaderboard'">
-    <i class="fas fa-trophy"></i>
-    Leaderboard
-  </div>
-
-  <div onclick="window.location.href='/checkout'">
-    <i class="fas fa-check-circle"></i>
-    Checkout
-  </div>
-
+  <div onclick="window.location.href='/'"><i class="fas fa-home"></i>Home</div>
+  <div onclick="window.location.href='/cart'"><i class="fas fa-shopping-cart"></i>Cart</div>
+  <div onclick="window.location.href='/'"><i class="fas fa-layer-group"></i>Categories</div>
+  <div onclick="window.location.href='/leaderboard'"><i class="fas fa-trophy"></i>Leaderboard</div>
+  <div onclick="window.location.href='/checkout'"><i class="fas fa-check-circle"></i>Checkout</div>
 </div>
+
+<script>
+const defaultImg = 'https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg';
+const topContainer = document.querySelector('.top-three');
+
+// Fetch leaderboard from MongoDB
+async function loadLeaderboard(){
+  const res = await fetch('/api/leaderboard');
+  const data = await res.json();
+
+  const top3 = data.filter(e=>e.rank>=1 && e.rank<=3).sort((a,b)=>a.rank-b.rank);
+  const rest = data.filter(e=>e.rank>=4 && e.rank<=20).sort((a,b)=>a.rank-b.rank);
+
+  // Render Top 3
+  topContainer.innerHTML = '';
+  if(top3[1]){
+    const div = document.createElement('div');
+    div.className = 'person second';
+    div.innerHTML = `
+      <div class="rank-circle">2</div>
+      <img src="${top3[1].img||defaultImg}">
+      <div class="amount">${top3[1].score} Plates</div>
+      <div class="name">${top3[1].player}</div>
+    `;
+    topContainer.appendChild(div);
+  }
+  if(top3[0]){
+    const div = document.createElement('div');
+    div.className = 'person first';
+    div.innerHTML = `
+      <div class="crown">👑</div>
+      <div class="rank-circle">1</div>
+      <img src="${top3[0].img||defaultImg}">
+      <div class="amount">${top3[0].score} Plates</div>
+      <div class="name">${top3[0].player}</div>
+    `;
+    topContainer.appendChild(div);
+  }
+  if(top3[2]){
+    const div = document.createElement('div');
+    div.className = 'person third';
+    div.innerHTML = `
+      <div class="rank-circle">3</div>
+      <img src="${top3[2].img||defaultImg}">
+      <div class="amount">${top3[2].score} Plates</div>
+      <div class="name">${top3[2].player}</div>
+    `;
+    topContainer.appendChild(div);
+  }
+
+  // Render Ranks 4-20
+  const restElements = document.querySelectorAll('.list-item');
+  restElements.forEach(el=>{
+    const rank = parseInt(el.getAttribute('data-rank'));
+    const person = rest.find(p=>p.rank===rank);
+    const nameEl = el.querySelector('[data-name]');
+    const platesEl = el.querySelector('[data-plates]');
+    const imgEl = el.querySelector('[data-img]');
+
+    if(person){
+      nameEl.textContent = person.player;
+      platesEl.textContent = person.score + ' Plates';
+      imgEl.src = person.img || defaultImg;
+      el.style.display = 'flex';
+    } else {
+      el.style.display = 'none';
+    }
+  });
+}
+
+// Load leaderboard on page load
+window.onload = loadLeaderboard;
+</script>
+
 </body>
 </html>
