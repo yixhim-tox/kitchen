@@ -19,7 +19,7 @@ button { padding:10px 15px; background:red; color:white; border:none; border-rad
 <h2>Leaderboard Admin</h2>
 
 <div id="leaderboard-form">
-  <!-- Ranks 1-3 -->
+  <!-- Top 3 -->
   <div class="rank-section">
     <h3>Top 3</h3>
     <div>
@@ -68,30 +68,35 @@ for(let i=4;i<=20;i++){
   restContainer.appendChild(div);
 }
 
-// Load existing leaderboard from MongoDB
+// Load existing leaderboard from backend
 async function loadLeaderboard(){
   try {
     const res = await fetch('/api/leaderboard');
+    if(!res.ok) throw new Error('Failed to fetch leaderboard');
     const data = await res.json();
 
     data.forEach(entry => {
       const rank = entry.rank;
-      if(rank===1){document.getElementById('top1-name').value=entry.player; document.getElementById('top1-plates').value=entry.score; document.getElementById('top1-img').value=entry.img||'';}
-      else if(rank===2){document.getElementById('top2-name').value=entry.player; document.getElementById('top2-plates').value=entry.score; document.getElementById('top2-img').value=entry.img||'';}
-      else if(rank===3){document.getElementById('top3-name').value=entry.player; document.getElementById('top3-plates').value=entry.score; document.getElementById('top3-img').value=entry.img||'';}
+      const player = entry.player || '';
+      const score = entry.score || 0;
+      const img = entry.img || '';
+      if(rank===1){document.getElementById('top1-name').value=player; document.getElementById('top1-plates').value=score; document.getElementById('top1-img').value=img;}
+      else if(rank===2){document.getElementById('top2-name').value=player; document.getElementById('top2-plates').value=score; document.getElementById('top2-img').value=img;}
+      else if(rank===3){document.getElementById('top3-name').value=player; document.getElementById('top3-plates').value=score; document.getElementById('top3-img').value=img;}
       else if(rank>=4 && rank<=20){
-        document.getElementById(`rank${rank}-name`).value = entry.player;
-        document.getElementById(`rank${rank}-plates`).value = entry.score;
-        document.getElementById(`rank${rank}-img`).value = entry.img||'';
+        document.getElementById(`rank${rank}-name`).value = player;
+        document.getElementById(`rank${rank}-plates`).value = score;
+        document.getElementById(`rank${rank}-img`).value = img;
       }
     });
   } catch(err){
     console.error('Error loading leaderboard:', err);
+    alert('Failed to load leaderboard. Check server.');
   }
 }
 
-// Save all leaderboard entries to MongoDB
-function saveLeaderboard() {
+// Save all leaderboard entries to backend
+async function saveLeaderboard() {
   const entries = [];
 
   // Top 3
@@ -114,14 +119,21 @@ function saveLeaderboard() {
     }
   }
 
-  fetch('/api/leaderboard', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(entries)
-  })
-  .then(res => res.json())
-  .then(data => alert(data.message))
-  .catch(err => alert('Error saving leaderboard: '+err));
+  try {
+    const res = await fetch('/api/leaderboard', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(entries)
+    });
+
+    if(!res.ok) throw new Error('Failed to save leaderboard');
+
+    const data = await res.json();
+    alert(data.message || 'Leaderboard saved successfully');
+  } catch(err) {
+    console.error(err);
+    alert('Error saving leaderboard: ' + err.message);
+  }
 }
 
 // Load leaderboard on page load
