@@ -411,8 +411,6 @@ const topContainer = document.querySelector('.top-three');
 async function loadLeaderboard(){
   const res = await fetch('/api/leaderboard');
   const data = await res.json();
-  alert("Total records: " + data.length);
-alert(JSON.stringify(data));
   console.log("FULL DATA:", data);
 
   const top3 = data.filter(e=>e.rank>=1 && e.rank<=3).sort((a,b)=>a.rank-b.rank);
