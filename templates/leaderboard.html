@@ -15,7 +15,7 @@
 
 body{
   background:#f2f2f2;
-  padding-bottom:80px; /* prevent content hiding behind nav */
+  padding-bottom:80px;
 }
 
 /* ===== TOP SECTION ===== */
@@ -183,6 +183,7 @@ body{
   display:block;
   margin-bottom:3px;
 }
+
 /* ===== FADE IN ANIMATION ===== */
 .fade-in {
   opacity: 0;
@@ -194,13 +195,38 @@ body{
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Loading spinner */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error message */
+.error-msg {
+  background: #ffebee;
+  color: #c62828;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 0;
+  font-size: 14px;
+}
 </style>
 </head>
 
 <body>
 
 <div class="top-area">
-  <p id="loadingText" style="margin-top:10px;">Loading leaderboard...</p>
+  <p id="loadingText" style="margin-top:10px;"><span class="loading"></span> Loading leaderboard...</p>
   <h2>Top Food Orders</h2>
   <div class="top-three">
     <!-- Top 3 will be inserted here dynamically -->
@@ -211,7 +237,7 @@ body{
   <!-- Rank 4-20 HTML elements -->
   <div class="list-item" data-rank="4">
     <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
       <div>
         <div class="order-amount" data-plates>0 Plates</div>
         <div data-name>Empty</div>
@@ -221,7 +247,7 @@ body{
   </div>
   <div class="list-item" data-rank="5">
     <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
       <div>
         <div class="order-amount" data-plates>0 Plates</div>
         <div data-name>Empty</div>
@@ -230,169 +256,155 @@ body{
     <div class="rank-number">5</div>
   </div>
   <div class="list-item" data-rank="6">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">6</div>
   </div>
-  <div class="rank-number">6</div>
-</div>
-
-<div class="list-item" data-rank="7">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+  <div class="list-item" data-rank="7">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">7</div>
   </div>
-  <div class="rank-number">7</div>
-</div>
-
-<div class="list-item" data-rank="8">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+  <div class="list-item" data-rank="8">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">8</div>
   </div>
-  <div class="rank-number">8</div>
-</div>
-
-<div class="list-item" data-rank="9">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+  <div class="list-item" data-rank="9">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">9</div>
   </div>
-  <div class="rank-number">9</div>
-</div>
-
-<div class="list-item" data-rank="10">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+  <div class="list-item" data-rank="10">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">10</div>
   </div>
-  <div class="rank-number">10</div>
-</div>
-
-<div class="list-item" data-rank="11">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+  <div class="list-item" data-rank="11">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">11</div>
   </div>
-  <div class="rank-number">11</div>
-</div>
-
-<div class="list-item" data-rank="12">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+  <div class="list-item" data-rank="12">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">12</div>
   </div>
-  <div class="rank-number">12</div>
-</div>
-
-<div class="list-item" data-rank="13">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+  <div class="list-item" data-rank="13">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">13</div>
   </div>
-  <div class="rank-number">13</div>
-</div>
-
-<div class="list-item" data-rank="14">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+  <div class="list-item" data-rank="14">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">14</div>
   </div>
-  <div class="rank-number">14</div>
-</div>
-
-<div class="list-item" data-rank="15">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+  <div class="list-item" data-rank="15">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">15</div>
   </div>
-  <div class="rank-number">15</div>
-</div>
-
-<div class="list-item" data-rank="16">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+  <div class="list-item" data-rank="16">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">16</div>
   </div>
-  <div class="rank-number">16</div>
-</div>
-
-<div class="list-item" data-rank="17">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+  <div class="list-item" data-rank="17">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">17</div>
   </div>
-  <div class="rank-number">17</div>
-</div>
-
-<div class="list-item" data-rank="18">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+  <div class="list-item" data-rank="18">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">18</div>
   </div>
-  <div class="rank-number">18</div>
-</div>
-
-<div class="list-item" data-rank="19">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+  <div class="list-item" data-rank="19">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">19</div>
   </div>
-  <div class="rank-number">19</div>
-</div>
-
-<div class="list-item" data-rank="20">
-  <div class="left">
-    <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img>
-    <div>
-      <div class="order-amount" data-plates>0 Plates</div>
-      <div data-name>Empty</div>
+  <div class="list-item" data-rank="20">
+    <div class="left">
+      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
+      <div>
+        <div class="order-amount" data-plates>0 Plates</div>
+        <div data-name>Empty</div>
+      </div>
     </div>
+    <div class="rank-number">20</div>
   </div>
-  <div class="rank-number">20</div>
-</div>
 </div>
 
 <div class="bottom-nav">
@@ -409,81 +421,106 @@ const topContainer = document.querySelector('.top-three');
 
 // Fetch leaderboard from MongoDB
 async function loadLeaderboard(){
-  const res = await fetch('/api/leaderboard');
-  const data = await res.json();
-  console.log("FULL DATA:", data);
+  try {
+    const res = await fetch('/api/leaderboard');
+    if(!res.ok) throw new Error('Failed to fetch: ' + res.status);
+    
+    const data = await res.json();
+    console.log("FULL DATA:", data);
 
-  const top3 = data.filter(e=>e.rank>=1 && e.rank<=3).sort((a,b)=>a.rank-b.rank);
-  const rest = data.filter(e=>e.rank>=4 && e.rank<=20).sort((a,b)=>a.rank-b.rank);
+    // Handle both 'plates' and 'score' for backwards compatibility
+    const top3 = data.filter(e => e.rank >= 1 && e.rank <= 3).sort((a,b) => a.rank - b.rank);
+    const rest = data.filter(e => e.rank >= 4 && e.rank <= 20).sort((a,b) => a.rank - b.rank);
 
-  // Render Top 3
-  topContainer.innerHTML = '';
+    // Render Top 3
+    topContainer.innerHTML = '';
 
-  if(top3[1]){
-    const div = document.createElement('div');
-    div.className = 'person second';
-    div.innerHTML = `
-      <div class="rank-circle">2</div>
-      <img src="${top3[1].img||defaultImg}">
-      <div class="amount">${top3[1].score} Plates</div>
-      <div class="name">${top3[1].player}</div>
-    `;
-    topContainer.appendChild(div);
-  }
-
-  if(top3[0]){
-    const div = document.createElement('div');
-    div.className = 'person first';
-    div.innerHTML = `
-      <div class="crown">👑</div>
-      <div class="rank-circle">1</div>
-      <img src="${top3[0].img||defaultImg}">
-      <div class="amount">${top3[0].score} Plates</div>
-      <div class="name">${top3[0].player}</div>
-    `;
-    topContainer.appendChild(div);
-  }
-
-  if(top3[2]){
-    const div = document.createElement('div');
-    div.className = 'person third';
-    div.innerHTML = `
-      <div class="rank-circle">3</div>
-      <img src="${top3[2].img||defaultImg}">
-      <div class="amount">${top3[2].score} Plates</div>
-      <div class="name">${top3[2].player}</div>
-    `;
-    topContainer.appendChild(div);
-  }
-
-  // Render Ranks 4-20
-  const restElements = document.querySelectorAll('.list-item');
-  restElements.forEach(el=>{
-    const rank = parseInt(el.getAttribute('data-rank'));
-    const person = rest.find(p=>parseInt(p.rank) === rank);
-    const nameEl = el.querySelector('[data-name]');
-    const platesEl = el.querySelector('[data-plates]');
-    const imgEl = el.querySelector('[data-img]');
-
-    if(person){
-      nameEl.textContent = person.player;
-      platesEl.textContent = person.score + ' Plates';
-      imgEl.src = person.img || defaultImg;
-      el.style.display = 'flex';
-    } else {
-      el.style.display = 'none';
+    // Rank 2 (left)
+    if(top3.find(p => p.rank === 2)){
+      const person = top3.find(p => p.rank === 2);
+      const div = document.createElement('div');
+      div.className = 'person second';
+      div.innerHTML = `
+        <div class="rank-circle">2</div>
+        <img src="${person.img || defaultImg}" onerror="this.src='${defaultImg}'" alt="${person.player || 'Player'}">
+        <div class="amount">${person.plates || person.score || 0} Plates</div>
+        <div class="name">${person.player || 'Unknown'}</div>
+      `;
+      topContainer.appendChild(div);
     }
-  });
 
-  document.getElementById('loadingText').style.display = 'none';
+    // Rank 1 (center)
+    if(top3.find(p => p.rank === 1)){
+      const person = top3.find(p => p.rank === 1);
+      const div = document.createElement('div');
+      div.className = 'person first';
+      div.innerHTML = `
+        <div class="crown">👑</div>
+        <div class="rank-circle">1</div>
+        <img src="${person.img || defaultImg}" onerror="this.src='${defaultImg}'" alt="${person.player || 'Player'}">
+        <div class="amount">${person.plates || person.score || 0} Plates</div>
+        <div class="name">${person.player || 'Unknown'}</div>
+      `;
+      topContainer.appendChild(div);
+    }
 
-const bottom = document.getElementById('bottomArea');
-bottom.style.display = 'block';
+    // Rank 3 (right)
+    if(top3.find(p => p.rank === 3)){
+      const person = top3.find(p => p.rank === 3);
+      const div = document.createElement('div');
+      div.className = 'person third';
+      div.innerHTML = `
+        <div class="rank-circle">3</div>
+        <img src="${person.img || defaultImg}" onerror="this.src='${defaultImg}'" alt="${person.player || 'Player'}">
+        <div class="amount">${person.plates || person.score || 0} Plates</div>
+        <div class="name">${person.player || 'Unknown'}</div>
+      `;
+      topContainer.appendChild(div);
+    }
 
-// small delay so browser registers display change
-setTimeout(() => {
-  bottom.classList.add('show');
-}, 50);
+    // Render Ranks 4-20
+    const restElements = document.querySelectorAll('.list-item');
+    restElements.forEach(el => {
+      const rank = parseInt(el.getAttribute('data-rank'));
+      const person = rest.find(p => parseInt(p.rank) === rank);
+      
+      const nameEl = el.querySelector('[data-name]');
+      const platesEl = el.querySelector('[data-plates]');
+      const imgEl = el.querySelector('[data-img]');
+
+      if(person){
+        nameEl.textContent = person.player || 'Unknown';
+        platesEl.textContent = (person.plates || person.score || 0) + ' Plates';
+        
+        // Handle Base64 images or URLs
+        const imgSrc = person.img || defaultImg;
+        imgEl.src = imgSrc;
+        
+        // Fallback if image fails to load
+        imgEl.onerror = function() {
+          this.src = defaultImg;
+        };
+        
+        el.style.display = 'flex';
+      } else {
+        el.style.display = 'none';
+      }
+    });
+
+    // Hide loading, show content
+    document.getElementById('loadingText').style.display = 'none';
+    const bottom = document.getElementById('bottomArea');
+    bottom.style.display = 'block';
+    
+    setTimeout(() => {
+      bottom.classList.add('show');
+    }, 50);
+    
+  } catch(err) {
+    console.error('Leaderboard error:', err);
+    document.getElementById('loadingText').innerHTML = 
+      '<div class="error-msg">❌ Failed to load leaderboard. Please refresh.</div>';
+  }
 }
 
 // Load leaderboard on page load

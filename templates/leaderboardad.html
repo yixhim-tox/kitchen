@@ -5,139 +5,634 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leaderboard Admin</title>
 <style>
-body { font-family: Arial; background: #f2f2f2; padding: 20px; }
-h2 { text-align:center; margin-bottom:20px; }
-form { background:white; padding:20px; border-radius:10px; margin-bottom:20px; }
-input { width:100%; padding:8px; margin:5px 0; border-radius:5px; border:1px solid #ccc; }
-button { padding:10px 15px; background:red; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:5px; width:100%; }
-.rank-section { margin-bottom:20px; background:white; padding:15px; border-radius:10px; }
-.rank-label { font-weight:bold; display:block; margin-bottom:5px; }
+body { 
+  font-family: Arial, sans-serif; 
+  background: #f0f2f5; 
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h2 { 
+  text-align: center; 
+  color: #333;
+  margin-bottom: 30px;
+}
+
+.instructions {
+  background: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.instructions h4 {
+  margin-top: 0;
+  color: #1976d2;
+}
+
+.rank-box {
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.rank-number {
+  background: #2196f3;
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.rank-box.top1 .rank-number { background: #ffd700; color: #333; }
+.rank-box.top2 .rank-number { background: #c0c0c0; color: #333; }
+.rank-box.top3 .rank-number { background: #cd7f32; color: white; }
+
+.input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.photo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 80px;
+}
+
+.upload-btn {
+  background: #4caf50;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: center;
+  border: none;
+  white-space: nowrap;
+}
+
+.upload-btn:hover {
+  background: #45a049;
+}
+
+.photo-preview {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid #ddd;
+  display: none;
+  cursor: pointer;
+}
+
+.photo-preview.visible {
+  display: block;
+}
+
+.status-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-top: 2px;
+  display: none;
+}
+
+.status-badge.saved {
+  background: #4caf50;
+  color: white;
+  display: inline-block;
+}
+
+.status-badge.pending {
+  background: #ff9800;
+  color: white;
+  display: inline-block;
+}
+
+.move-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.arrow-btn {
+  width: 40px;
+  height: 35px;
+  border: none;
+  background: #2196f3;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrow-btn:hover:not(:disabled) {
+  background: #1976d2;
+}
+
+.arrow-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.global-swap {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.global-swap label {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.global-swap select {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  margin: 0 5px;
+}
+
+.swap-btn {
+  background: #ff9800;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.save-btn {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+.save-btn:hover {
+  background: #d32f2f;
+}
+
+.save-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.crop-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.crop-modal.active {
+  display: flex;
+}
+
+.crop-container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 90%;
+  text-align: center;
+}
+
+.crop-area {
+  position: relative;
+  display: inline-block;
+  margin: 20px 0;
+  max-width: 600px;
+  max-height: 500px;
+}
+
+#crop-image {
+  max-width: 100%;
+  max-height: 450px;
+  display: block;
+}
+
+.crop-box {
+  position: absolute;
+  border: 3px dashed white;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+  cursor: move;
+  background: transparent;
+}
+
+.crop-btn {
+  padding: 10px 20px;
+  margin: 0 5px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.crop-btn.apply { background: #4caf50; color: white; }
+.crop-btn.cancel { background: #f44336; color: white; }
 </style>
 </head>
 <body>
 
-<h2>Leaderboard Admin</h2>
+<h2>🏆 Leaderboard Admin Panel</h2>
 
-<div id="leaderboard-form">
-  <!-- Top 3 -->
-  <div class="rank-section">
-    <h3>Top 3</h3>
-    <div>
-      <span class="rank-label">1️⃣ Top 1</span>
-      <input placeholder="Name" id="top1-name">
-      <input placeholder="Plates" id="top1-plates" type="number">
-      <input placeholder="Image URL" id="top1-img">
+<div class="instructions">
+  <h4>📋 How to Use:</h4>
+  <ol>
+    <li><strong>Upload Photo:</strong> Click "Choose Photo" → Select from phone → Crop → Done!</li>
+    <li><strong>Move Ranks:</strong> Use ▲ Up / ▼ Down arrows</li>
+    <li><strong>Quick Swap:</strong> Use dropdowns to swap any ranks</li>
+    <li><strong>Save:</strong> Click red "Save Leaderboard" button</li>
+  </ol>
+</div>
+
+<div class="global-swap">
+  <label>⚡ Quick Swap:</label>
+  <select id="swap-from">
+    <option value="">Select Rank</option>
+  </select>
+  ↔️
+  <select id="swap-to">
+    <option value="">Select Rank</option>
+  </select>
+  <button class="swap-btn" onclick="quickSwap()">Swap Positions</button>
+</div>
+
+<div id="ranks-container"></div>
+
+<button class="save-btn" id="save-btn" onclick="saveLeaderboard()">💾 SAVE LEADERBOARD</button>
+
+<div class="crop-modal" id="crop-modal">
+  <div class="crop-container">
+    <h3>✂️ Crop Your Photo</h3>
+    <p>Drag the box to move. Photo will be auto-compressed.</p>
+    <div class="crop-area">
+      <img id="crop-image" src="" alt="Preview">
+      <div class="crop-box" id="crop-box"></div>
     </div>
     <div>
-      <span class="rank-label">2️⃣ Top 2</span>
-      <input placeholder="Name" id="top2-name">
-      <input placeholder="Plates" id="top2-plates" type="number">
-      <input placeholder="Image URL" id="top2-img">
-    </div>
-    <div>
-      <span class="rank-label">3️⃣ Top 3</span>
-      <input placeholder="Name" id="top3-name">
-      <input placeholder="Plates" id="top3-plates" type="number">
-      <input placeholder="Image URL" id="top3-img">
+      <button class="crop-btn apply" onclick="applyCrop()">✓ Apply</button>
+      <button class="crop-btn cancel" onclick="closeCrop()">✕ Cancel</button>
     </div>
   </div>
-
-  <!-- Ranks 4-20 -->
-  <div class="rank-section">
-    <h3>Ranks 4 - 20</h3>
-    <div id="rest-container"></div>
-  </div>
-
-  <!-- Save button -->
-  <button onclick="saveLeaderboard()">Save Leaderboard</button>
 </div>
 
 <script>
 const defaultImg = 'https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg';
-const restContainer = document.getElementById('rest-container');
+let currentEditingRank = null;
+let cropImageSrc = null;
 
-// Dynamically create input boxes for ranks 4-20
-for(let i=4;i<=20;i++){
-  const div = document.createElement('div');
-  div.innerHTML = `
-    <span class="rank-label">${i}️⃣ Rank ${i}</span>
-    <input placeholder="Name" id="rank${i}-name">
-    <input placeholder="Plates" type="number" id="rank${i}-plates">
-    <input placeholder="Image URL" id="rank${i}-img">
-  `;
-  restContainer.appendChild(div);
+// CREATE ALL 20 RANKS - THIS MUST RUN ON PAGE LOAD
+function createRankBoxes() {
+  console.log('Creating rank boxes...'); // Debug message
+  const container = document.getElementById('ranks-container');
+  const fromSelect = document.getElementById('swap-from');
+  const toSelect = document.getElementById('swap-to');
+  
+  if(!container) {
+    console.error('ERROR: ranks-container not found!');
+    return;
+  }
+  
+  for(let i = 1; i <= 20; i++) {
+    const box = document.createElement('div');
+    box.className = 'rank-box ' + (i <= 3 ? 'top'+i : '');
+    box.id = 'rank-box-' + i;
+    
+    box.innerHTML = 
+      '<div class="rank-number">' + i + '</div>' +
+      '<div class="input-group">' +
+        '<input type="text" id="name-' + i + '" placeholder="👤 Player Name" style="font-weight:bold;">' +
+        '<input type="number" id="plates-' + i + '" placeholder="🍽️ Plates Count">' +
+      '</div>' +
+      '<div class="photo-section">' +
+        '<input type="file" id="file-' + i + '" accept="image/*" style="display:none" onchange="handlePhoto(' + i + ', this)">' +
+        '<label for="file-' + i + '" class="upload-btn">📷 Choose Photo</label>' +
+        '<img id="preview-' + i + '" class="photo-preview" onclick="changePhoto(' + i + ')" title="Click to change">' +
+        '<span class="status-badge" id="status-' + i + '">✓ Saved</span>' +
+        '<input type="hidden" id="img-url-' + i + '">' +
+      '</div>' +
+      '<div class="move-buttons">' +
+        '<button class="arrow-btn" onclick="moveUp(' + i + ')" ' + (i === 1 ? 'disabled' : '') + '>▲</button>' +
+        '<button class="arrow-btn" onclick="moveDown(' + i + ')" ' + (i === 20 ? 'disabled' : '') + '>▼</button>' +
+      '</div>';
+    
+    container.appendChild(box);
+    fromSelect.innerHTML += '<option value="' + i + '">Rank ' + i + '</option>';
+    toSelect.innerHTML += '<option value="' + i + '">Rank ' + i + '</option>';
+  }
+  
+  console.log('Created 20 ranks successfully'); // Debug message
 }
 
-// Load existing leaderboard from backend
-async function loadLeaderboard(){
+// HANDLE PHOTO UPLOAD
+function handlePhoto(rank, input) {
+  const file = input.files[0];
+  if(!file) return;
+  
+  if(file.size > 5 * 1024 * 1024) {
+    alert('Photo too large! Max 5MB.');
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    cropImageSrc = e.target.result;
+    currentEditingRank = rank;
+    openCropModal();
+  };
+  reader.readAsDataURL(file);
+}
+
+function changePhoto(rank) {
+  document.getElementById('file-' + rank).click();
+}
+
+// CROP MODAL
+function openCropModal() {
+  const modal = document.getElementById('crop-modal');
+  const img = document.getElementById('crop-image');
+  const box = document.getElementById('crop-box');
+  
+  img.src = cropImageSrc;
+  modal.classList.add('active');
+  
+  img.onload = function() {
+    const size = Math.min(img.width, img.height, 300);
+    box.style.width = size + 'px';
+    box.style.height = size + 'px';
+    box.style.left = ((img.width - size) / 2) + 'px';
+    box.style.top = ((img.height - size) / 2) + 'px';
+    
+    // Make draggable
+    let isDragging = false;
+    let startX, startY, initialLeft, initialTop;
+    
+    box.onmousedown = function(e) {
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      initialLeft = parseInt(box.style.left) || 0;
+      initialTop = parseInt(box.style.top) || 0;
+      e.preventDefault();
+    };
+    
+    document.onmousemove = function(e) {
+      if(!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      let newLeft = initialLeft + dx;
+      let newTop = initialTop + dy;
+      const maxLeft = img.width - parseInt(box.style.width);
+      const maxTop = img.height - parseInt(box.style.height);
+      box.style.left = Math.max(0, Math.min(newLeft, maxLeft)) + 'px';
+      box.style.top = Math.max(0, Math.min(newTop, maxTop)) + 'px';
+    };
+    
+    document.onmouseup = function() {
+      isDragging = false;
+    };
+  };
+}
+
+function closeCrop() {
+  document.getElementById('crop-modal').classList.remove('active');
+  currentEditingRank = null;
+  cropImageSrc = null;
+}
+
+function applyCrop() {
+  if(!currentEditingRank) return;
+  
+  const img = document.getElementById('crop-image');
+  const box = document.getElementById('crop-box');
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  const scaleX = img.naturalWidth / img.width;
+  const scaleY = img.naturalHeight / img.height;
+  
+  const x = parseInt(box.style.left) * scaleX;
+  const y = parseInt(box.style.top) * scaleY;
+  const w = parseInt(box.style.width) * scaleX;
+  const h = parseInt(box.style.height) * scaleY;
+  
+  canvas.width = 400;
+  canvas.height = 400;
+  ctx.drawImage(img, x, y, w, h, 0, 0, 400, 400);
+  
+  const finalData = canvas.toDataURL('image/jpeg', 0.8);
+  
+  const preview = document.getElementById('preview-' + currentEditingRank);
+  const hiddenInput = document.getElementById('img-url-' + currentEditingRank);
+  const status = document.getElementById('status-' + currentEditingRank);
+  
+  preview.src = finalData;
+  preview.classList.add('visible');
+  hiddenInput.value = finalData;
+  status.textContent = '⏳ Pending';
+  status.className = 'status-badge pending';
+  
+  closeCrop();
+}
+
+// MOVE FUNCTIONS
+function moveUp(rank) {
+  if(rank <= 1) return;
+  swapData(rank, rank - 1);
+}
+
+function moveDown(rank) {
+  if(rank >= 20) return;
+  swapData(rank, rank + 1);
+}
+
+function quickSwap() {
+  const from = parseInt(document.getElementById('swap-from').value);
+  const to = parseInt(document.getElementById('swap-to').value);
+  
+  if(!from || !to || from === to) {
+    alert('Select two different ranks');
+    return;
+  }
+  
+  swapData(from, to);
+  document.getElementById('swap-from').value = '';
+  document.getElementById('swap-to').value = '';
+}
+
+function swapData(rank1, rank2) {
+  const data1 = {
+    name: document.getElementById('name-' + rank1).value,
+    plates: document.getElementById('plates-' + rank1).value,
+    img: document.getElementById('img-url-' + rank1).value,
+    visible: document.getElementById('preview-' + rank1).classList.contains('visible')
+  };
+  
+  const data2 = {
+    name: document.getElementById('name-' + rank2).value,
+    plates: document.getElementById('plates-' + rank2).value,
+    img: document.getElementById('img-url-' + rank2).value,
+    visible: document.getElementById('preview-' + rank2).classList.contains('visible')
+  };
+  
+  // Swap
+  document.getElementById('name-' + rank1).value = data2.name;
+  document.getElementById('plates-' + rank1).value = data2.plates;
+  document.getElementById('img-url-' + rank1).value = data2.img;
+  const preview1 = document.getElementById('preview-' + rank1);
+  if(data2.visible && data2.img) {
+    preview1.src = data2.img;
+    preview1.classList.add('visible');
+  } else {
+    preview1.classList.remove('visible');
+  }
+  
+  document.getElementById('name-' + rank2).value = data1.name;
+  document.getElementById('plates-' + rank2).value = data1.plates;
+  document.getElementById('img-url-' + rank2).value = data1.img;
+  const preview2 = document.getElementById('preview-' + rank2);
+  if(data1.visible && data1.img) {
+    preview2.src = data1.img;
+    preview2.classList.add('visible');
+  } else {
+    preview2.classList.remove('visible');
+  }
+}
+
+// LOAD FROM BACKEND
+async function loadLeaderboard() {
   try {
     const res = await fetch('/api/leaderboard');
-    if(!res.ok) throw new Error('Failed to fetch leaderboard');
+    if(!res.ok) throw new Error('Failed to load');
     const data = await res.json();
-
+    
     data.forEach(entry => {
       const rank = entry.rank;
-      const player = entry.player || '';
-      const score = entry.score || 0;
-      const img = entry.img || '';
-      if(rank===1){document.getElementById('top1-name').value=player; document.getElementById('top1-plates').value=score; document.getElementById('top1-img').value=img;}
-      else if(rank===2){document.getElementById('top2-name').value=player; document.getElementById('top2-plates').value=score; document.getElementById('top2-img').value=img;}
-      else if(rank===3){document.getElementById('top3-name').value=player; document.getElementById('top3-plates').value=score; document.getElementById('top3-img').value=img;}
-      else if(rank>=4 && rank<=20){
-        document.getElementById(`rank${rank}-name`).value = player;
-        document.getElementById(`rank${rank}-plates`).value = score;
-        document.getElementById(`rank${rank}-img`).value = img;
+      if(rank >= 1 && rank <= 20) {
+        document.getElementById('name-' + rank).value = entry.player || '';
+        document.getElementById('plates-' + rank).value = entry.plates || entry.score || '';
+        
+        if(entry.img && entry.img !== defaultImg) {
+          document.getElementById('img-url-' + rank).value = entry.img;
+          const preview = document.getElementById('preview-' + rank);
+          preview.src = entry.img;
+          preview.classList.add('visible');
+          const status = document.getElementById('status-' + rank);
+          status.className = 'status-badge saved';
+          status.textContent = '✓ Saved';
+        }
       }
     });
-  } catch(err){
-    console.error('Error loading leaderboard:', err);
-    alert('Failed to load leaderboard. Check server.');
+  } catch(err) {
+    console.error('Load error:', err);
   }
 }
 
-// Save all leaderboard entries to backend
+// SAVE TO BACKEND
 async function saveLeaderboard() {
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = '💾 Saving...';
+  
   const entries = [];
-
-  // Top 3
-  for(let i=1;i<=3;i++){
-    entries.push({
-      rank: i,
-      player: document.getElementById(`top${i}-name`).value || '',
-      score: parseInt(document.getElementById(`top${i}-plates`).value) || 0,
-      img: document.getElementById(`top${i}-img`).value || defaultImg
-    });
-  }
-
-  // Ranks 4-20
-  for(let i=4;i<=20;i++){
-    const name = document.getElementById(`rank${i}-name`).value;
-    const plates = parseInt(document.getElementById(`rank${i}-plates`).value) || 0;
-    const img = document.getElementById(`rank${i}-img`).value || defaultImg;
-    if(name || plates){
-      entries.push({rank: i, player: name, score: plates, img: img});
+  
+  for(let i = 1; i <= 20; i++) {
+    const name = document.getElementById('name-' + i).value;
+    const plates = document.getElementById('plates-' + i).value;
+    const img = document.getElementById('img-url-' + i).value || defaultImg;
+    
+    if(name || plates) {
+      entries.push({
+        rank: i,
+        player: name,
+        plates: parseInt(plates) || 0,
+        img: img
+      });
     }
   }
-
+  
   try {
     const res = await fetch('/api/leaderboard', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(entries)
     });
-
-    if(!res.ok) throw new Error('Failed to save leaderboard');
-
-    const data = await res.json();
-    alert(data.message || 'Leaderboard saved successfully');
+    
+    if(!res.ok) throw new Error('Save failed');
+    
+    // Update status to saved
+    for(let i = 1; i <= 20; i++) {
+      const status = document.getElementById('status-' + i);
+      if(status && document.getElementById('img-url-' + i).value) {
+        status.className = 'status-badge saved';
+        status.textContent = '✓ Saved';
+      }
+    }
+    
+    alert('✅ Saved ' + entries.length + ' entries to MongoDB!');
+    
   } catch(err) {
+    alert('❌ Error: ' + err.message);
     console.error(err);
-    alert('Error saving leaderboard: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 SAVE LEADERBOARD';
   }
 }
 
-// Load leaderboard on page load
-window.onload = loadLeaderboard;
+// THIS RUNS WHEN PAGE LOADS - CREATES THE 20 RANKS
+window.onload = function() {
+  console.log('Page loaded, initializing...');
+  createRankBoxes();
+  loadLeaderboard();
+};
 </script>
 
 </body>
