@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+importify
 import sqlite3
 import os
 from werkzeug.utils import secure_filename
@@ -8,6 +9,8 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import urllib.parse
+import base64
+import io
 
 load_dotenv()
 
@@ -27,12 +30,11 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # === MongoDB setup ===
-USE_MONGO = bool(os.getenv('MONGODB_URL'))  # True if URL exists
+USE_MONGO = bool(os.getenv('MONGODB_URL'))
 mongo_client = None
 mongo_db = None
 mongo_meals = None
 mongo_leaderboard = None
-# === Separate Leaderboard MongoDB (NEW - does not touch meals) ===
 leaderboard_client = None
 leaderboard_collection = None
 
@@ -45,10 +47,11 @@ if os.getenv('LEADERBOARD_MONGODB_URI'):
         print("✅ Leaderboard MongoDB connected successfully")
     except Exception as e:
         print("❌ Leaderboard MongoDB connection failed:", e)
+
 if USE_MONGO:
     try:
         mongo_client = MongoClient(os.getenv('MONGODB_URL'))
-        mongo_client.server_info()  # Test connection immediately
+        mongo_client.server_info()
         mongo_db = mongo_client['tgs_kitchen']
         mongo_meals = mongo_db['meals']
         mongo_leaderboard = mongo_db['leaderboard']
@@ -79,7 +82,10 @@ init_db()
 # === Helper function ===
 def get_all_meals():
     if USE_MONGO:
-        return list(mongo_meals.find().sort("_id", -1))
+        return list(mongo_meals.find.find().sort("_id", -1))
+    else:
+        conn = sqlite3.connect(DB_NAME)
+        conn.row_factory = sqlite().sort("_id", -1))
     else:
         conn = sqlite3.connect(DB_NAME)
         conn.row_factory = sqlite3.Row
@@ -251,13 +257,59 @@ def api_meals():
 
 @app.route('/api/upload_image', methods=['POST'])
 def upload_image():
-    if 'image' not in request.files:
-        return jsonify({'error': 'No image file provided'}), 400
-    image = request.files['image']
+    """Upload image to Cloudinary (handles both file and base64)"""
     try:
-        upload_result = cloudinary.uploader.upload(image)
-        return jsonify({'url': upload_result['secure_url']})
+        # Check if it's a file upload (multipart/form-data)
+        if 'image' in request.files:
+            file = request.files['image']
+            if file.filename == '':
+                return jsonify({'error': 'No file selected'}), 400
+            
+            upload_result = cloudinary.uploader.upload(
+                file,
+                folder="leaderboard",
+                transformation=[
+                    {'width': 400, 'height': 400, 'crop': 'fill'},
+                    {'quality': 'auto:good'}
+                ]
+            )
+            return jsonify({'url': upload_result['secure_url']})
+        
+        # Check if it's JSON with base64
+        elif request.is_json:
+            data = request.get_json()
+            base64_image = data.get('image')
+            
+            if not base64_image:
+                return jsonify({'error': 'No image provided'}), 400
+            
+            # Remove data:image/jpeg;base64, prefix if present
+            if ',' in base64_image:
+                base64_image = base64_image.split(',')[1]
+            
+            # Decode base64
+            image_bytes = base64.b64decode(base64_image)
+            
+            # Upload to Cloudinary
+            upload_result = cloudinary.uploader.upload(
+                io.BytesIO(image_bytes),
+                folder="leaderboard",
+                transformation=[
+                    {'width': 400, 'height': 400, 'crop': 'fill'},
+                    {'quality': 'auto:good'}
+                ]
+            )
+            
+            return jsonify({
+                'url': upload_result['secure_url'],
+                'public_id': upload_result['public_id']
+            })
+        
+        else:
+            return jsonify({'error': 'No image provided'}), 400
+            
     except Exception as e:
+        print("Cloudinary upload error:", e)
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/add_meal', methods=['POST'])
@@ -300,6 +352,8 @@ def api_delete_meal(meal_id):
         mongo_meals.delete_one({'_id': ObjectId(meal_id)})
         return jsonify({'message': 'Meal deleted successfully'})
     return jsonify({'error': 'MongoDB not available'}), 500
+
+# === LEADERBOARD ROUTES ===
 @app.route('/api/leaderboard', methods=['GET'])
 def get_leaderboard():
     try:
@@ -337,8 +391,8 @@ def save_leaderboard():
             leaderboard_collection.insert_one({
                 'rank': int(entry.get('rank', 0)),
                 'player': entry.get('player') or '',
-                'plates': int(entry.get('plates', entry.get('score', 0))),  # Handle both
-                'score': int(entry.get('plates', entry.get('score', 0))),   # Backwards compat
+                'plates': int(entry.get('plates', entry.get('score', 0))),
+                'score': int(entry.get('plates', entry.get('score', 0))),
                 'img': entry.get('img') or ''
             })
 
@@ -348,23 +402,6 @@ def save_leaderboard():
         print("Leaderboard MongoDB error:", e)
         return jsonify({'error': str(e)}), 500
 
-
-    try:
-        leaderboard_collection.delete_many({})
-
-        for entry in data:
-            leaderboard_collection.insert_one({
-                'rank': int(entry.get('rank', 0)),
-                'player': entry.get('player') or '',
-                'score': int(entry.get('score', 0)),
-                'img': entry.get('img') or ''
-            })
-
-        return jsonify({'message': 'Leaderboard saved'})
-
-    except Exception as e:
-        print("Leaderboard MongoDB error:", e)
-        return jsonify({'error': str(e)}), 500
 # === Leaderboard pages ===
 @app.route('/leaderboard')
 def leaderboard():
@@ -373,82 +410,6 @@ def leaderboard():
 @app.route('/leaderboardad')
 def leaderboard_admin_page():
     return render_template('leaderboardad.html')
-import base64
-import io
-
-@app.route('/api/upload_image', methods=['POST'])
-def upload_base64_image():
-    """Upload Base64 image to Cloudinary"""
-    try:
-        data = request.get_json()
-        base64_image = data.get('image')
-        
-        if not base64_image:
-            return jsonify({'error': 'No image provided'}), 400
-        
-        # Remove data:image/jpeg;base64, prefix if present
-        if ',' in base64_image:
-            base64_image = base64_image.split(',')[1]
-        
-        # Decode base64
-        image_bytes = base64.b64decode(base64_image)
-        
-        # Upload to Cloudinary
-        upload_result = cloudinary.uploader.upload(
-            io.BytesIO(image_bytes),
-            folder="leaderboard",
-            transformation=[
-                {'width': 400, 'height': 400, 'crop': 'fill'},
-                {'quality': 'auto:good'}
-            ]
-        )
-        
-        return jsonify({
-            'url': upload_result['secure_url'],
-            'public_id': upload_result['public_id']
-        })
-        
-    except Exception as e:
-        print("Cloudinary upload error:", e)
-        return jsonify({'error': str(e)}), 500
-import base64
-import io
-
-@app.route('/api/upload_image', methods=['POST'])
-def upload_base64_image():
-    """Upload Base64 image to Cloudinary"""
-    try:
-        data = request.get_json()
-        base64_image = data.get('image')
-        
-        if not base64_image:
-            return jsonify({'error': 'No image provided'}), 400
-        
-        # Remove data:image/jpeg;base64, prefix if present
-        if ',' in base64_image:
-            base64_image = base64_image.split(',')[1]
-        
-        # Decode base64
-        image_bytes = base64.b64decode(base64_image)
-        
-        # Upload to Cloudinary
-        upload_result = cloudinary.uploader.upload(
-            io.BytesIO(image_bytes),
-            folder="leaderboard",
-            transformation=[
-                {'width': 400, 'height': 400, 'crop': 'fill'},
-                {'quality': 'auto:good'}
-            ]
-        )
-        
-        return jsonify({
-            'url': upload_result['secure_url'],
-            'public_id': upload_result['public_id']
-        })
-        
-    except Exception as e:
-        print("Cloudinary upload error:", e)
-        return jsonify({'error': str(e)}), 500
 
 # === Run app ===
 if __name__ == '__main__':
