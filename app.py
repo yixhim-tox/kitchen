@@ -35,12 +35,6 @@ mongo_db = None
 mongo_meals = None
 mongo_leaderboard = None
 leaderboard_client = None
-leaderboard_collectionMONGODB_URL'))
-mongo_client = None
-mongo_db = None
-mongo_meals = None
-mongo_leaderboard = None
-leaderboard_client = None
 leaderboard_collection = None
 
 if os.getenv('LEADERBOARD_MONGODB_URI'):
