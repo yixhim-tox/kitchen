@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-importify
 import sqlite3
 import os
 from werkzeug.utils import secure_filename
@@ -31,6 +30,12 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # === MongoDB setup ===
 USE_MONGO = bool(os.getenv('MONGODB_URL'))
+mongo_client = None
+mongo_db = None
+mongo_meals = None
+mongo_leaderboard = None
+leaderboard_client = None
+leaderboard_collectionMONGODB_URL'))
 mongo_client = None
 mongo_db = None
 mongo_meals = None
@@ -82,10 +87,7 @@ init_db()
 # === Helper function ===
 def get_all_meals():
     if USE_MONGO:
-        return list(mongo_meals.find.find().sort("_id", -1))
-    else:
-        conn = sqlite3.connect(DB_NAME)
-        conn.row_factory = sqlite().sort("_id", -1))
+        return list(mongo_meals.find().sort("_id", -1))
     else:
         conn = sqlite3.connect(DB_NAME)
         conn.row_factory = sqlite3.Row
