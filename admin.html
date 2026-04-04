@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - TG's Kitchen</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      color: #E53935;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #e0e0e0;
+      overflow-x: auto;
+    }
+    
+    .tab {
+      padding: 12px 24px;
+      background: none;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      color: #666;
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+    
+    .tab.active {
+      color: #E53935;
+      border-bottom-color: #E53935;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Cards */
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    /* Forms */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+    
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #555;
+    }
+    
+    input, textarea, select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 15px;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #E53935;
+    }
+    
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    
+    /* Image Upload - Leaderboard Style */
+    .image-upload {
+      border: 2px dashed #ccc;
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .image-upload:hover {
+      border-color: #E53935;
+      background: #fff5f5;
+    }
+    
+    .image-upload i {
+      font-size: 48px;
+      color: #ccc;
+      margin-bottom: 12px;
+    }
+    
+    .image-upload.has-image {
+      border-style: solid;
+      border-color: #4caf50;
+      padding: 0;
+      overflow: hidden;
+    }
+    
+    .image-upload img {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+    }
+    
+    .image-upload input {
+      display: none;
+    }
+    
+    /* Buttons */
+    .btn {
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background: #E53935;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #c62828;
+    }
+    
+    .btn-success {
+      background: #4caf50;
+      color: white;
+    }
+    
+    .btn-danger {
+      background: #f44336;
+      color: white;
+    }
+    
+    .btn-secondary {
+      background: #f5f5f5;
+      color: #333;
+    }
+    
+    /* Items List */
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    
+    .item-card {
+      background: #fafafa;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e0e0e0;
+    }
+    
+    .item-image {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: #f0f0f0;
+    }
+    
+    .item-content {
+      padding: 16px;
+    }
+    
+    .item-name {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+    
+    .item-desc {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .item-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: #E53935;
+      margin-bottom: 12px;
+    }
+    
+    .item-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .item-actions .btn {
+      flex: 1;
+      padding: 8px;
+      font-size: 13px;
+      justify-content: center;
+    }
+    
+    /* Gallery Grid */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    
+    .gallery-item {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      aspect-ratio: 1;
+    }
+    
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .gallery-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.8));
+      padding: 40px 12px 12px;
+      color: white;
+    }
+    
+    .gallery-title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    
+    .gallery-delete {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+      background: rgba(244, 67, 54, 0.9);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: #f5f5f5;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    
+    /* Crop Modal - Leaderboard Style */
+    .crop-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .crop-modal.active {
+      display: flex;
+    }
+    
+    .crop-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 90%;
+      text-align: center;
+    }
+    
+    .crop-area {
+      position: relative;
+      display: inline-block;
+      margin: 20px 0;
+      max-width: 600px;
+      max-height: 500px;
+    }
+    
+    #crop-image {
+      max-width: 100%;
+      max-height: 450px;
+      display: block;
+    }
+    
+    .crop-box {
+      position: absolute;
+      border: 3px dashed white;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+      cursor: move;
+      background: transparent;
+    }
+    
+    .crop-btn {
+      padding: 10px 20px;
+      margin: 0 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .crop-btn.apply { background: #4caf50; color: white; }
+    .crop-btn.cancel { background: #f44336; color: white; }
+    
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #333;
+      color: white;
+      padding: 16px 24px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: none;
+      align-items: center;
+      gap: 10px;
+      z-index: 3000;
+    }
+    
+    .toast.show {
+      display: flex;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .toast.success { background: #4caf50; }
+    .toast.error { background: #f44336; }
+    
+    /* Loading */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #E53935;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+    
+    .empty-state i {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+    
+    /* Current image preview in edit modal */
+    .current-image-preview {
+      width: 100%;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    
+    /* Photo section - leaderboard style */
+    .photo-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .upload-btn {
+      background: #4caf50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      text-align: center;
+      border: none;
+    }
+    
+    .upload-btn:hover {
+      background: #45a049;
+    }
+    
+    .photo-preview {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 2px solid #ddd;
+      display: none;
+    }
+    
+    .photo-preview.visible {
+      display: block;
+    }
+    
+    .status-badge {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 5px;
+    }
+    
+    .status-badge.saved {
+      background: #4caf50;
+      color: white;
+    }
+    
+    .status-badge.pending {
+      background: #ff9800;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-cog"></i> Admin Dashboard</h1>
+    <p class="subtitle">Manage meals, gallery, and leaderboard</p>
+    
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('meals')">
+        <i class="fas fa-utensils"></i> Meals
+      </button>
+      <button class="tab" onclick="switchTab('gallery')">
+        <i class="fas fa-images"></i> Gallery
+      </button>
+      <button class="tab" onclick="switchTab('leaderboard')">
+        <i class="fas fa-trophy"></i> Leaderboard
+      </button>
+    </div>
+    
+    <!-- Meals Tab -->
+    <div id="meals-tab" class="tab-content active">
+      <!-- Add Meal Form -->
+      <div class="card">
+        <h2 class="card-title"><i class="fas fa-plus-circle"></i> Add New Meal</h2>
+        <form id="addMealForm" onsubmit="addMeal(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Meal Name *</label>
+              <input type="text" name="name" required placeholder="e.g., Jollof Rice Special">
+            </div>
+            <div class="form-group">
+              <label>Price (₦) *</label>
+              <input type="number" name="price" required placeholder="e.g., 4500">
+            </div>
+            <div class="form-group">
+              <label>Category *</label>
+              <select name="category" required>
+                <option value="">Select Category</option>
+                <option value="Pasta">Pasta</option>
+                <option value="Rice">Rice</option>
+                <option value="Noodles">Noodles</option>
+                <option value="Specials">Specials</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <label>Description</label>
+              <textarea name="description" placeholder="Brief description of the meal..."></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label>Meal Image</label>
+              <div class="photo-section">
+                <input type="file" id="mealImage" accept="image/*" style="display:none" onchange="handleMealPhoto(this)">
+                <label for="mealImage" class="upload-btn">📷 Choose Photo</label>
+                <img id="mealPreview" class="photo-preview" onclick="document.getElementById('mealImage').click()" title="Click to change">
+                <span class="status-badge" id="mealStatus" style="display:none;"></span>
+                <input type="hidden" name="image" id="mealImageUrl">
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top: 20px;">
+            <i class="fas fa-plus"></i> Add Meal
+          </button>
+        </form>
+      </div>
+      
+      <!-- Meals List -->
+      <div class="card">
+        <h2 class="card-title"><i class="fas fa-list"></i> All Meals</h2>
+        <div id="mealsList" class="items-grid">
+          <div class="loading"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Gallery Tab -->
+    <div id="gallery-tab" class="tab-content">
+      <!-- Add Gallery Image -->
+      <div class="card">
+        <h2 class="card-title"><i class="fas fa-plus-circle"></i> Add Gallery Image</h2>
+        <form id="addGalleryForm" onsubmit="addGalleryImage(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Image Title *</label>
+              <input type="text" name="title" required placeholder="e.g., Special Sunday Platter">
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <select name="category">
+                <option value="Featured">Featured</option>
+                <option value="Events">Events</option>
+                <option value="Daily Specials">Daily Specials</option>
+                <option value="Behind the Scenes">Behind the Scenes</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <label>Description</label>
+              <textarea name="description" placeholder="Brief description..."></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label>Image *</label>
+              <div class="photo-section">
+                <input type="file" id="galleryImage" accept="image/*" required style="display:none" onchange="handleGalleryPhoto(this)">
+                <label for="galleryImage" class="upload-btn">📷 Choose Photo</label>
+                <img id="galleryPreview" class="photo-preview" onclick="document.getElementById('galleryImage').click()" title="Click to change">
+                <span class="status-badge" id="galleryStatus" style="display:none;"></span>
+                <input type="hidden" name="image_url" id="galleryImageUrl">
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top: 20px;">
+            <i class="fas fa-plus"></i> Add to Gallery
+          </button>
+        </form>
+      </div>
+      
+      <!-- Gallery Grid -->
+      <div class="card">
+        <h2 class="card-title"><i class="fas fa-images"></i> Gallery Images</h2>
+        <div id="galleryList" class="gallery-grid">
+          <div class="loading"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Leaderboard Tab -->
+    <div id="leaderboard-tab" class="tab-content">
+      <div class="card">
+        <h2 class="card-title"><i class="fas fa-trophy"></i> Manage Leaderboard</h2>
+        <p style="margin-bottom: 20px; color: #666;">
+          <a href="/leaderboardad" target="_blank" class="btn btn-secondary">
+            <i class="fas fa-external-link-alt"></i> Open Full Leaderboard Admin
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Edit Meal Modal -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Meal</h3>
+        <button class="modal-close" onclick="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="editMealForm" onsubmit="updateMeal(event)">
+        <input type="hidden" name="id" id="editId">
+        <div class="form-group">
+          <label>Meal Name</label>
+          <input type="text" name="name" id="editName" required>
+        </div>
+        <div class="form-group">
+          <label>Price (₦)</label>
+          <input type="number" name="price" id="editPrice" required>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select name="category" id="editCategory" required>
+            <option value="Pasta">Pasta</option>
+            <option value="Rice">Rice</option>
+            <option value="Noodles">Noodles</option>
+            <option value="Specials">Specials</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea name="description" id="editDescription"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Meal Image</label>
+          <img id="editCurrentImage" class="current-image-preview" style="display: none;" alt="Current image">
+          <div class="photo-section" style="margin-top: 10px;">
+            <input type="file" id="editImageFile" accept="image/*" style="display:none" onchange="handleEditPhoto(this)">
+            <label for="editImageFile" class="upload-btn">📷 Change Photo</label>
+            <img id="editPreview" class="photo-preview" onclick="document.getElementById('editImageFile').click()" title="Click to change">
+            <input type="hidden" name="image" id="editImage">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-success" style="width: 100%;">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Crop Modal - Leaderboard Style -->
+  <div class="crop-modal" id="cropModal">
+    <div class="crop-container">
+      <h3>✂️ Crop Your Photo</h3>
+      <p>Drag the box to move. Photo will be auto-compressed.</p>
+      <div class="crop-area">
+        <img id="cropImage" src="" alt="Preview">
+        <div class="crop-box" id="cropBox"></div>
+      </div>
+      <div>
+        <button class="crop-btn apply" onclick="applyCrop()">✓ Apply</button>
+        <button class="crop-btn cancel" onclick="closeCropModal()">✕ Cancel</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMessage">Success!</span>
+  </div>
+
+  <script>
+    // === LEADERBOARD-STYLE PHOTO HANDLING ===
+    let cropImageSrc = null;
+    let currentEditingType = null; // 'meal', 'gallery', or 'edit'
+    
+    // Handle meal photo selection
+    function handleMealPhoto(input) {
+      handlePhoto(input, 'meal');
+    }
+    
+    // Handle gallery photo selection
+    function handleGalleryPhoto(input) {
+      handlePhoto(input, 'gallery');
+    }
+    
+    // Handle edit photo selection
+    function handleEditPhoto(input) {
+      handlePhoto(input, 'edit');
+    }
+    
+    // Generic photo handler (like leaderboard)
+    function handlePhoto(input, type) {
+      const file = input.files[0];
+      if (!file) return;
+      
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Photo too large! Max 5MB.', 'error');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        cropImageSrc = e.target.result;
+        currentEditingType = type;
+        openCropModal();
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    // Open crop modal (leaderboard style)
+    function openCropModal() {
+      const modal = document.getElementById('cropModal');
+      const img = document.getElementById('cropImage');
+      const box = document.getElementById('cropBox');
+      
+      img.src = cropImageSrc;
+      modal.classList.add('active');
+      
+      img.onload = function() {
+        const size = Math.min(img.width, img.height, 300);
+        box.style.width = size + 'px';
+        box.style.height = size + 'px';
+        box.style.left = ((img.width - size) / 2) + 'px';
+        box.style.top = ((img.height - size) / 2) + 'px';
+        
+        // Make draggable
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+        
+        box.onmousedown = function(e) {
+          isDragging = true;
+          startX = e.clientX;
+          startY = e.clientY;
+          initialLeft = parseInt(box.style.left) || 0;
+          initialTop = parseInt(box.style.top) || 0;
+          e.preventDefault();
+        };
+        
+        document.onmousemove = function(e) {
+          if (!isDragging) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          let newLeft = initialLeft + dx;
+          let newTop = initialTop + dy;
+          const maxLeft = img.width - parseInt(box.style.width);
+          const maxTop = img.height - parseInt(box.style.height);
+          box.style.left = Math.max(0, Math.min(newLeft, maxLeft)) + 'px';
+          box.style.top = Math.max(0, Math.min(newTop, maxTop)) + 'px';
+        };
+        
+        document.onmouseup = function() {
+          isDragging = false;
+        };
+      };
+    }
+    
+    // Close crop modal
+    function closeCropModal() {
+      document.getElementById('cropModal').classList.remove('active');
+      cropImageSrc = null;
+      currentEditingType = null;
+    }
+    
+    // Apply crop and save base64 (leaderboard style)
+    function applyCrop() {
+      if (!currentEditingType) return;
+      
+      const img = document.getElementById('cropImage');
+      const box = document.getElementById('cropBox');
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      const scaleX = img.naturalWidth / img.width;
+      const scaleY = img.naturalHeight / img.height;
+      
+      const x = parseInt(box.style.left) * scaleX;
+      const y = parseInt(box.style.top) * scaleY;
+      const w = parseInt(box.style.width) * scaleX;
+      const h = parseInt(box.style.height) * scaleY;
+      
+      canvas.width = 400;
+      canvas.height = 400;
+      ctx.drawImage(img, x, y, w, h, 0, 0, 400, 400);
+      
+      // Compress to JPEG 0.8 quality (leaderboard style)
+      const finalData = canvas.toDataURL('image/jpeg', 0.8);
+      
+      // Update appropriate form
+      if (currentEditingType === 'meal') {
+        document.getElementById('mealImageUrl').value = finalData;
+        document.getElementById('mealPreview').src = finalData;
+        document.getElementById('mealPreview').classList.add('visible');
+        document.getElementById('mealStatus').textContent = '⏳ Pending';
+        document.getElementById('mealStatus').className = 'status-badge pending';
+        document.getElementById('mealStatus').style.display = 'inline-block';
+      } else if (currentEditingType === 'gallery') {
+        document.getElementById('galleryImageUrl').value = finalData;
+        document.getElementById('galleryPreview').src = finalData;
+        document.getElementById('galleryPreview').classList.add('visible');
+        document.getElementById('galleryStatus').textContent = '⏳ Pending';
+        document.getElementById('galleryStatus').className = 'status-badge pending';
+        document.getElementById('galleryStatus').style.display = 'inline-block';
+      } else if (currentEditingType === 'edit') {
+        document.getElementById('editImage').value = finalData;
+        document.getElementById('editPreview').src = finalData;
+        document.getElementById('editPreview').classList.add('visible');
+        document.getElementById('editCurrentImage').style.display = 'none';
+      }
+      
+      closeCropModal();
+      showToast('Photo ready!');
+    }
+    
+    // Tab switching
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      
+      event.target.closest('.tab').classList.add('active');
+      document.getElementById(tab + '-tab').classList.add('active');
+      
+      if (tab === 'meals') loadMeals();
+      if (tab === 'gallery') loadGallery();
+    }
+    
+    // Toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.className = 'toast show ' + type;
+      document.getElementById('toastMessage').textContent = message;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+    
+    // Add meal (uses base64 image like leaderboard)
+    async function addMeal(e) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      
+      const data = {
+        name: formData.get('name'),
+        price: parseFloat(formData.get('price')),
+        category: formData.get('category'),
+        description: formData.get('description'),
+        image: document.getElementById('mealImageUrl').value || 'https://via.placeholder.com/300x200?text=No+Image'
+      };
+      
+      // Check image size
+      if (data.image.startsWith('data:image') && data.image.length > 500000) {
+        showToast('Image too large! Max 500KB.', 'error');
+        return;
+      }
+      
+      try {
+        const res = await fetch('/api/add_meal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        if (res.ok) {
+          showToast('Meal added successfully!');
+          form.reset();
+          document.getElementById('mealPreview').classList.remove('visible');
+          document.getElementById('mealStatus').style.display = 'none';
+          document.getElementById('mealImageUrl').value = '';
+          loadMeals();
+        } else {
+          showToast('Failed to add meal', 'error');
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+    
+    // Load meals
+    async function loadMeals() {
+      try {
+        const res = await fetch('/api/meals');
+        const meals = await res.json();
+        
+        const container = document.getElementById('mealsList');
+        
+        if (meals.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state" style="grid-column: 1/-1;">
+              <i class="fas fa-utensils"></i>
+              <p>No meals added yet</p>
+            </div>
+          `;
+          return;
+        }
+        
+        container.innerHTML = meals.map(meal => `
+          <div class="item-card">
+            <img src="${meal.image || 'https://via.placeholder.com/300x200?text=No+Image'}" 
+                 alt="${meal.name}" class="item-image"
+                 onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+            <div class="item-content">
+              <div class="item-name">${meal.name}</div>
+              <div class="item-desc">${meal.description || 'No description'}</div>
+              <div class="item-price">₦${meal.price.toLocaleString()}</div>
+              <div class="item-actions">
+                <button class="btn btn-secondary" onclick="editMeal('${meal.id}')">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn btn-danger" onclick="deleteMeal('${meal.id}')">
+                  <i class="fas fa-trash"></i> Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load meals:', err);
+      }
+    }
+    
+    // Edit meal - open modal
+    async function editMeal(id) {
+      try {
+        const res = await fetch('/api/meals');
+        const meals = await res.json();
+        const meal = meals.find(m => m.id === id);
+        
+        if (!meal) return;
+        
+        document.getElementById('editId').value = meal.id;
+        document.getElementById('editName').value = meal.name;
+        document.getElementById('editPrice').value = meal.price;
+        document.getElementById('editCategory').value = meal.category || 'Pasta';
+        document.getElementById('editDescription').value = meal.description || '';
+        document.getElementById('editImage').value = meal.image || '';
+        
+        // Show current image
+        const currentImage = document.getElementById('editCurrentImage');
+        const editPreview = document.getElementById('editPreview');
+        
+        if (meal.image) {
+          currentImage.src = meal.image;
+          currentImage.style.display = 'block';
+          editPreview.classList.remove('visible');
+        } else {
+          currentImage.style.display = 'none';
+        }
+        
+        document.getElementById('editModal').classList.add('active');
+      } catch (err) {
+        showToast('Error loading meal', 'error');
+      }
+    }
+    
+    // Update meal
+    async function updateMeal(e) {
+      e.preventDefault();
+      const id = document.getElementById('editId').value;
+      
+      const data = {
+        name: document.getElementById('editName').value,
+        price: parseFloat(document.getElementById('editPrice').value),
+        category: document.getElementById('editCategory').value,
+        description: document.getElementById('editDescription').value,
+        image: document.getElementById('editImage').value
+      };
+      
+      // Check image size
+      if (data.image.startsWith('data:image') && data.image.length > 500000) {
+        showToast('Image too large! Max 500KB.', 'error');
+        return;
+      }
+      
+      try {
+        const res = await fetch(`/api/update_meal/${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        if (res.ok) {
+          showToast('Meal updated successfully!');
+          closeModal();
+          loadMeals();
+        } else {
+          showToast('Failed to update meal', 'error');
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+    
+    // Delete meal
+    async function deleteMeal(id) {
+      if (!confirm('Are you sure you want to delete this meal?')) return;
+      
+      try {
+        const res = await fetch(`/api/delete_meal/${id}`, {
+          method: 'DELETE'
+        });
+        
+        if (res.ok) {
+          showToast('Meal deleted successfully!');
+          loadMeals();
+        } else {
+          showToast('Failed to delete meal', 'error');
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+    
+    // Close modal
+    function closeModal() {
+      document.getElementById('editModal').classList.remove('active');
+    }
+    
+    // Add gallery image (base64 like leaderboard)
+    async function addGalleryImage(e) {
+      e.preventDefault();
+      const form = e.target;
+      
+      const imageData = document.getElementById('galleryImageUrl').value;
+      
+      if (!imageData) {
+        showToast('Please select a photo', 'error');
+        return;
+      }
+      
+      // Check image size
+      if (imageData.startsWith('data:image') && imageData.length > 500000) {
+        showToast('Image too large! Max 500KB.', 'error');
+        return;
+      }
+      
+      const data = {
+        title: form.querySelector('[name="title"]').value,
+        category: form.querySelector('[name="category"]').value,
+        description: form.querySelector('[name="description"]').value,
+        image_url: imageData
+      };
+      
+      try {
+        const res = await fetch('/api/gallery', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        if (res.ok) {
+          showToast('Image added to gallery!');
+          form.reset();
+          document.getElementById('galleryPreview').classList.remove('visible');
+          document.getElementById('galleryStatus').style.display = 'none';
+          document.getElementById('galleryImageUrl').value = '';
+          loadGallery();
+        } else {
+          showToast('Failed to add to gallery', 'error');
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+    
+    // Load gallery
+    async function loadGallery() {
+      try {
+        const res = await fetch('/api/gallery');
+        const images = await res.json();
+        
+        const container = document.getElementById('galleryList');
+        
+        if (images.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state" style="grid-column: 1/-1;">
+              <i class="fas fa-images"></i>
+              <p>No gallery images yet</p>
+            </div>
+          `;
+          return;
+        }
+        
+        container.innerHTML = images.map(img => `
+          <div class="gallery-item">
+            <img src="${img.image_url}" alt="${img.title}">
+            <button class="gallery-delete" onclick="deleteGalleryImage('${img.id}')">
+              <i class="fas fa-trash"></i>
+            </button>
+            <div class="gallery-overlay">
+              <div class="gallery-title">${img.title}</div>
+              <small>${img.category}</small>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load gallery:', err);
+      }
+    }
+    
+    // Delete gallery image
+    async function deleteGalleryImage(id) {
+      if (!confirm('Delete this gallery image?')) return;
+      
+      try {
+        const res = await fetch(`/api/gallery/${id}`, {
+          method: 'DELETE'
+        });
+        
+        if (res.ok) {
+          showToast('Image deleted!');
+          loadGallery();
+        } else {
+          showToast('Failed to delete', 'error');
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+    
+    // Load meals on page load
+    loadMeals();
+  </script>
+</body>
+</html>
