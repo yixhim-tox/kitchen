@@ -415,66 +415,7 @@
       font-size: 18px;
     }
     
-    /* Crop Modal - Leaderboard Style */
-    .crop-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.8);
-      z-index: 3000;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
     
-    .crop-modal.active {
-      display: flex;
-    }
-    
-    .crop-container {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 90%;
-      text-align: center;
-    }
-    
-    .crop-area {
-      position: relative;
-      display: inline-block;
-      margin: 20px 0;
-      max-width: 600px;
-      max-height: 500px;
-    }
-    
-    #crop-image {
-      max-width: 100%;
-      max-height: 450px;
-      display: block;
-    }
-    
-    .crop-box {
-      position: absolute;
-      border: 3px dashed white;
-      box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
-      cursor: move;
-      background: transparent;
-    }
-    
-    .crop-btn {
-      padding: 10px 20px;
-      margin: 0 5px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    
-    .crop-btn.apply { background: #4caf50; color: white; }
-    .crop-btn.cancel { background: #f44336; color: white; }
     
     /* Toast */
     .toast {
@@ -800,21 +741,7 @@
     </div>
   </div>
   
-  <!-- Crop Modal - Leaderboard Style -->
-  <div class="crop-modal" id="cropModal">
-    <div class="crop-container">
-      <h3>✂️ Crop Your Photo</h3>
-      <p>Drag the box to move. Photo will be auto-compressed.</p>
-      <div class="crop-area">
-        <img id="cropImage" src="" alt="Preview">
-        <div class="crop-box" id="cropBox"></div>
-      </div>
-      <div>
-        <button class="crop-btn apply" onclick="applyCrop()">✓ Apply</button>
-        <button class="crop-btn cancel" onclick="closeCropModal()">✕ Cancel</button>
-      </div>
-    </div>
-  </div>
+  
   
   <!-- Toast -->
   <div class="toast" id="toast">
@@ -847,168 +774,107 @@
       console.log(`%c[${type.toUpperCase()}] ${message}`, consoleColor);
     }
     
-    // === LEADERBOARD-STYLE PHOTO HANDLING ===
-    let cropImageSrc = null;
-    let currentEditingType = null; // 'meal', 'gallery', or 'edit'
-    
-    // Handle meal photo selection
+        // === SIMPLE PHOTO HANDLING (No Crop) ===
+    // Handle meal photo - direct upload with compression
     function handleMealPhoto(input) {
-      debugLog('Meal photo selected: ' + (input.files[0]?.name || 'none'), 'debug');
-      handlePhoto(input, 'meal');
+      handlePhotoSimple(input, 'meal');
     }
-    
-    // Handle gallery photo selection
+
+    // Handle gallery photo - direct upload with compression
     function handleGalleryPhoto(input) {
-      debugLog('Gallery photo selected: ' + (input.files[0]?.name || 'none'), 'debug');
-      handlePhoto(input, 'gallery');
+      handlePhotoSimple(input, 'gallery');
     }
-    
-    // Handle edit photo selection
+
+    // Handle edit photo - direct upload with compression
     function handleEditPhoto(input) {
-      debugLog('Edit photo selected: ' + (input.files[0]?.name || 'none'), 'debug');
-      handlePhoto(input, 'edit');
+      handlePhotoSimple(input, 'edit');
     }
-    
-    // Generic photo handler (like leaderboard)
-    function handlePhoto(input, type) {
+
+    // Simple photo handler - no cropping, just resize and compress
+    function handlePhotoSimple(input, type) {
       const file = input.files[0];
       if (!file) {
         debugLog('No file selected', 'warn');
         return;
       }
-      
+
       debugLog(`Processing ${type} photo: ${file.name}, Size: ${Math.round(file.size/1024)}KB`, 'debug');
-      
+
       if (file.size > 5 * 1024 * 1024) {
         debugLog('Photo too large! Max 5MB.', 'error');
         showToast('Photo too large! Max 5MB.', 'error');
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onload = function(e) {
-        cropImageSrc = e.target.result;
-        currentEditingType = type;
-        debugLog(`Photo loaded, base64 length: ${cropImageSrc.length} chars`, 'debug');
-        openCropModal();
+        const img = new Image();
+        img.onload = function() {
+          // Resize and compress
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+
+          // Max dimensions
+          const maxWidth = 800;
+          const maxHeight = 800;
+          let width = img.width;
+          let height = img.height;
+
+          // Calculate new dimensions
+          if (width > height) {
+            if (width > maxWidth) {
+              height *= maxWidth / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width *= maxHeight / height;
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Compress to JPEG 0.8 quality
+          const finalData = canvas.toDataURL('image/jpeg', 0.8);
+
+          debugLog(`Photo processed: ${width}x${height}, size: ${Math.round(finalData.length/1024)}KB`, 'debug');
+
+          // Update appropriate form
+          if (type === 'meal') {
+            document.getElementById('mealImageUrl').value = finalData;
+            document.getElementById('mealPreview').src = finalData;
+            document.getElementById('mealPreview').classList.add('visible');
+            document.getElementById('mealStatus').textContent = '✓ Ready';
+            document.getElementById('mealStatus').className = 'status-badge saved';
+            document.getElementById('mealStatus').style.display = 'inline-block';
+          } else if (type === 'gallery') {
+            document.getElementById('galleryImageUrl').value = finalData;
+            document.getElementById('galleryPreview').src = finalData;
+            document.getElementById('galleryPreview').classList.add('visible');
+            document.getElementById('galleryStatus').textContent = '✓ Ready';
+            document.getElementById('galleryStatus').className = 'status-badge saved';
+            document.getElementById('galleryStatus').style.display = 'inline-block';
+          } else if (type === 'edit') {
+            document.getElementById('editImage').value = finalData;
+            document.getElementById('editPreview').src = finalData;
+            document.getElementById('editPreview').classList.add('visible');
+            document.getElementById('editCurrentImage').style.display = 'none';
+          }
+
+          showToast('Photo ready!');
+        };
+        img.src = e.target.result;
       };
       reader.onerror = function(err) {
         debugLog('FileReader error: ' + err, 'error');
       };
       reader.readAsDataURL(file);
     }
-    
-    // Open crop modal (leaderboard style)
-    function openCropModal() {
-      const modal = document.getElementById('cropModal');
-      const img = document.getElementById('cropImage');
-      const box = document.getElementById('cropBox');
-      
-      img.src = cropImageSrc;
-      modal.classList.add('active');
-      
-      img.onload = function() {
-        debugLog(`Crop image loaded: ${img.width}x${img.height}`, 'debug');
-        const size = Math.min(img.width, img.height, 300);
-        box.style.width = size + 'px';
-        box.style.height = size + 'px';
-        box.style.left = ((img.width - size) / 2) + 'px';
-        box.style.top = ((img.height - size) / 2) + 'px';
-        
-        // Make draggable
-        let isDragging = false;
-        let startX, startY, initialLeft, initialTop;
-        
-        box.onmousedown = function(e) {
-          isDragging = true;
-          startX = e.clientX;
-          startY = e.clientY;
-          initialLeft = parseInt(box.style.left) || 0;
-          initialTop = parseInt(box.style.top) || 0;
-          e.preventDefault();
-        };
-        
-        document.onmousemove = function(e) {
-          if (!isDragging) return;
-          const dx = e.clientX - startX;
-          const dy = e.clientY - startY;
-          let newLeft = initialLeft + dx;
-          let newTop = initialTop + dy;
-          const maxLeft = img.width - parseInt(box.style.width);
-          const maxTop = img.height - parseInt(box.style.height);
-          box.style.left = Math.max(0, Math.min(newLeft, maxLeft)) + 'px';
-          box.style.top = Math.max(0, Math.min(newTop, maxTop)) + 'px';
-        };
-        
-        document.onmouseup = function() {
-          isDragging = false;
-        };
-      };
-    }
-    
-    // Close crop modal
-    function closeCropModal() {
-      document.getElementById('cropModal').classList.remove('active');
-      cropImageSrc = null;
-      currentEditingType = null;
-    }
-    
-    // Apply crop and save base64 (leaderboard style)
-    function applyCrop() {
-      if (!currentEditingType) {
-        debugLog('No editing type set for crop', 'error');
-        return;
-      }
-      
-      const img = document.getElementById('cropImage');
-      const box = document.getElementById('cropBox');
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      const scaleX = img.naturalWidth / img.width;
-      const scaleY = img.naturalHeight / img.height;
-      
-      const x = parseInt(box.style.left) * scaleX;
-      const y = parseInt(box.style.top) * scaleY;
-      const w = parseInt(box.style.width) * scaleX;
-      const h = parseInt(box.style.height) * scaleY;
-      
-      canvas.width = 400;
-      canvas.height = 400;
-      ctx.drawImage(img, x, y, w, h, 0, 0, 400, 400);
-      
-      // Compress to JPEG 0.8 quality (leaderboard style)
-      const finalData = canvas.toDataURL('image/jpeg', 0.8);
-      
-      debugLog(`Cropped image generated, size: ${Math.round(finalData.length/1024)}KB`, 'debug');
-      
-      // Update appropriate form
-      if (currentEditingType === 'meal') {
-        document.getElementById('mealImageUrl').value = finalData;
-        document.getElementById('mealPreview').src = finalData;
-        document.getElementById('mealPreview').classList.add('visible');
-        document.getElementById('mealStatus').textContent = '⏳ Pending';
-        document.getElementById('mealStatus').className = 'status-badge pending';
-        document.getElementById('mealStatus').style.display = 'inline-block';
-      } else if (currentEditingType === 'gallery') {
-        document.getElementById('galleryImageUrl').value = finalData;
-        document.getElementById('galleryPreview').src = finalData;
-        document.getElementById('galleryPreview').classList.add('visible');
-        document.getElementById('galleryStatus').textContent = '⏳ Pending';
-        document.getElementById('galleryStatus').className = 'status-badge pending';
-        document.getElementById('galleryStatus').style.display = 'inline-block';
-      } else if (currentEditingType === 'edit') {
-        document.getElementById('editImage').value = finalData;
-        document.getElementById('editPreview').src = finalData;
-        document.getElementById('editPreview').classList.add('visible');
-        document.getElementById('editCurrentImage').style.display = 'none';
-      }
-      
-      closeCropModal();
-      showToast('Photo ready!');
-    }
-    
-    // Tab switching
+
+// Tab switching
     function switchTab(tab) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -1483,15 +1349,35 @@
         const res = await fetch('/api/db_status');
         const data = await res.json();
 
+        // Check ALL SQLite tables (meals, gallery, leaderboard)
         const sqliteMeals = data.data_counts?.sqlite_meals || 0;
+        const sqliteGallery = data.data_counts?.sqlite_gallery || 0;
+        const sqliteLeaderboard = data.data_counts?.sqlite_leaderboard || 0;
+        const totalSQLite = sqliteMeals + sqliteGallery + sqliteLeaderboard;
+
         const mongoMeals = data.data_counts?.mongodb_meals || 0;
+        const mongoGallery = data.data_counts?.mongodb_gallery || 0;
+        const mongoLeaderboard = data.data_counts?.mongodb_leaderboard || 0;
+        const totalMongo = mongoMeals + mongoGallery + mongoLeaderboard;
 
-        debugLog(`DB Status - SQLite meals: ${sqliteMeals}, MongoDB meals: ${mongoMeals}`, 'debug');
+        debugLog(`DB Status - SQLite: ${sqliteMeals} meals, ${sqliteGallery} gallery, ${sqliteLeaderboard} leaderboard`, 'debug');
+        debugLog(`DB Status - MongoDB: ${mongoMeals} meals, ${mongoGallery} gallery, ${mongoLeaderboard} leaderboard`, 'debug');
 
-        // If SQLite has data but MongoDB doesn't, show migration alert
-        if (sqliteMeals > 0 && mongoMeals === 0) {
+        // If SQLite has ANY data but MongoDB is empty, show migration alert
+        if (totalSQLite > 0 && totalMongo === 0) {
           document.getElementById('migrationAlert').style.display = 'block';
-          debugLog(`⚠️ Migration needed: ${sqliteMeals} meals in SQLite, 0 in MongoDB`, 'warn');
+          debugLog(`⚠️ Migration needed: ${totalSQLite} total items in SQLite, 0 in MongoDB`, 'warn');
+
+          // Update the alert message to show what data is waiting
+          const details = [];
+          if (sqliteMeals > 0) details.push(`${sqliteMeals} meals`);
+          if (sqliteGallery > 0) details.push(`${sqliteGallery} gallery`);
+          if (sqliteLeaderboard > 0) details.push(`${sqliteLeaderboard} leaderboard entries`);
+
+          const alertMsg = document.querySelector('#migrationAlert p');
+          if (alertMsg && details.length > 0) {
+            alertMsg.innerHTML = `Found <strong>${details.join(', ')}</strong> in SQLite that need to be migrated to MongoDB.`;
+          }
         } else {
           document.getElementById('migrationAlert').style.display = 'none';
           debugLog('✅ No migration needed', 'info');
