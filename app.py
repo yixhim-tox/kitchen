@@ -25,7 +25,7 @@ def after_request(response):
 
 DB_NAME = 'meals.db'
 
-# Cloudinary config
+# Cloudinary config (optional - for external image hosting)
 cloudinary.config(
     cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
     api_key=os.getenv('CLOUDINARY_API_KEY'),
@@ -36,46 +36,37 @@ UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# === MongoDB setup ===
+# === UNIFIED MongoDB setup (uses same connection for everything) ===
 USE_MONGO = False
 mongo_client = None
 mongo_db = None
 mongo_meals = None
 mongo_gallery = None
-leaderboard_client = None
 leaderboard_collection = None
 
-# Try to connect to MongoDB
+# Use LEADERBOARD_MONGODB_URI as primary, fallback to MONGODB_URL
+mongodb_uri = os.getenv('LEADERBOARD_MONGODB_URI') or os.getenv('MONGODB_URL')
+
 try:
-    if os.getenv('MONGODB_URL'):
-        mongo_client = MongoClient(os.getenv('MONGODB_URL'), serverSelectionTimeoutMS=3000)
+    if mongodb_uri:
+        mongo_client = MongoClient(mongodb_uri, serverSelectionTimeoutMS=5000)
         mongo_client.server_info()
-        mongo_db = mongo_client['tgs_kitchen']
+        mongo_db = mongo_client['tgs_kitchen']  # Single database for everything
         mongo_meals = mongo_db['meals']
         mongo_gallery = mongo_db['gallery']
+        leaderboard_collection = mongo_db['leaderboard']  # Same DB, different collection
         USE_MONGO = True
-        print("✅ MongoDB connected successfully")
+        print("✅ MongoDB connected successfully to tgs_kitchen database")
+        print(f"   - Meals collection: {mongo_meals.name}")
+        print(f"   - Gallery collection: {mongo_gallery.name}")
+        print(f"   - Leaderboard collection: {leaderboard_collection.name}")
     else:
-        print("ℹ️ No MONGODB_URL found, using SQLite")
+        print("ℹ️ No MongoDB URI found (LEADERBOARD_MONGODB_URI or MONGODB_URL), using SQLite")
 except Exception as e:
     print("❌ MongoDB connection failed:", e)
     USE_MONGO = False
 
-# Leaderboard MongoDB (separate connection)
-try:
-    if os.getenv('LEADERBOARD_MONGODB_URI'):
-        leaderboard_client = MongoClient(os.getenv('LEADERBOARD_MONGODB_URI'), serverSelectionTimeoutMS=3000)
-        leaderboard_client.server_info()
-        leaderboard_db = leaderboard_client['leaderboard_db']
-        leaderboard_collection = leaderboard_db['leaderboard']
-        print("✅ Leaderboard MongoDB connected successfully")
-    else:
-        print("ℹ️ No LEADERBOARD_MONGODB_URI found")
-except Exception as e:
-    print("❌ Leaderboard MongoDB connection failed:", e)
-    leaderboard_collection = None
-
-# === SQLite setup (always works as fallback) ===
+# === SQLite setup (fallback if MongoDB fails) ===
 def init_db():
     with sqlite3.connect(DB_NAME) as conn:
         c = conn.cursor()
@@ -109,11 +100,11 @@ def init_db():
             )
         ''')
         conn.commit()
-        print("✅ SQLite database initialized")
+        print("✅ SQLite database initialized as fallback")
 
 init_db()
 
-# === CRITICAL FIX: Helper to convert MongoDB documents to JSON-serializable dicts ===
+# === Helper to convert MongoDB documents to JSON-serializable dicts ===
 def mongo_to_dict(doc):
     """Convert MongoDB document to JSON-serializable dictionary"""
     if doc is None:
@@ -121,13 +112,10 @@ def mongo_to_dict(doc):
     result = {}
     for key, value in doc.items():
         if key == '_id':
-            # Convert ObjectId to string and rename to 'id'
             result['id'] = str(value)
         elif isinstance(value, ObjectId):
-            # Convert any other ObjectId fields
             result[key] = str(value)
         elif isinstance(value, datetime):
-            # Convert datetime to ISO string
             result[key] = value.isoformat()
         else:
             result[key] = value
@@ -138,14 +126,12 @@ def get_all_meals():
     if USE_MONGO and mongo_meals is not None:
         try:
             meals = list(mongo_meals.find().sort("_id", -1))
-            # Convert each document to JSON-serializable dict
             meals = [mongo_to_dict(meal) for meal in meals]
             print(f"📊 MongoDB: Found {len(meals)} meals")
             return meals
         except Exception as e:
             print("MongoDB query failed, falling back to SQLite:", e)
     
-    # Fallback to SQLite
     try:
         conn = sqlite3.connect(DB_NAME)
         conn.row_factory = sqlite3.Row
@@ -233,7 +219,7 @@ def api_add_meal():
             print("❌ No JSON data received")
             return jsonify({'error': 'No data received'}), 400
         
-        print("Received data:", data)
+        print("Received data:", {k: v[:50] + '...' if k == 'image' and len(str(v)) > 50 else v for k, v in data.items()})
         
         name = data.get('name')
         description = data.get('description', '')
@@ -252,17 +238,25 @@ def api_add_meal():
         except:
             return jsonify({'error': 'Price must be a number'}), 400
         
+        # Handle base64 image size check
+        if image and image.startswith('data:image'):
+            size_kb = len(image) / 1024
+            print(f"📸 Base64 image size: {size_kb:.1f}KB")
+            if size_kb > 500:  # 500KB limit for base64
+                return jsonify({'error': 'Image too large. Max 500KB for base64 images.'}), 400
+        
         print(f"Validated: name={name}, price={price}, category={category}")
         
-        # Try MongoDB first
+        # Try MongoDB first (same DB as leaderboard)
         if USE_MONGO and mongo_meals is not None:
             try:
                 result = mongo_meals.insert_one({
                     'name': name,
                     'description': description,
                     'price': price,
-                    'image': image,
-                    'category': category
+                    'image': image,  # Can be URL or base64
+                    'category': category,
+                    'created_at': datetime.now()
                 })
                 print(f"✅ Meal added to MongoDB with ID: {result.inserted_id}")
                 return jsonify({'message': 'Meal added', 'id': str(result.inserted_id)})
@@ -296,6 +290,13 @@ def api_update_meal(meal_id):
         if not data:
             return jsonify({'error': 'No data received'}), 400
         
+        # Handle base64 image size check
+        image = data.get('image', '')
+        if image and image.startswith('data:image'):
+            size_kb = len(image) / 1024
+            if size_kb > 500:
+                return jsonify({'error': 'Image too large. Max 500KB for base64 images.'}), 400
+        
         if USE_MONGO and mongo_meals is not None:
             try:
                 mongo_meals.update_one(
@@ -304,8 +305,9 @@ def api_update_meal(meal_id):
                         'name': data.get('name'),
                         'description': data.get('description'),
                         'price': float(data.get('price', 0)),
-                        'image': data.get('image'),
-                        'category': data.get('category')
+                        'image': image,
+                        'category': data.get('category'),
+                        'updated_at': datetime.now()
                     }}
                 )
                 return jsonify({'message': 'Meal updated'})
@@ -317,7 +319,7 @@ def api_update_meal(meal_id):
         c = conn.cursor()
         c.execute('''UPDATE meals SET name=?, description=?, price=?, image=?, category=? WHERE id=?''',
                   (data.get('name'), data.get('description'), float(data.get('price', 0)), 
-                   data.get('image'), data.get('category'), meal_id))
+                   image, data.get('category'), meal_id))
         conn.commit()
         conn.close()
         return jsonify({'message': 'Meal updated'})
@@ -376,12 +378,18 @@ def api_add_gallery():
         if not title or not image_url:
             return jsonify({'error': 'Title and image URL are required'}), 400
         
+        # Handle base64 image size check
+        if image_url and image_url.startswith('data:image'):
+            size_kb = len(image_url) / 1024
+            if size_kb > 500:
+                return jsonify({'error': 'Image too large. Max 500KB for base64 images.'}), 400
+        
         if USE_MONGO and mongo_gallery is not None:
             try:
                 result = mongo_gallery.insert_one({
                     'title': title,
                     'description': description,
-                    'image_url': image_url,
+                    'image_url': image_url,  # Can be URL or base64
                     'category': category,
                     'created_at': datetime.now()
                 })
@@ -424,13 +432,28 @@ def api_delete_gallery(img_id):
         print("Error deleting gallery:", e)
         return jsonify({'error': str(e)}), 500
 
-# === API Routes - Image Upload ===
+# === API Routes - Image Upload (supports both Cloudinary and base64) ===
 @app.route('/api/upload_image', methods=['POST', 'OPTIONS'])
 def upload_image():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'OK'}), 200
     
     try:
+        # Check if this is a base64 upload (from leaderboard-style crop)
+        if request.is_json:
+            data = request.get_json()
+            if data and 'image' in data and isinstance(data['image'], str) and data['image'].startswith('data:image'):
+                # Return base64 directly (like leaderboard)
+                base64_img = data['image']
+                if len(base64_img) > 500000:  # 500KB limit
+                    return jsonify({'error': 'Base64 image too large'}), 400
+                return jsonify({
+                    'url': base64_img,
+                    'public_id': 'base64',
+                    'format': 'base64'
+                })
+        
+        # File upload to Cloudinary (original behavior)
         if 'image' not in request.files:
             return jsonify({'error': 'No image provided'}), 400
             
@@ -461,10 +484,10 @@ def upload_image():
         })
         
     except Exception as e:
-        print("Cloudinary upload error:", e)
+        print("Upload error:", e)
         return jsonify({'error': str(e)}), 500
 
-# === API Routes - Leaderboard ===
+# === API Routes - Leaderboard (same DB as meals/gallery) ===
 @app.route('/api/leaderboard', methods=['GET'])
 def get_leaderboard():
     try:
@@ -503,33 +526,44 @@ def save_leaderboard():
         if not data or not isinstance(data, list):
             return jsonify({'error': 'No data or invalid format'}), 400
         
+        # Check for oversized images and compress/convert to URLs if needed
+        processed_data = []
+        for entry in data:
+            img = entry.get('img', '')
+            # If base64 image is too large, use default URL
+            if img and img.startswith('data:image') and len(img) > 500000:
+                img = 'https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg'
+            
+            processed_data.append({
+                'rank': int(entry.get('rank', 0)),
+                'player': entry.get('player') or '',
+                'plates': int(entry.get('plates', entry.get('score', 0))),
+                'score': int(entry.get('plates', entry.get('score', 0))),
+                'img': img
+            })
+        
         if leaderboard_collection is not None:
             leaderboard_collection.delete_many({})
             
-            for entry in data:
-                leaderboard_collection.insert_one({
-                    'rank': int(entry.get('rank', 0)),
-                    'player': entry.get('player') or '',
-                    'plates': int(entry.get('plates', entry.get('score', 0))),
-                    'score': int(entry.get('plates', entry.get('score', 0))),
-                    'img': entry.get('img') or ''
-                })
+            for entry in processed_data:
+                leaderboard_collection.insert_one(entry)
             
-            return jsonify({'message': 'Leaderboard saved'})
+            return jsonify({'message': 'Leaderboard saved to MongoDB'})
         else:
             # Fallback to SQLite
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
             c.execute('DELETE FROM leaderboard')
-            for entry in data:
+            for entry in processed_data:
                 c.execute('INSERT INTO leaderboard (rank, player, plates, img) VALUES (?, ?, ?, ?)',
-                          (int(entry.get('rank', 0)), entry.get('player') or '',
-                           int(entry.get('plates', entry.get('score', 0))), entry.get('img') or ''))
+                          (entry['rank'], entry['player'], entry['plates'], entry['img']))
             conn.commit()
             conn.close()
             return jsonify({'message': 'Leaderboard saved to SQLite'})
     except Exception as e:
         print("Leaderboard save error:", e)
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 # === Legacy Routes ===
