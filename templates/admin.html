@@ -32,6 +32,53 @@
       margin-bottom: 30px;
     }
     
+    /* Debug Panel Styles */
+    #debugPanel {
+      background: #1a1a1a;
+      color: #00ff00;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 250px;
+      overflow-y: auto;
+      display: none;
+      border: 2px solid #333;
+    }
+    
+    #debugPanel .debug-header {
+      color: #fff;
+      font-weight: bold;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    #debugPanel .debug-entry {
+      margin-bottom: 4px;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+    
+    #debugPanel .debug-entry.error { color: #ff4444; }
+    #debugPanel .debug-entry.warn { color: #ffaa00; }
+    #debugPanel .debug-entry.info { color: #00ff00; }
+    #debugPanel .debug-entry.debug { color: #66ccff; }
+    
+    .close-debug {
+      background: #444;
+      color: #fff;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    
     /* Tabs */
     .tabs {
       display: flex;
@@ -129,7 +176,7 @@
       resize: vertical;
     }
     
-    /* Image Upload */
+    /* Image Upload - Leaderboard Style */
     .image-upload {
       border: 2px dashed #ccc;
       border-radius: 12px;
@@ -368,6 +415,67 @@
       font-size: 18px;
     }
     
+    /* Crop Modal - Leaderboard Style */
+    .crop-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .crop-modal.active {
+      display: flex;
+    }
+    
+    .crop-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 90%;
+      text-align: center;
+    }
+    
+    .crop-area {
+      position: relative;
+      display: inline-block;
+      margin: 20px 0;
+      max-width: 600px;
+      max-height: 500px;
+    }
+    
+    #crop-image {
+      max-width: 100%;
+      max-height: 450px;
+      display: block;
+    }
+    
+    .crop-box {
+      position: absolute;
+      border: 3px dashed white;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+      cursor: move;
+      background: transparent;
+    }
+    
+    .crop-btn {
+      padding: 10px 20px;
+      margin: 0 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .crop-btn.apply { background: #4caf50; color: white; }
+    .crop-btn.cancel { background: #f44336; color: white; }
+    
     /* Toast */
     .toast {
       position: fixed;
@@ -433,10 +541,72 @@
       border-radius: 8px;
       margin-bottom: 10px;
     }
+    
+    /* Photo section - leaderboard style */
+    .photo-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .upload-btn {
+      background: #4caf50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      text-align: center;
+      border: none;
+    }
+    
+    .upload-btn:hover {
+      background: #45a049;
+    }
+    
+    .photo-preview {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 2px solid #ddd;
+      display: none;
+    }
+    
+    .photo-preview.visible {
+      display: block;
+    }
+    
+    .status-badge {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 5px;
+    }
+    
+    .status-badge.saved {
+      background: #4caf50;
+      color: white;
+    }
+    
+    .status-badge.pending {
+      background: #ff9800;
+      color: white;
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Debug Panel - Shows errors and logs -->
+    <div id="debugPanel">
+      <div class="debug-header">
+        <span>🔧 Debug Console</span>
+        <button class="close-debug" onclick="document.getElementById('debugPanel').style.display='none'">✕</button>
+      </div>
+      <div id="debugLogs"></div>
+    </div>
+    
     <h1><i class="fas fa-cog"></i> Admin Dashboard</h1>
     <p class="subtitle">Manage meals, gallery, and leaderboard</p>
     
@@ -484,13 +654,13 @@
             </div>
             <div class="form-group full-width">
               <label>Meal Image</label>
-              <div class="image-upload" id="mealImageUpload" onclick="document.getElementById('mealImage').click()">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <p>Click to upload image</p>
-                <small>or paste image URL below</small>
-                <input type="file" id="mealImage" accept="image/*" onchange="previewImage(this, 'mealImageUpload')">
+              <div class="photo-section">
+                <input type="file" id="mealImage" accept="image/*" style="display:none" onchange="handleMealPhoto(this)">
+                <label for="mealImage" class="upload-btn">📷 Choose Photo</label>
+                <img id="mealPreview" class="photo-preview" onclick="document.getElementById('mealImage').click()" title="Click to change">
+                <span class="status-badge" id="mealStatus" style="display:none;"></span>
+                <input type="hidden" name="image" id="mealImageUrl">
               </div>
-              <input type="url" name="image" id="mealImageUrl" placeholder="Or paste image URL here" style="margin-top: 10px;">
             </div>
           </div>
           <button type="submit" class="btn btn-primary" style="margin-top: 20px;">
@@ -534,10 +704,12 @@
             </div>
             <div class="form-group full-width">
               <label>Image *</label>
-              <div class="image-upload" id="galleryImageUpload" onclick="document.getElementById('galleryImage').click()">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <p>Click to upload image</p>
-                <input type="file" id="galleryImage" accept="image/*" required onchange="previewImage(this, 'galleryImageUpload')">
+              <div class="photo-section">
+                <input type="file" id="galleryImage" accept="image/*" required style="display:none" onchange="handleGalleryPhoto(this)">
+                <label for="galleryImage" class="upload-btn">📷 Choose Photo</label>
+                <img id="galleryPreview" class="photo-preview" onclick="document.getElementById('galleryImage').click()" title="Click to change">
+                <span class="status-badge" id="galleryStatus" style="display:none;"></span>
+                <input type="hidden" name="image_url" id="galleryImageUrl">
               </div>
             </div>
           </div>
@@ -603,24 +775,34 @@
         </div>
         <div class="form-group">
           <label>Meal Image</label>
-          <!-- Current image preview -->
           <img id="editCurrentImage" class="current-image-preview" style="display: none;" alt="Current image">
-          
-          <!-- Image upload option -->
-          <div class="image-upload" id="editImageUpload" onclick="document.getElementById('editImageFile').click()">
-            <i class="fas fa-cloud-upload-alt"></i>
-            <p>Click to upload new image</p>
-            <small>or keep existing image</small>
-            <input type="file" id="editImageFile" accept="image/*" onchange="previewEditImage(this)">
+          <div class="photo-section" style="margin-top: 10px;">
+            <input type="file" id="editImageFile" accept="image/*" style="display:none" onchange="handleEditPhoto(this)">
+            <label for="editImageFile" class="upload-btn">📷 Change Photo</label>
+            <img id="editPreview" class="photo-preview" onclick="document.getElementById('editImageFile').click()" title="Click to change">
+            <input type="hidden" name="image" id="editImage">
           </div>
-          
-          <!-- Image URL input -->
-          <input type="url" name="image" id="editImage" placeholder="Or paste image URL here" style="margin-top: 10px;">
         </div>
         <button type="submit" class="btn btn-success" style="width: 100%;">
           <i class="fas fa-save"></i> Save Changes
         </button>
       </form>
+    </div>
+  </div>
+  
+  <!-- Crop Modal - Leaderboard Style -->
+  <div class="crop-modal" id="cropModal">
+    <div class="crop-container">
+      <h3>✂️ Crop Your Photo</h3>
+      <p>Drag the box to move. Photo will be auto-compressed.</p>
+      <div class="crop-area">
+        <img id="cropImage" src="" alt="Preview">
+        <div class="crop-box" id="cropBox"></div>
+      </div>
+      <div>
+        <button class="crop-btn apply" onclick="applyCrop()">✓ Apply</button>
+        <button class="crop-btn cancel" onclick="closeCropModal()">✕ Cancel</button>
+      </div>
     </div>
   </div>
   
@@ -631,6 +813,191 @@
   </div>
 
   <script>
+    // === DEBUG LOGGING SYSTEM ===
+    function debugLog(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const panel = document.getElementById('debugPanel');
+      const logs = document.getElementById('debugLogs');
+      
+      // Show panel
+      panel.style.display = 'block';
+      
+      // Create log entry
+      const entry = document.createElement('div');
+      entry.className = 'debug-entry ' + type;
+      entry.textContent = `[${timestamp}] ${message}`;
+      
+      logs.appendChild(entry);
+      panel.scrollTop = panel.scrollHeight;
+      
+      // Also log to console with color
+      const consoleColor = type === 'error' ? 'color: #ff4444' : 
+                          type === 'warn' ? 'color: #ffaa00' : 
+                          type === 'debug' ? 'color: #66ccff' : 'color: #00ff00';
+      console.log(`%c[${type.toUpperCase()}] ${message}`, consoleColor);
+    }
+    
+    // === LEADERBOARD-STYLE PHOTO HANDLING ===
+    let cropImageSrc = null;
+    let currentEditingType = null; // 'meal', 'gallery', or 'edit'
+    
+    // Handle meal photo selection
+    function handleMealPhoto(input) {
+      debugLog('Meal photo selected: ' + (input.files[0]?.name || 'none'), 'debug');
+      handlePhoto(input, 'meal');
+    }
+    
+    // Handle gallery photo selection
+    function handleGalleryPhoto(input) {
+      debugLog('Gallery photo selected: ' + (input.files[0]?.name || 'none'), 'debug');
+      handlePhoto(input, 'gallery');
+    }
+    
+    // Handle edit photo selection
+    function handleEditPhoto(input) {
+      debugLog('Edit photo selected: ' + (input.files[0]?.name || 'none'), 'debug');
+      handlePhoto(input, 'edit');
+    }
+    
+    // Generic photo handler (like leaderboard)
+    function handlePhoto(input, type) {
+      const file = input.files[0];
+      if (!file) {
+        debugLog('No file selected', 'warn');
+        return;
+      }
+      
+      debugLog(`Processing ${type} photo: ${file.name}, Size: ${Math.round(file.size/1024)}KB`, 'debug');
+      
+      if (file.size > 5 * 1024 * 1024) {
+        debugLog('Photo too large! Max 5MB.', 'error');
+        showToast('Photo too large! Max 5MB.', 'error');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        cropImageSrc = e.target.result;
+        currentEditingType = type;
+        debugLog(`Photo loaded, base64 length: ${cropImageSrc.length} chars`, 'debug');
+        openCropModal();
+      };
+      reader.onerror = function(err) {
+        debugLog('FileReader error: ' + err, 'error');
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    // Open crop modal (leaderboard style)
+    function openCropModal() {
+      const modal = document.getElementById('cropModal');
+      const img = document.getElementById('cropImage');
+      const box = document.getElementById('cropBox');
+      
+      img.src = cropImageSrc;
+      modal.classList.add('active');
+      
+      img.onload = function() {
+        debugLog(`Crop image loaded: ${img.width}x${img.height}`, 'debug');
+        const size = Math.min(img.width, img.height, 300);
+        box.style.width = size + 'px';
+        box.style.height = size + 'px';
+        box.style.left = ((img.width - size) / 2) + 'px';
+        box.style.top = ((img.height - size) / 2) + 'px';
+        
+        // Make draggable
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+        
+        box.onmousedown = function(e) {
+          isDragging = true;
+          startX = e.clientX;
+          startY = e.clientY;
+          initialLeft = parseInt(box.style.left) || 0;
+          initialTop = parseInt(box.style.top) || 0;
+          e.preventDefault();
+        };
+        
+        document.onmousemove = function(e) {
+          if (!isDragging) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          let newLeft = initialLeft + dx;
+          let newTop = initialTop + dy;
+          const maxLeft = img.width - parseInt(box.style.width);
+          const maxTop = img.height - parseInt(box.style.height);
+          box.style.left = Math.max(0, Math.min(newLeft, maxLeft)) + 'px';
+          box.style.top = Math.max(0, Math.min(newTop, maxTop)) + 'px';
+        };
+        
+        document.onmouseup = function() {
+          isDragging = false;
+        };
+      };
+    }
+    
+    // Close crop modal
+    function closeCropModal() {
+      document.getElementById('cropModal').classList.remove('active');
+      cropImageSrc = null;
+      currentEditingType = null;
+    }
+    
+    // Apply crop and save base64 (leaderboard style)
+    function applyCrop() {
+      if (!currentEditingType) {
+        debugLog('No editing type set for crop', 'error');
+        return;
+      }
+      
+      const img = document.getElementById('cropImage');
+      const box = document.getElementById('cropBox');
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      const scaleX = img.naturalWidth / img.width;
+      const scaleY = img.naturalHeight / img.height;
+      
+      const x = parseInt(box.style.left) * scaleX;
+      const y = parseInt(box.style.top) * scaleY;
+      const w = parseInt(box.style.width) * scaleX;
+      const h = parseInt(box.style.height) * scaleY;
+      
+      canvas.width = 400;
+      canvas.height = 400;
+      ctx.drawImage(img, x, y, w, h, 0, 0, 400, 400);
+      
+      // Compress to JPEG 0.8 quality (leaderboard style)
+      const finalData = canvas.toDataURL('image/jpeg', 0.8);
+      
+      debugLog(`Cropped image generated, size: ${Math.round(finalData.length/1024)}KB`, 'debug');
+      
+      // Update appropriate form
+      if (currentEditingType === 'meal') {
+        document.getElementById('mealImageUrl').value = finalData;
+        document.getElementById('mealPreview').src = finalData;
+        document.getElementById('mealPreview').classList.add('visible');
+        document.getElementById('mealStatus').textContent = '⏳ Pending';
+        document.getElementById('mealStatus').className = 'status-badge pending';
+        document.getElementById('mealStatus').style.display = 'inline-block';
+      } else if (currentEditingType === 'gallery') {
+        document.getElementById('galleryImageUrl').value = finalData;
+        document.getElementById('galleryPreview').src = finalData;
+        document.getElementById('galleryPreview').classList.add('visible');
+        document.getElementById('galleryStatus').textContent = '⏳ Pending';
+        document.getElementById('galleryStatus').className = 'status-badge pending';
+        document.getElementById('galleryStatus').style.display = 'inline-block';
+      } else if (currentEditingType === 'edit') {
+        document.getElementById('editImage').value = finalData;
+        document.getElementById('editPreview').src = finalData;
+        document.getElementById('editPreview').classList.add('visible');
+        document.getElementById('editCurrentImage').style.display = 'none';
+      }
+      
+      closeCropModal();
+      showToast('Photo ready!');
+    }
+    
     // Tab switching
     function switchTab(tab) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -643,36 +1010,6 @@
       if (tab === 'gallery') loadGallery();
     }
     
-    // Image preview for add meal
-    function previewImage(input, containerId) {
-      const container = document.getElementById(containerId);
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          container.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-          container.classList.add('has-image');
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
-    
-    // Image preview for edit meal
-    function previewEditImage(input) {
-      const container = document.getElementById('editImageUpload');
-      const currentImage = document.getElementById('editCurrentImage');
-      
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          container.innerHTML = `<img src="${e.target.result}" alt="New Preview">`;
-          container.classList.add('has-image');
-          // Hide current image preview since we're uploading new one
-          currentImage.style.display = 'none';
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
-    
     // Toast notification
     function showToast(message, type = 'success') {
       const toast = document.getElementById('toast');
@@ -681,35 +1018,18 @@
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
     
-    // Add meal
+    // Add meal (uses base64 image like leaderboard) - WITH DEBUG
     async function addMeal(e) {
       e.preventDefault();
+      debugLog('🚀 addMeal function started', 'info');
+      
       const form = e.target;
       const formData = new FormData(form);
       
-      // Handle image
-      const imageFile = document.getElementById('mealImage').files[0];
-      const imageUrl = document.getElementById('mealImageUrl').value;
-      
-      let finalImage = imageUrl;
-      
-      if (imageFile) {
-        // Upload to Cloudinary first
-        const uploadData = new FormData();
-        uploadData.append('image', imageFile);
-        
-        try {
-          const uploadRes = await fetch('/api/upload_image', {
-            method: 'POST',
-            body: uploadData
-          });
-          const uploadResult = await uploadRes.json();
-          if (uploadResult.url) {
-            finalImage = uploadResult.url;
-          }
-        } catch (err) {
-          console.error('Image upload failed:', err);
-        }
+      // Debug: Log all form data
+      debugLog('📋 Form data entries:', 'debug');
+      for (let [key, value] of formData.entries()) {
+        debugLog(`  ${key}: ${value ? (value.length > 50 ? value.substring(0,50) + '...' : value) : 'empty'}`, 'debug');
       }
       
       const data = {
@@ -717,39 +1037,97 @@
         price: parseFloat(formData.get('price')),
         category: formData.get('category'),
         description: formData.get('description'),
-        image: finalImage
+        image: document.getElementById('mealImageUrl').value || 'https://via.placeholder.com/300x200?text=No+Image'
       };
       
+      debugLog(`📦 Data prepared: name="${data.name}", price=${data.price}, category=${data.category}`, 'debug');
+      debugLog(`🖼️ Image: ${data.image ? (data.image.substring(0,50) + '... [' + data.image.length + ' chars]') : 'none'}`, 'debug');
+      
+      // Validation checks
+      if (!data.name) {
+        debugLog('❌ Validation failed: Name is required', 'error');
+        showToast('Meal name is required', 'error');
+        return;
+      }
+      
+      if (!data.price || isNaN(data.price)) {
+        debugLog(`❌ Validation failed: Price is invalid (${formData.get('price')})`, 'error');
+        showToast('Valid price is required', 'error');
+        return;
+      }
+      
+      if (!data.category) {
+        debugLog('❌ Validation failed: Category is required', 'error');
+        showToast('Category is required', 'error');
+        return;
+      }
+      
+      // Check image size
+      if (data.image && data.image.startsWith('data:image')) {
+        const sizeKB = Math.round(data.image.length / 1024);
+        debugLog(`🖼️ Base64 image size: ${sizeKB}KB`, 'debug');
+        if (data.image.length > 500000) {
+          debugLog(`❌ Image too large: ${sizeKB}KB (max 500KB)`, 'error');
+          showToast(`Image too large! Max 500KB. Your image is ${sizeKB}KB`, 'error');
+          return;
+        }
+      }
+      
+      debugLog('✅ Validation passed, sending request...', 'info');
+      
       try {
+        debugLog('📡 Sending POST to /api/add_meal', 'info');
         const res = await fetch('/api/add_meal', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
         
+        debugLog(`📡 Response status: ${res.status} ${res.statusText}`, res.ok ? 'info' : 'warn');
+        
+        const responseText = await res.text();
+        debugLog(`📡 Raw response: ${responseText.substring(0, 200)}${responseText.length > 200 ? '...' : ''}`, 'debug');
+        
+        let result;
+        try {
+          result = JSON.parse(responseText);
+          debugLog(`✅ Parsed response: ${JSON.stringify(result)}`, 'info');
+        } catch (parseErr) {
+          debugLog(`❌ JSON parse error: ${parseErr.message}`, 'error');
+          debugLog(`Raw response was: ${responseText}`, 'error');
+          showToast('Server returned invalid JSON. Check debug panel.', 'error');
+          return;
+        }
+        
         if (res.ok) {
+          debugLog('✅ Meal added successfully!', 'info');
           showToast('Meal added successfully!');
           form.reset();
-          document.getElementById('mealImageUpload').innerHTML = `
-            <i class="fas fa-cloud-upload-alt"></i>
-            <p>Click to upload image</p>
-            <small>or paste image URL below</small>
-          `;
-          document.getElementById('mealImageUpload').classList.remove('has-image');
+          document.getElementById('mealPreview').classList.remove('visible');
+          document.getElementById('mealStatus').style.display = 'none';
+          document.getElementById('mealImageUrl').value = '';
           loadMeals();
         } else {
-          showToast('Failed to add meal', 'error');
+          const errorMsg = result.error || result.message || 'Failed to add meal';
+          debugLog(`❌ Server error: ${errorMsg}`, 'error');
+          showToast('Error: ' + errorMsg, 'error');
         }
       } catch (err) {
-        showToast('Error: ' + err.message, 'error');
+        debugLog(`❌ Network/Fetch error: ${err.message}`, 'error');
+        debugLog(`Stack: ${err.stack}`, 'error');
+        showToast('Network Error: ' + err.message, 'error');
       }
     }
     
-    // Load meals
+    // Load meals - WITH DEBUG
     async function loadMeals() {
+      debugLog('📡 Loading meals from /api/meals...', 'info');
       try {
         const res = await fetch('/api/meals');
+        debugLog(`📡 Meals response: ${res.status} ${res.statusText}`, res.ok ? 'info' : 'warn');
+        
         const meals = await res.json();
+        debugLog(`✅ Loaded ${meals.length} meals`, 'info');
         
         const container = document.getElementById('mealsList');
         
@@ -784,18 +1162,23 @@
           </div>
         `).join('');
       } catch (err) {
+        debugLog(`❌ Failed to load meals: ${err.message}`, 'error');
         console.error('Failed to load meals:', err);
       }
     }
     
     // Edit meal - open modal
     async function editMeal(id) {
+      debugLog(`✏️ Editing meal: ${id}`, 'info');
       try {
         const res = await fetch('/api/meals');
         const meals = await res.json();
         const meal = meals.find(m => m.id === id);
         
-        if (!meal) return;
+        if (!meal) {
+          debugLog(`❌ Meal not found: ${id}`, 'error');
+          return;
+        }
         
         document.getElementById('editId').value = meal.id;
         document.getElementById('editName').value = meal.name;
@@ -804,69 +1187,45 @@
         document.getElementById('editDescription').value = meal.description || '';
         document.getElementById('editImage').value = meal.image || '';
         
-        // Show current image preview if exists
+        // Show current image
         const currentImage = document.getElementById('editCurrentImage');
+        const editPreview = document.getElementById('editPreview');
+        
         if (meal.image) {
           currentImage.src = meal.image;
           currentImage.style.display = 'block';
+          editPreview.classList.remove('visible');
         } else {
           currentImage.style.display = 'none';
         }
         
-        // Reset the upload area
-        document.getElementById('editImageUpload').innerHTML = `
-          <i class="fas fa-cloud-upload-alt"></i>
-          <p>Click to upload new image</p>
-          <small>or keep existing image</small>
-          <input type="file" id="editImageFile" accept="image/*" onchange="previewEditImage(this)">
-        `;
-        document.getElementById('editImageUpload').classList.remove('has-image');
-        
         document.getElementById('editModal').classList.add('active');
       } catch (err) {
+        debugLog(`❌ Error loading meal: ${err.message}`, 'error');
         showToast('Error loading meal', 'error');
       }
     }
     
-    // Update meal
+    // Update meal - WITH DEBUG
     async function updateMeal(e) {
       e.preventDefault();
       const id = document.getElementById('editId').value;
-      
-      // Check if new image was uploaded
-      const imageFile = document.getElementById('editImageFile').files[0];
-      const imageUrlInput = document.getElementById('editImage').value;
-      
-      let finalImage = imageUrlInput;
-      
-      // If new file uploaded, upload it first
-      if (imageFile) {
-        const uploadData = new FormData();
-        uploadData.append('image', imageFile);
-        
-        try {
-          showToast('Uploading image...', 'success');
-          const uploadRes = await fetch('/api/upload_image', {
-            method: 'POST',
-            body: uploadData
-          });
-          const uploadResult = await uploadRes.json();
-          if (uploadResult.url) {
-            finalImage = uploadResult.url;
-          }
-        } catch (err) {
-          console.error('Image upload failed:', err);
-          showToast('Image upload failed, using existing image', 'error');
-        }
-      }
+      debugLog(`📝 Updating meal: ${id}`, 'info');
       
       const data = {
         name: document.getElementById('editName').value,
         price: parseFloat(document.getElementById('editPrice').value),
         category: document.getElementById('editCategory').value,
         description: document.getElementById('editDescription').value,
-        image: finalImage
+        image: document.getElementById('editImage').value
       };
+      
+      // Check image size
+      if (data.image.startsWith('data:image') && data.image.length > 500000) {
+        debugLog(`❌ Update image too large: ${Math.round(data.image.length/1024)}KB`, 'error');
+        showToast('Image too large! Max 500KB.', 'error');
+        return;
+      }
       
       try {
         const res = await fetch(`/api/update_meal/${id}`, {
@@ -875,34 +1234,45 @@
           body: JSON.stringify(data)
         });
         
+        debugLog(`📡 Update response: ${res.status}`, res.ok ? 'info' : 'warn');
+        
         if (res.ok) {
           showToast('Meal updated successfully!');
           closeModal();
           loadMeals();
         } else {
+          const result = await res.json().catch(() => ({}));
+          debugLog(`❌ Update failed: ${result.error || 'Unknown error'}`, 'error');
           showToast('Failed to update meal', 'error');
         }
       } catch (err) {
+        debugLog(`❌ Update error: ${err.message}`, 'error');
         showToast('Error: ' + err.message, 'error');
       }
     }
     
-    // Delete meal
+    // Delete meal - WITH DEBUG
     async function deleteMeal(id) {
       if (!confirm('Are you sure you want to delete this meal?')) return;
+      debugLog(`🗑️ Deleting meal: ${id}`, 'info');
       
       try {
         const res = await fetch(`/api/delete_meal/${id}`, {
           method: 'DELETE'
         });
         
+        debugLog(`📡 Delete response: ${res.status}`, res.ok ? 'info' : 'warn');
+        
         if (res.ok) {
           showToast('Meal deleted successfully!');
           loadMeals();
         } else {
+          const result = await res.json().catch(() => ({}));
+          debugLog(`❌ Delete failed: ${result.error || 'Unknown error'}`, 'error');
           showToast('Failed to delete meal', 'error');
         }
       } catch (err) {
+        debugLog(`❌ Delete error: ${err.message}`, 'error');
         showToast('Error: ' + err.message, 'error');
       }
     }
@@ -912,68 +1282,78 @@
       document.getElementById('editModal').classList.remove('active');
     }
     
-    // Gallery functions
+    // Add gallery image (base64 like leaderboard) - WITH DEBUG
     async function addGalleryImage(e) {
       e.preventDefault();
-      const form = e.target;
-      const imageFile = document.getElementById('galleryImage').files[0];
+      debugLog('🚀 addGalleryImage started', 'info');
       
-      if (!imageFile) {
-        showToast('Please select an image', 'error');
+      const form = e.target;
+      
+      const imageData = document.getElementById('galleryImageUrl').value;
+      
+      if (!imageData) {
+        debugLog('❌ No gallery image selected', 'error');
+        showToast('Please select a photo', 'error');
         return;
       }
       
-      // Upload image
-      const uploadData = new FormData();
-      uploadData.append('image', imageFile);
-      
-      try {
-        const uploadRes = await fetch('/api/upload_image', {
-          method: 'POST',
-          body: uploadData
-        });
-        const uploadResult = await uploadRes.json();
-        
-        if (!uploadResult.url) {
-          showToast('Image upload failed', 'error');
+      // Check image size
+      if (imageData.startsWith('data:image')) {
+        const sizeKB = Math.round(imageData.length / 1024);
+        debugLog(`🖼️ Gallery image size: ${sizeKB}KB`, 'debug');
+        if (imageData.length > 500000) {
+          debugLog(`❌ Gallery image too large: ${sizeKB}KB`, 'error');
+          showToast('Image too large! Max 500KB.', 'error');
           return;
         }
-        
-        // Save gallery entry
-        const data = {
-          title: form.querySelector('[name="title"]').value,
-          category: form.querySelector('[name="category"]').value,
-          description: form.querySelector('[name="description"]').value,
-          image_url: uploadResult.url
-        };
-        
+      }
+      
+      const data = {
+        title: form.querySelector('[name="title"]').value,
+        category: form.querySelector('[name="category"]').value,
+        description: form.querySelector('[name="description"]').value,
+        image_url: imageData
+      };
+      
+      debugLog(`📦 Gallery data: ${JSON.stringify({...data, image_url: data.image_url.substring(0,50) + '...'})}`, 'debug');
+      
+      try {
+        debugLog('📡 Sending POST to /api/gallery', 'info');
         const res = await fetch('/api/gallery', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
         
+        debugLog(`📡 Gallery response: ${res.status}`, res.ok ? 'info' : 'warn');
+        
         if (res.ok) {
           showToast('Image added to gallery!');
           form.reset();
-          document.getElementById('galleryImageUpload').innerHTML = `
-            <i class="fas fa-cloud-upload-alt"></i>
-            <p>Click to upload image</p>
-          `;
-          document.getElementById('galleryImageUpload').classList.remove('has-image');
+          document.getElementById('galleryPreview').classList.remove('visible');
+          document.getElementById('galleryStatus').style.display = 'none';
+          document.getElementById('galleryImageUrl').value = '';
           loadGallery();
         } else {
+          const result = await res.json().catch(() => ({}));
+          debugLog(`❌ Gallery add failed: ${result.error || 'Unknown error'}`, 'error');
           showToast('Failed to add to gallery', 'error');
         }
       } catch (err) {
+        debugLog(`❌ Gallery error: ${err.message}`, 'error');
         showToast('Error: ' + err.message, 'error');
       }
     }
     
+    // Load gallery - WITH DEBUG
     async function loadGallery() {
+      debugLog('📡 Loading gallery from /api/gallery...', 'info');
       try {
         const res = await fetch('/api/gallery');
+        debugLog(`📡 Gallery response: ${res.status}`, res.ok ? 'info' : 'warn');
+        
         const images = await res.json();
+        debugLog(`✅ Loaded ${images.length} gallery images`, 'info');
         
         const container = document.getElementById('galleryList');
         
@@ -1000,30 +1380,39 @@
           </div>
         `).join('');
       } catch (err) {
+        debugLog(`❌ Failed to load gallery: ${err.message}`, 'error');
         console.error('Failed to load gallery:', err);
       }
     }
     
+    // Delete gallery image - WITH DEBUG
     async function deleteGalleryImage(id) {
       if (!confirm('Delete this gallery image?')) return;
+      debugLog(`🗑️ Deleting gallery image: ${id}`, 'info');
       
       try {
         const res = await fetch(`/api/gallery/${id}`, {
           method: 'DELETE'
         });
         
+        debugLog(`📡 Delete gallery response: ${res.status}`, res.ok ? 'info' : 'warn');
+        
         if (res.ok) {
           showToast('Image deleted!');
           loadGallery();
         } else {
+          const result = await res.json().catch(() => ({}));
+          debugLog(`❌ Gallery delete failed: ${result.error || 'Unknown error'}`, 'error');
           showToast('Failed to delete', 'error');
         }
       } catch (err) {
+        debugLog(`❌ Gallery delete error: ${err.message}`, 'error');
         showToast('Error: ' + err.message, 'error');
       }
     }
     
     // Load meals on page load
+    debugLog('🔄 Admin page loaded, initializing...', 'info');
     loadMeals();
   </script>
 </body>
