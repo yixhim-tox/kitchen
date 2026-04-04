@@ -1,530 +1,444 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Top Orders</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Arial, Helvetica, sans-serif;
-}
-
-body{
-  background:#f2f2f2;
-  padding-bottom:80px;
-}
-
-/* ===== TOP SECTION ===== */
-.top-area{
-  position:relative;
-  padding:40px 20px 170px;
-  text-align:center;
-  color:white;
-  background:
-    linear-gradient(rgba(255,60,40,0.75), rgba(255,30,20,0.5)),
-    url('https://i.postimg.cc/fbP16wcV/IMG-20260222-WA0015.jpg');
-  background-size:cover;
-  background-position:center;
-}
-
-.top-area h2{
-  font-size:26px;
-  margin-bottom:35px;
-  font-weight:bold;
-}
-
-/* ===== TOP 3 ===== */
-.top-three{
-  display:flex;
-  justify-content:center;
-  align-items:flex-end;
-  gap:25px;
-}
-
-.person{
-  text-align:center;
-  position:relative;
-}
-
-.person img{
-  width:95px;
-  height:95px;
-  border-radius:50%;
-  border:4px solid white;
-  object-fit:cover;
-  background:white;
-}
-
-.first{
-  transform:translateY(-20px);
-}
-
-.first img{
-  width:130px;
-  height:130px;
-}
-
-.second img, .third img{
-  width:100px;
-  height:100px;
-}
-
-.crown{
-  position:absolute;
-  top:-25px;
-  left:50%;
-  transform:translateX(-50%);
-  font-size:30px;
-}
-
-.rank-circle{
-  position:absolute;
-  top:-5px;
-  right:-5px;
-  width:28px;
-  height:28px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:14px;
-  font-weight:bold;
-  color:white;
-}
-
-.first .rank-circle{ background:#d4af37; }
-.second .rank-circle{ background:#c0c0c0; }
-.third .rank-circle{ background:#cd7f32; }
-
-.amount{
-  margin-top:12px;
-  font-weight:bold;
-  font-size:18px;
-}
-
-.name{
-  font-size:14px;
-  margin-top:5px;
-}
-
-/* ===== BOTTOM LIST ===== */
-.bottom-area{
-  background:white;
-  margin-top:-30px;
-  border-radius:30px 30px 0 0;
-  padding:40px 20px;
-}
-
-.list-item{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:15px 0;
-  border-bottom:1px solid #eee;
-}
-
-.left{
-  display:flex;
-  align-items:center;
-  gap:15px;
-}
-
-.left img{
-  width:50px;
-  height:50px;
-  border-radius:50%;
-  object-fit:cover;
-}
-
-.order-amount{
-  font-weight:bold;
-  font-size:16px;
-}
-
-.rank-number{
-  width:35px;
-  height:35px;
-  border:2px solid #ff3d2e;
-  color:#ff3d2e;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:bold;
-}
-
-/* ===== BOTTOM NAV ===== */
-.bottom-nav{
-  position:fixed;
-  bottom:0;
-  width:100%;
-  background:red;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px 5px;
-  color:white;
-  font-size:13px;
-  z-index:999;
-}
-
-.bottom-nav div{
-  flex:1;
-  text-align:center;
-  cursor:pointer;
-}
-
-.bottom-nav i{
-  font-size:18px;
-  display:block;
-  margin-bottom:3px;
-}
-
-/* ===== FADE IN ANIMATION ===== */
-.fade-in {
-  opacity: 0;
-  transform: translateY(15px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-.fade-in.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Loading spinner */
-.loading {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255,255,255,.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Error message */
-.error-msg {
-  background: #ffebee;
-  color: #c62828;
-  padding: 10px;
-  border-radius: 5px;
-  margin: 10px 0;
-  font-size: 14px;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Leaderboard - TG's Kitchen</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary-red: #E53935;
+      --dark-bg: #1a1a1a;
+      --light-pink: #FFEBEE;
+      --text-dark: #212121;
+      --text-gray: #757575;
+      --gold: #FFD700;
+      --silver: #C0C0C0;
+      --bronze: #CD7F32;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      color: var(--text-dark);
+      padding-bottom: 80px;
+    }
+    
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, var(--primary-red), #ff6b6b);
+      padding: 16px;
+      z-index: 1000;
+      color: white;
+    }
+    
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    
+    .back-btn {
+      color: white;
+      font-size: 20px;
+      text-decoration: none;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .header-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    
+    .header-subtitle {
+      text-align: center;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+    
+    /* Top 3 Section */
+    .top-section {
+      background: linear-gradient(135deg, var(--primary-red), #ff6b6b);
+      padding: 80px 20px 100px;
+      position: relative;
+    }
+    
+    .podium {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 20px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    .podium-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    
+    .podium-rank {
+      position: absolute;
+      top: -10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: white;
+      z-index: 10;
+    }
+    
+    .rank-1 .podium-rank { background: var(--gold); color: #333; }
+    .rank-2 .podium-rank { background: var(--silver); color: #333; }
+    .rank-3 .podium-rank { background: var(--bronze); color: white; }
+    
+    .podium-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 4px solid white;
+      object-fit: cover;
+      background: #f0f0f0;
+    }
+    
+    .rank-1 .podium-avatar {
+      width: 100px;
+      height: 100px;
+      border-width: 5px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    
+    .crown {
+      position: absolute;
+      top: -35px;
+      font-size: 28px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    
+    .podium-info {
+      text-align: center;
+      margin-top: 12px;
+      color: white;
+    }
+    
+    .podium-name {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .podium-score {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    
+    .podium-label {
+      font-size: 11px;
+      opacity: 0.9;
+    }
+    
+    /* List Section */
+    .list-section {
+      background: white;
+      border-radius: 24px 24px 0 0;
+      margin-top: -30px;
+      position: relative;
+      z-index: 5;
+      padding: 24px 16px;
+      min-height: 300px;
+    }
+    
+    .list-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    
+    .leaderboard-item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      background: #fafafa;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      transition: transform 0.2s;
+    }
+    
+    .leaderboard-item:active {
+      transform: scale(0.98);
+    }
+    
+    .item-rank {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      margin-right: 12px;
+      color: var(--text-gray);
+    }
+    
+    .item-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 12px;
+      background: #f0f0f0;
+    }
+    
+    .item-info {
+      flex: 1;
+    }
+    
+    .item-name {
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 2px;
+    }
+    
+    .item-score {
+      font-size: 13px;
+      color: var(--text-gray);
+    }
+    
+    .item-plates {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--primary-red);
+    }
+    
+    /* Loading */
+    .loading-container {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-gray);
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid var(--primary-red);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      border-top: 1px solid #f0f0f0;
+      z-index: 1000;
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: var(--text-gray);
+      font-size: 11px;
+      padding: 4px 12px;
+    }
+    
+    .nav-item.active {
+      color: var(--primary-red);
+    }
+    
+    .nav-item i {
+      font-size: 22px;
+    }
+  </style>
 </head>
-
 <body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-top">
+      <a href="/" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+      </a>
+      <h1 class="header-title">Top Customers</h1>
+      <span style="width: 40px;"></span>
+    </div>
+    <p class="header-subtitle">Most loyal food lovers this month</p>
+  </header>
 
-<div class="top-area">
-  <p id="loadingText" style="margin-top:10px;"><span class="loading"></span> Loading leaderboard...</p>
-  <h2>Top Food Orders</h2>
-  <div class="top-three">
-    <!-- Top 3 will be inserted here dynamically -->
-  </div>
-</div>
+  <!-- Top 3 Podium -->
+  <section class="top-section">
+    <div class="podium" id="podium">
+      <div class="loading-container" style="color: white;">
+        <div class="spinner" style="border-color: rgba(255,255,255,0.3); border-top-color: white;"></div>
+        <p>Loading leaderboard...</p>
+      </div>
+    </div>
+  </section>
 
-<div class="bottom-area fade-in" id="bottomArea" style="display:none;">
-  <!-- Rank 4-20 HTML elements -->
-  <div class="list-item" data-rank="4">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
+  <!-- List Section -->
+  <section class="list-section">
+    <h2 class="list-title">Rankings 4-20</h2>
+    <div id="leaderboardList">
+      <!-- Loaded dynamically -->
     </div>
-    <div class="rank-number">4</div>
-  </div>
-  <div class="list-item" data-rank="5">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">5</div>
-  </div>
-  <div class="list-item" data-rank="6">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">6</div>
-  </div>
-  <div class="list-item" data-rank="7">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">7</div>
-  </div>
-  <div class="list-item" data-rank="8">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">8</div>
-  </div>
-  <div class="list-item" data-rank="9">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">9</div>
-  </div>
-  <div class="list-item" data-rank="10">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">10</div>
-  </div>
-  <div class="list-item" data-rank="11">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">11</div>
-  </div>
-  <div class="list-item" data-rank="12">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">12</div>
-  </div>
-  <div class="list-item" data-rank="13">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">13</div>
-  </div>
-  <div class="list-item" data-rank="14">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">14</div>
-  </div>
-  <div class="list-item" data-rank="15">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">15</div>
-  </div>
-  <div class="list-item" data-rank="16">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">16</div>
-  </div>
-  <div class="list-item" data-rank="17">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">17</div>
-  </div>
-  <div class="list-item" data-rank="18">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">18</div>
-  </div>
-  <div class="list-item" data-rank="19">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">19</div>
-  </div>
-  <div class="list-item" data-rank="20">
-    <div class="left">
-      <img src="https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg" data-img alt="Player">
-      <div>
-        <div class="order-amount" data-plates>0 Plates</div>
-        <div data-name>Empty</div>
-      </div>
-    </div>
-    <div class="rank-number">20</div>
-  </div>
-</div>
+  </section>
 
-<div class="bottom-nav">
-  <div onclick="window.location.href='/'"><i class="fas fa-home"></i>Home</div>
-  <div onclick="window.location.href='/cart'"><i class="fas fa-shopping-cart"></i>Cart</div>
-  <div onclick="window.location.href='/'"><i class="fas fa-layer-group"></i>Categories</div>
-  <div onclick="window.location.href='/leaderboard'"><i class="fas fa-trophy"></i>Leaderboard</div>
-  <div onclick="window.location.href='/checkout'"><i class="fas fa-check-circle"></i>Checkout</div>
-</div>
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="/" class="nav-item">
+      <i class="fas fa-home"></i>
+      <span>Home</span>
+    </a>
+    <a href="/menu" class="nav-item">
+      <i class="fas fa-utensils"></i>
+      <span>Menu</span>
+    </a>
+    <a href="/gallery" class="nav-item">
+      <i class="fas fa-images"></i>
+      <span>Gallery</span>
+    </a>
+    <a href="/cart" class="nav-item">
+      <i class="fas fa-shopping-bag"></i>
+      <span>Cart</span>
+    </a>
+    <a href="/leaderboard" class="nav-item active">
+      <i class="fas fa-trophy"></i>
+      <span>Leaderboard</span>
+    </a>
+  </nav>
 
-<script>
-const defaultImg = 'https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg';
-const topContainer = document.querySelector('.top-three');
-
-// Fetch leaderboard from MongoDB
-async function loadLeaderboard(){
-  try {
-    const res = await fetch('/api/leaderboard');
-    if(!res.ok) throw new Error('Failed to fetch: ' + res.status);
+  <script>
+    const defaultImg = 'https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg';
     
-    const data = await res.json();
-    console.log("FULL DATA:", data);
-
-    // Handle both 'plates' and 'score' for backwards compatibility
-    const top3 = data.filter(e => e.rank >= 1 && e.rank <= 3).sort((a,b) => a.rank - b.rank);
-    const rest = data.filter(e => e.rank >= 4 && e.rank <= 20).sort((a,b) => a.rank - b.rank);
-
-    // Render Top 3
-    topContainer.innerHTML = '';
-
-    // Rank 2 (left)
-    if(top3.find(p => p.rank === 2)){
-      const person = top3.find(p => p.rank === 2);
-      const div = document.createElement('div');
-      div.className = 'person second';
-      div.innerHTML = `
-        <div class="rank-circle">2</div>
-        <img src="${person.img || defaultImg}" onerror="this.src='${defaultImg}'" alt="${person.player || 'Player'}">
-        <div class="amount">${person.plates || person.score || 0} Plates</div>
-        <div class="name">${person.player || 'Unknown'}</div>
-      `;
-      topContainer.appendChild(div);
-    }
-
-    // Rank 1 (center)
-    if(top3.find(p => p.rank === 1)){
-      const person = top3.find(p => p.rank === 1);
-      const div = document.createElement('div');
-      div.className = 'person first';
-      div.innerHTML = `
-        <div class="crown">👑</div>
-        <div class="rank-circle">1</div>
-        <img src="${person.img || defaultImg}" onerror="this.src='${defaultImg}'" alt="${person.player || 'Player'}">
-        <div class="amount">${person.plates || person.score || 0} Plates</div>
-        <div class="name">${person.player || 'Unknown'}</div>
-      `;
-      topContainer.appendChild(div);
-    }
-
-    // Rank 3 (right)
-    if(top3.find(p => p.rank === 3)){
-      const person = top3.find(p => p.rank === 3);
-      const div = document.createElement('div');
-      div.className = 'person third';
-      div.innerHTML = `
-        <div class="rank-circle">3</div>
-        <img src="${person.img || defaultImg}" onerror="this.src='${defaultImg}'" alt="${person.player || 'Player'}">
-        <div class="amount">${person.plates || person.score || 0} Plates</div>
-        <div class="name">${person.player || 'Unknown'}</div>
-      `;
-      topContainer.appendChild(div);
-    }
-
-    // Render Ranks 4-20
-    const restElements = document.querySelectorAll('.list-item');
-    restElements.forEach(el => {
-      const rank = parseInt(el.getAttribute('data-rank'));
-      const person = rest.find(p => parseInt(p.rank) === rank);
-      
-      const nameEl = el.querySelector('[data-name]');
-      const platesEl = el.querySelector('[data-plates]');
-      const imgEl = el.querySelector('[data-img]');
-
-      if(person){
-        nameEl.textContent = person.player || 'Unknown';
-        platesEl.textContent = (person.plates || person.score || 0) + ' Plates';
+    async function loadLeaderboard() {
+      try {
+        const res = await fetch('/api/leaderboard');
+        const data = await res.json();
         
-        // Handle Base64 images or URLs
-        const imgSrc = person.img || defaultImg;
-        imgEl.src = imgSrc;
+        // Sort by rank
+        data.sort((a, b) => (a.rank || 0) - (b.rank || 0));
         
-        // Fallback if image fails to load
-        imgEl.onerror = function() {
-          this.src = defaultImg;
-        };
-        
-        el.style.display = 'flex';
-      } else {
-        el.style.display = 'none';
+        renderPodium(data.filter(p => p.rank >= 1 && p.rank <= 3));
+        renderList(data.filter(p => p.rank >= 4 && p.rank <= 20));
+      } catch (e) {
+        console.error('Failed to load leaderboard:', e);
+        document.getElementById('podium').innerHTML = `
+          <div style="text-align: center; color: white;">
+            <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 16px;"></i>
+            <p>Failed to load leaderboard</p>
+          </div>
+        `;
       }
-    });
-
-    // Hide loading, show content
-    document.getElementById('loadingText').style.display = 'none';
-    const bottom = document.getElementById('bottomArea');
-    bottom.style.display = 'block';
+    }
     
-    setTimeout(() => {
-      bottom.classList.add('show');
-    }, 50);
+    function renderPodium(top3) {
+      const container = document.getElementById('podium');
+      
+      if (top3.length === 0) {
+        container.innerHTML = '<p style="color: white; text-align: center;">No data yet</p>';
+        return;
+      }
+      
+      // Arrange: 2nd, 1st, 3rd
+      const rank2 = top3.find(p => p.rank === 2);
+      const rank1 = top3.find(p => p.rank === 1);
+      const rank3 = top3.find(p => p.rank === 3);
+      
+      let html = '';
+      
+      if (rank2) {
+        html += createPodiumItem(rank2, 'rank-2', 2);
+      }
+      if (rank1) {
+        html += createPodiumItem(rank1, 'rank-1', 1, true);
+      }
+      if (rank3) {
+        html += createPodiumItem(rank3, 'rank-3', 3);
+      }
+      
+      container.innerHTML = html;
+    }
     
-  } catch(err) {
-    console.error('Leaderboard error:', err);
-    document.getElementById('loadingText').innerHTML = 
-      '<div class="error-msg">❌ Failed to load leaderboard. Please refresh.</div>';
-  }
-}
-
-// Load leaderboard on page load
-window.onload = loadLeaderboard;
-</script>
+    function createPodiumItem(person, className, rank, hasCrown = false) {
+      const plates = person.plates || person.score || 0;
+      return `
+        <div class="podium-item ${className}">
+          ${hasCrown ? '<div class="crown">👑</div>' : ''}
+          <div class="podium-rank">${rank}</div>
+          <img src="${person.img || defaultImg}" alt="${person.player}" class="podium-avatar" onerror="this.src='${defaultImg}'">
+          <div class="podium-info">
+            <div class="podium-name">${person.player || 'Unknown'}</div>
+            <div class="podium-score">${plates}</div>
+            <div class="podium-label">Plates</div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderList(rest) {
+      const container = document.getElementById('leaderboardList');
+      
+      if (rest.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-gray); padding: 20px;">No more rankings</p>';
+        return;
+      }
+      
+      container.innerHTML = rest.map(person => {
+        const plates = person.plates || person.score || 0;
+        return `
+          <div class="leaderboard-item">
+            <div class="item-rank">${person.rank}</div>
+            <img src="${person.img || defaultImg}" alt="${person.player}" class="item-avatar" onerror="this.src='${defaultImg}'">
+            <div class="item-info">
+              <div class="item-name">${person.player || 'Unknown'}</div>
+              <div class="item-score">${plates} Plates ordered</div>
+            </div>
+            <div class="item-plates">#${person.rank}</div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // Load on page load
+    loadLeaderboard();
+  </script>
 </body>
 </html>

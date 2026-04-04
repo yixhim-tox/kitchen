@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Food Gallery - TG's Kitchen</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary-red: #E53935;
+      --dark-bg: #1a1a1a;
+      --light-pink: #FFEBEE;
+      --text-dark: #212121;
+      --text-gray: #757575;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fafafa;
+      color: var(--text-dark);
+      padding-bottom: 80px;
+    }
+    
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1000;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    
+    .brand-name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    
+    /* Main Content */
+    .main-content {
+      margin-top: 64px;
+      padding: 16px;
+    }
+    
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .page-subtitle {
+      color: var(--text-gray);
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+    
+    /* Gallery Grid */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    @media (min-width: 768px) {
+      .gallery-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+    .gallery-item {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      aspect-ratio: 1;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    
+    .gallery-item:active {
+      transform: scale(0.98);
+    }
+    
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    
+    .gallery-item:hover img {
+      transform: scale(1.05);
+    }
+    
+    .gallery-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.8));
+      padding: 20px 12px 12px;
+      color: white;
+    }
+    
+    .gallery-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .gallery-category {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    
+    /* Lightbox */
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .lightbox.active {
+      display: flex;
+    }
+    
+    .lightbox-content {
+      max-width: 100%;
+      max-height: 80vh;
+      position: relative;
+    }
+    
+    .lightbox img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 8px;
+    }
+    
+    .lightbox-close {
+      position: absolute;
+      top: -40px;
+      right: 0;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .lightbox-info {
+      position: absolute;
+      bottom: -60px;
+      left: 0;
+      right: 0;
+      color: white;
+      text-align: center;
+    }
+    
+    .lightbox-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .lightbox-desc {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-gray);
+      grid-column: 1 / -1;
+    }
+    
+    .empty-state i {
+      font-size: 64px;
+      margin-bottom: 16px;
+      color: #ddd;
+    }
+    
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      border-top: 1px solid #f0f0f0;
+      z-index: 1000;
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: var(--text-gray);
+      font-size: 11px;
+      padding: 4px 12px;
+    }
+    
+    .nav-item.active {
+      color: var(--primary-red);
+    }
+    
+    .nav-item i {
+      font-size: 22px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-section">
+      <img src="https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg" alt="TG's Kitchen" class="logo">
+      <span class="brand-name">TG's Kitchen</span>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <h1 class="page-title">Food Gallery</h1>
+    <p class="page-subtitle">A visual feast of our culinary creations</p>
+    
+    <!-- Gallery Grid -->
+    <div class="gallery-grid" id="galleryGrid">
+      <!-- Loaded dynamically -->
+    </div>
+  </main>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+    <div class="lightbox-content" onclick="event.stopPropagation()">
+      <div class="lightbox-close" onclick="closeLightbox()">
+        <i class="fas fa-times"></i>
+      </div>
+      <img src="" alt="" id="lightboxImg">
+      <div class="lightbox-info">
+        <div class="lightbox-title" id="lightboxTitle"></div>
+        <div class="lightbox-desc" id="lightboxDesc"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="/" class="nav-item">
+      <i class="fas fa-home"></i>
+      <span>Home</span>
+    </a>
+    <a href="/menu" class="nav-item">
+      <i class="fas fa-utensils"></i>
+      <span>Menu</span>
+    </a>
+    <a href="/gallery" class="nav-item active">
+      <i class="fas fa-images"></i>
+      <span>Gallery</span>
+    </a>
+    <a href="/cart" class="nav-item">
+      <i class="fas fa-shopping-bag"></i>
+      <span>Cart</span>
+    </a>
+    <a href="/account" class="nav-item">
+      <i class="fas fa-user"></i>
+      <span>Account</span>
+    </a>
+  </nav>
+
+  <script>
+    async function loadGallery() {
+      try {
+        const res = await fetch('/api/gallery');
+        const images = await res.json();
+        
+        const container = document.getElementById('galleryGrid');
+        
+        if (images.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-images"></i>
+              <h3>No gallery images yet</h3>
+              <p>Check back soon for delicious photos!</p>
+            </div>
+          `;
+          return;
+        }
+        
+        container.innerHTML = images.map((img, index) => `
+          <div class="gallery-item" onclick="openLightbox(${index})">
+            <img src="${img.image_url}" alt="${img.title}" loading="lazy">
+            <div class="gallery-overlay">
+              <div class="gallery-title">${img.title}</div>
+              <div class="gallery-category">${img.category || 'Featured'}</div>
+            </div>
+          </div>
+        `).join('');
+        
+        // Store for lightbox
+        window.galleryImages = images;
+      } catch (e) {
+        console.error('Failed to load gallery:', e);
+        document.getElementById('galleryGrid').innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-circle"></i>
+            <p>Failed to load gallery. Please try again.</p>
+          </div>
+        `;
+      }
+    }
+    
+    function openLightbox(index) {
+      const img = window.galleryImages[index];
+      document.getElementById('lightboxImg').src = img.image_url;
+      document.getElementById('lightboxTitle').textContent = img.title;
+      document.getElementById('lightboxDesc').textContent = img.description || 'Delicious creation from TG\'s Kitchen';
+      document.getElementById('lightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closeLightbox(e) {
+      if (!e || e.target.id === 'lightbox' || e.target.closest('.lightbox-close')) {
+        document.getElementById('lightbox').classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+    
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+    
+    // Load on page load
+    loadGallery();
+  </script>
+</body>
+</html>

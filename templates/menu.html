@@ -2,361 +2,567 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TG's Kitchen Menu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Our Menu - TG's Kitchen</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    
+    :root {
+      --primary-red: #E53935;
+      --dark-bg: #1a1a1a;
+      --light-pink: #FFEBEE;
+      --text-dark: #212121;
+      --text-gray: #757575;
+    }
+    
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #fff;
-      padding-top: 130px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fff;
+      color: var(--text-dark);
       padding-bottom: 80px;
     }
-
-    header {
+    
+    /* Header */
+    .header {
       position: fixed;
       top: 0;
-      width: 100%;
-      background: #333;
-      color: #fff;
-      padding: 15px;
-      font-size: 20px;
-      font-weight: bold;
-      text-align: center;
+      left: 0;
+      right: 0;
+      background: #fff;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       z-index: 1000;
+      border-bottom: 1px solid #f0f0f0;
     }
-
+    
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    
+    .brand-name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    
+    .header-icons {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    
+    .header-icons i {
+      font-size: 22px;
+      color: var(--text-dark);
+    }
+    
+    /* Main Content */
+    .main-content {
+      margin-top: 64px;
+      padding: 16px;
+    }
+    
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .page-subtitle {
+      color: var(--text-gray);
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+    
+    /* Search */
     .search-bar {
-      position: fixed;
-      top: 55px;
-      width: 100%;
-      padding: 10px 15px;
-      z-index: 1000;
-      background: #333;
+      display: flex;
+      background: #f5f5f5;
+      border-radius: 25px;
+      padding: 4px;
+      margin-bottom: 16px;
+      border: 1px solid #e0e0e0;
     }
-
+    
     .search-bar input {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
+      flex: 1;
       border: none;
-      border-radius: 8px;
-      background-color: #111;
-      color: #fff;
+      background: transparent;
+      padding: 10px 16px;
+      font-size: 15px;
+      outline: none;
     }
-
-    .floating-bell {
+    
+    /* Categories */
+    .categories {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+      scrollbar-width: none;
+    }
+    
+    .categories::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .category-btn {
+      padding: 10px 20px;
+      border-radius: 20px;
+      border: none;
+      background: #f5f5f5;
+      color: var(--text-gray);
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .category-btn.active {
+      background: var(--primary-red);
+      color: white;
+    }
+    
+    /* Dishes Grid */
+    .dishes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .dish-card {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border: 1px solid #f0f0f0;
+      transition: transform 0.2s;
+    }
+    
+    .dish-card:active {
+      transform: scale(0.98);
+    }
+    
+    .dish-image {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+    }
+    
+    .dish-info {
+      padding: 12px;
+    }
+    
+    .dish-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .dish-desc {
+      font-size: 12px;
+      color: var(--text-gray);
+      margin-bottom: 10px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .dish-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .dish-price {
+      font-size: 15px;
+      font-weight: 700;
+    }
+    
+    .add-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--primary-red);
+      color: white;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+      transition: transform 0.2s;
+    }
+    
+    .add-btn:active {
+      transform: scale(0.9);
+    }
+    
+    .quantity-controls {
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .quantity-controls.show {
+      display: flex;
+    }
+    
+    .qty-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--primary-red);
+      background: white;
+      color: var(--primary-red);
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    
+    .qty-value {
+      font-weight: 600;
+      min-width: 24px;
+      text-align: center;
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-gray);
+    }
+    
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 16px;
+      color: #ddd;
+    }
+    
+    /* Bottom Navigation */
+    .bottom-nav {
       position: fixed;
-      top: 65px;
-      right: 20px;
-      background: gold;
-      width: 45px;
-      height: 45px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      border-top: 1px solid #f0f0f0;
+      z-index: 1000;
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: var(--text-gray);
+      font-size: 11px;
+      padding: 4px 12px;
+    }
+    
+    .nav-item.active {
+      color: var(--primary-red);
+    }
+    
+    .nav-item i {
+      font-size: 22px;
+    }
+    
+    /* Cart Badge */
+    .cart-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--primary-red);
+      color: white;
+      font-size: 10px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      z-index: 1001;
-    }
-
-    .floating-bell i {
-      font-size: 20px;
-      color: #000;
-    }
-
-    #menu-container {
-      padding: 15px;
-    }
-
-    .meal {
-      background-color: #ffcc00;
-      color: #000;
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 16px;
-      font-weight: 500;
-    }
-
-    .meal .meal-name {
-      flex: 1;
-    }
-
-    .meal .meal-price {
-      margin: 0 10px;
-      white-space: nowrap;
-    }
-
-    .meal .add-btn {
-      background-color: red;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 5px 10px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .quantity-controls {
-      display: none;
-      gap: 5px;
-    }
-
-    .quantity-controls button {
-      padding: 4px 8px;
-      font-size: 16px;
-      font-weight: bold;
-      background-color: #1b1a1a;
-      color: white;
-      border: none;
-      border-radius: 4px;
-    }
-
-    .quantity-controls .quantity {
-      font-weight: bold;
-      font-size: 15px;
-      padding: 0 5px;
-    }
-
-    .bottom-nav {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: red;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 5px;
-  color: white;
-  font-size: 13px;
-  z-index: 999;
-}
-
-.bottom-nav div {
-  flex: 1;
-  text-align: center;
-}
-
-    .bottom-nav div {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      cursor: pointer;
-    }
-
-    .bottom-nav i {
-      font-size: 18px;
-      margin-bottom: 3px;
-    }
-
-    .category-select-wrapper {
-      display: none;
-      position: fixed;
-      bottom: 60px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1002;
-    }
-
-    #category-select {
-      padding: 10px;
-      font-size: 16px;
       font-weight: 600;
-      border-radius: 8px;
-      border: 2px solid #333;
-      background-color: #fff;
-      width: 250px;
+    }
+    
+    .nav-item {
+      position: relative;
     }
   </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 </head>
 <body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-section">
+      <img src="https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg" alt="TG's Kitchen" class="logo">
+      <span class="brand-name">TG's Kitchen</span>
+    </div>
+    <div class="header-icons">
+      <a href="/cart" style="color: inherit; position: relative;">
+        <i class="fas fa-shopping-bag"></i>
+        <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+      </a>
+    </div>
+  </header>
 
-  <header>TG's Kitchen Menu</header>
+  <!-- Main Content -->
+  <main class="main-content">
+    <h1 class="page-title">Our Menu</h1>
+    <p class="page-subtitle">Fresh meals prepared daily — pick your favorites.</p>
+    
+    <!-- Search -->
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search meals...">
+      <i class="fas fa-search" style="padding: 10px 16px; color: var(--text-gray);"></i>
+    </div>
+    
+    <!-- Categories -->
+    <div class="categories" id="categories">
+      <button class="category-btn active" data-category="all">All</button>
+      <button class="category-btn" data-category="Pasta">Pasta</button>
+      <button class="category-btn" data-category="Rice">Rice</button>
+      <button class="category-btn" data-category="Noodles">Noodles</button>
+      <button class="category-btn" data-category="Specials">Specials</button>
+    </div>
+    
+    <!-- Dishes Grid -->
+    <div class="dishes-grid" id="dishesGrid">
+      <!-- Loaded dynamically -->
+    </div>
+    
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+      <i class="fas fa-utensils"></i>
+      <p>No meals found in this category</p>
+    </div>
+  </main>
 
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search Menu">
-  </div>
-
-  <div class="floating-bell">
-    <i class="fas fa-bell"></i>
-  </div>
-
-  <div class="category-select-wrapper" id="categoryWrapper">
-    <select id="category-select">
-      <option disabled selected>Select Category</option>
-      <option value="Meat">Meat</option>
-      <option value="Swallow">Swallow</option>
-      <option value="Soft foods">Soft foods</option>
-      <option value="Beverages">Beverages</option>
-      <option value="All in one">All in one</option>
-      <option value="Snacks">Snacks</option>
-    </select>
-  </div>
-
-  <div id="menu-container"></div>
-
-  <div class="bottom-nav">
-  <div onclick="window.location.href='/'">
-    <i class="fas fa-home"></i>Home
-  </div>
-
-  <div onclick="window.location.href='/cart'">
-    <i class="fas fa-shopping-cart"></i>Cart
-  </div>
-
-  <div onclick="toggleCategory()">
-    <i class="fas fa-layer-group"></i>Categories
-  </div>
-
-  <div onclick="window.location.href='/leaderboard'">
-    <i class="fas fa-trophy"></i>Leaderboard
-  </div>
-
-  <div onclick="window.location.href='/checkout'">
-    <i class="fas fa-check-circle"></i>Checkout
-  </div>
-</div>
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="/" class="nav-item">
+      <i class="fas fa-home"></i>
+      <span>Home</span>
+    </a>
+    <a href="/menu" class="nav-item active">
+      <i class="fas fa-utensils"></i>
+      <span>Menu</span>
+    </a>
+    <a href="/gallery" class="nav-item">
+      <i class="fas fa-images"></i>
+      <span>Gallery</span>
+    </a>
+    <a href="/cart" class="nav-item">
+      <i class="fas fa-shopping-bag"></i>
+      <span>Cart</span>
+    </a>
+    <a href="/account" class="nav-item">
+      <i class="fas fa-user"></i>
+      <span>Account</span>
+    </a>
+  </nav>
 
   <script>
     let allMeals = [];
-    const menuContainer = document.getElementById("menu-container");
-    const searchInput = document.getElementById("searchInput");
-    const categorySelect = document.getElementById("category-select");
-    const categoryWrapper = document.getElementById("categoryWrapper");
-
-    function toggleCategory() {
-      categoryWrapper.style.display = (categoryWrapper.style.display === 'block') ? 'none' : 'block';
-    }
-
-    categorySelect.addEventListener('change', () => {
-      const selected = categorySelect.value;
-      const filtered = allMeals.filter(meal => meal.category === selected);
-      renderMeals(filtered);
-      categoryWrapper.style.display = 'none';
-    });
-
-    function renderMeals(meals) {
-      menuContainer.innerHTML = '';
-      if (meals.length === 0) {
-        menuContainer.innerHTML = '<p style="color:#555;font-size:18px;text-align:center;margin-top:20px;">Currently not available</p>';
-        return;
-      }
-
-      meals.forEach(meal => {
-        const div = document.createElement("div");
-        div.className = "meal";
-        div.innerHTML = `
-          <div class="meal-name">${meal.name}</div>
-          <div class="meal-price">₦${meal.price}</div>
-          <div class="cart-buttons">
-            <button class="add-btn">ADD</button>
-            <div class="quantity-controls">
-              <button class="decrease-btn">−</button>
-              <span class="quantity">1</span>
-              <button class="increase-btn">+</button>
-            </div>
-          </div>
-        `;
-        menuContainer.appendChild(div);
-      });
-
-      menuContainer.querySelectorAll('.add-btn').forEach(btn =>
-        btn.addEventListener('click', function () {
-          addToCart(this);
-        })
-      );
-      menuContainer.querySelectorAll('.increase-btn').forEach(btn =>
-        btn.addEventListener('click', function () {
-          increaseQty(this);
-        })
-      );
-      menuContainer.querySelectorAll('.decrease-btn').forEach(btn =>
-        btn.addEventListener('click', function () {
-          decreaseQty(this);
-        })
-      );
-    }
-
-    function addToCart(btn) {
-      const cartBox = btn.parentElement;
-      const mealBox = btn.closest('.meal');
-      const name = mealBox.querySelector('.meal-name').textContent.trim();
-      const price = parseFloat(mealBox.querySelector('.meal-price').textContent.replace(/[^\d.]/g, ''));
-      const image = '';
-      let quantity = 1;
-
-      let cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const index = cart.findIndex(item => item.name === name);
-      if (index > -1) {
-        cart[index].quantity = Math.min(cart[index].quantity + quantity, 10);
-      } else {
-        cart.push({ name, price, image, quantity });
-      }
-
-      localStorage.setItem('cart', JSON.stringify(cart));
-      btn.style.display = 'none';
-      cartBox.querySelector('.quantity-controls').style.display = 'flex';
-    }
-
-    function increaseQty(btn) {
-      const qtySpan = btn.parentElement.querySelector('.quantity');
-      let qty = parseInt(qtySpan.textContent);
-      if (qty < 10) {
-        qtySpan.textContent = qty + 1;
-        updateCartQty(btn, qty + 1);
-      }
-    }
-
-    function decreaseQty(btn) {
-      const controls = btn.parentElement;
-      const qtySpan = controls.querySelector('.quantity');
-      let qty = parseInt(qtySpan.textContent);
-      if (qty > 1) {
-        qtySpan.textContent = qty - 1;
-        updateCartQty(btn, qty - 1);
-      } else {
-        controls.style.display = 'none';
-        controls.parentElement.querySelector('.add-btn').style.display = 'inline-block';
-        updateCartQty(btn, 0, true);
-      }
-    }
-
-    function updateCartQty(btn, qty, remove = false) {
-      const name = btn.closest('.meal').querySelector('.meal-name').textContent.trim();
-      let cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const index = cart.findIndex(item => item.name === name);
-      if (index > -1) {
-        if (remove) {
-          cart.splice(index, 1);
-        } else {
-          cart[index].quantity = qty;
-        }
-        localStorage.setItem('cart', JSON.stringify(cart));
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", async () => {
+    let currentCategory = 'all';
+    
+    // Category mapping for display
+    const categoryMap = {
+      'Pasta': ['Pasta', 'Spaghetti'],
+      'Rice': ['Rice'],
+      'Noodles': ['Noodles'],
+      'Specials': ['Special', 'Combo']
+    };
+    
+    async function loadMeals() {
       try {
         const res = await fetch('/api/meals');
         allMeals = await res.json();
-        renderMeals(allMeals);
+        
+        // Check for search param
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchQuery = urlParams.get('search');
+        if (searchQuery) {
+          document.getElementById('searchInput').value = searchQuery;
+          filterMeals(searchQuery);
+        } else {
+          renderMeals(allMeals);
+        }
+        
+        updateCartBadge();
       } catch (e) {
-        menuContainer.innerHTML = "<p style='color:red;'>Failed to load meals.</p>";
-        console.error(e);
+        console.error('Failed to load meals:', e);
+        document.getElementById('dishesGrid').innerHTML = `
+          <div class="empty-state" style="grid-column: 1/-1;">
+            <i class="fas fa-exclamation-circle"></i>
+            <p>Failed to load meals. Please try again.</p>
+          </div>
+        `;
       }
-    });
-
-    searchInput.addEventListener('input', () => {
-      const val = searchInput.value.toLowerCase();
-      const filtered = allMeals.filter(meal => meal.name.toLowerCase().includes(val));
+    }
+    
+    function renderMeals(meals) {
+      const container = document.getElementById('dishesGrid');
+      const emptyState = document.getElementById('emptyState');
+      
+      if (meals.length === 0) {
+        container.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+      }
+      
+      emptyState.style.display = 'none';
+      container.innerHTML = meals.map(meal => `
+        <div class="dish-card" data-id="${meal.id}">
+          <img src="${meal.image || 'https://via.placeholder.com/300x200?text=No+Image'}" 
+               alt="${meal.name}" class="dish-image" 
+               onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+          <div class="dish-info">
+            <div class="dish-name">${meal.name}</div>
+            <div class="dish-desc">${meal.description || 'Delicious meal prepared fresh'}</div>
+            <div class="dish-footer">
+              <span class="dish-price">₦${meal.price.toLocaleString()}</span>
+              <button class="add-btn" id="add-${meal.id}" onclick="addToCart('${meal.id}', '${meal.name}', ${meal.price}, '${meal.image}')">+</button>
+              <div class="quantity-controls" id="qty-${meal.id}">
+                <button class="qty-btn" onclick="updateQty('${meal.id}', -1)">−</button>
+                <span class="qty-value" id="val-${meal.id}">1</span>
+                <button class="qty-btn" onclick="updateQty('${meal.id}', 1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      
+      // Restore quantities from cart
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      cart.forEach(item => {
+        const addBtn = document.getElementById(`add-${item.id}`);
+        const qtyControls = document.getElementById(`qty-${item.id}`);
+        const valSpan = document.getElementById(`val-${item.id}`);
+        if (addBtn && qtyControls && valSpan) {
+          addBtn.style.display = 'none';
+          qtyControls.classList.add('show');
+          valSpan.textContent = item.quantity;
+        }
+      });
+    }
+    
+    function filterMeals(searchQuery = '') {
+      let filtered = allMeals;
+      
+      // Filter by category
+      if (currentCategory !== 'all') {
+        const keywords = categoryMap[currentCategory] || [currentCategory];
+        filtered = filtered.filter(meal => 
+          keywords.some(kw => 
+            meal.category?.toLowerCase().includes(kw.toLowerCase()) ||
+            meal.name.toLowerCase().includes(kw.toLowerCase())
+          )
+        );
+      }
+      
+      // Filter by search
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(meal => 
+          meal.name.toLowerCase().includes(q) ||
+          (meal.description && meal.description.toLowerCase().includes(q))
+        );
+      }
+      
       renderMeals(filtered);
+    }
+    
+    function addToCart(id, name, price, image) {
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const existing = cart.find(item => item.id === id);
+      
+      if (existing) {
+        existing.quantity = Math.min(existing.quantity + 1, 10);
+      } else {
+        cart.push({ id, name, price: parseFloat(price), image, quantity: 1 });
+      }
+      
+      localStorage.setItem('cart', JSON.stringify(cart));
+      
+      // Update UI
+      document.getElementById(`add-${id}`).style.display = 'none';
+      document.getElementById(`qty-${id}`).classList.add('show');
+      document.getElementById(`val-${id}`).textContent = existing ? existing.quantity : 1;
+      
+      updateCartBadge();
+    }
+    
+    function updateQty(id, change) {
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const item = cart.find(i => i.id === id);
+      
+      if (!item) return;
+      
+      item.quantity += change;
+      
+      if (item.quantity <= 0) {
+        cart = cart.filter(i => i.id !== id);
+        document.getElementById(`add-${id}`).style.display = 'flex';
+        document.getElementById(`qty-${id}`).classList.remove('show');
+      } else {
+        document.getElementById(`val-${id}`).textContent = item.quantity;
+      }
+      
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartBadge();
+    }
+    
+    function updateCartBadge() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      const badge = document.getElementById('cartBadge');
+      
+      if (totalItems > 0) {
+        badge.textContent = totalItems > 99 ? '99+' : totalItems;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+    
+    // Category buttons
+    document.querySelectorAll('.category-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentCategory = btn.dataset.category;
+        filterMeals(document.getElementById('searchInput').value);
+      });
     });
+    
+    // Search input
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      filterMeals(e.target.value);
+    });
+    
+    // Load on page load
+    loadMeals();
   </script>
 </body>
 </html>
