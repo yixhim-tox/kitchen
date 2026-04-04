@@ -580,6 +580,205 @@ def remove_from_cart(meal_id):
     cart.pop(str(meal_id), None)
     session['cart'] = cart
     return redirect(url_for('cart'))
+# === MIGRATION ENDPOINT: Copy data from SQLite to MongoDB ===
+@app.route('/api/migrate_to_mongodb', methods=['POST', 'OPTIONS'])
+def migrate_to_mongodb():
+    """
+    Migrates all data from SQLite to MongoDB.
+    Call this endpoint once to copy meals, gallery, and leaderboard data.
+    """
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'OK'}), 200
+    
+    # Only allow migration if MongoDB is available
+    if not USE_MONGO or mongo_db is None:
+        return jsonify({
+            'error': 'MongoDB not available. Migration not possible.',
+            'mongodb_connected': USE_MONGO,
+            'mongo_db': str(mongo_db)
+        }), 400
+    
+    results = {
+        'meals': {'sqlite_count': 0, 'mongo_count': 0, 'status': 'pending'},
+        'gallery': {'sqlite_count': 0, 'mongo_count': 0, 'status': 'pending'},
+        'leaderboard': {'sqlite_count': 0, 'mongo_count': 0, 'status': 'pending'}
+    }
+    
+    try:
+        # Connect to SQLite
+        conn = sqlite3.connect(DB_NAME)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # === MIGRATE MEALS ===
+        print("🔄 Migrating meals from SQLite to MongoDB...")
+        try:
+            # Get meals from SQLite
+            rows = cursor.execute('SELECT * FROM meals ORDER BY id').fetchall()
+            meals = [dict(row) for row in rows]
+            results['meals']['sqlite_count'] = len(meals)
+            
+            if meals:
+                # Clear existing MongoDB meals
+                mongo_meals.delete_many({})
+                
+                # Convert and insert
+                for meal in meals:
+                    mongo_doc = {
+                        'name': meal.get('name', ''),
+                        'description': meal.get('description', ''),
+                        'price': float(meal.get('price', 0)),
+                        'image': meal.get('image', ''),
+                        'category': meal.get('category', 'Pasta'),
+                        'created_at': datetime.now(),
+                        'sqlite_id': meal.get('id')  # Keep reference
+                    }
+                    mongo_meals.insert_one(mongo_doc)
+                
+                results['meals']['mongo_count'] = mongo_meals.count_documents({})
+                results['meals']['status'] = 'success'
+                print(f"✅ Migrated {results['meals']['mongo_count']} meals")
+            else:
+                results['meals']['status'] = 'no_data'
+                print("ℹ️ No meals found in SQLite")
+                
+        except Exception as e:
+            results['meals']['status'] = 'error'
+            results['meals']['error'] = str(e)
+            print(f"❌ Error migrating meals: {e}")
+        
+        # === MIGRATE GALLERY ===
+        print("🔄 Migrating gallery from SQLite to MongoDB...")
+        try:
+            rows = cursor.execute('SELECT * FROM gallery ORDER BY id').fetchall()
+            images = [dict(row) for row in rows]
+            results['gallery']['sqlite_count'] = len(images)
+            
+            if images:
+                mongo_gallery.delete_many({})
+                
+                for img in images:
+                    mongo_doc = {
+                        'title': img.get('title', ''),
+                        'description': img.get('description', ''),
+                        'image_url': img.get('image_url', ''),
+                        'category': img.get('category', 'Featured'),
+                        'created_at': datetime.now(),
+                        'sqlite_id': img.get('id')
+                    }
+                    mongo_gallery.insert_one(mongo_doc)
+                
+                results['gallery']['mongo_count'] = mongo_gallery.count_documents({})
+                results['gallery']['status'] = 'success'
+                print(f"✅ Migrated {results['gallery']['mongo_count']} gallery images")
+            else:
+                results['gallery']['status'] = 'no_data'
+                print("ℹ️ No gallery images found in SQLite")
+                
+        except Exception as e:
+            results['gallery']['status'] = 'error'
+            results['gallery']['error'] = str(e)
+            print(f"❌ Error migrating gallery: {e}")
+        
+        # === MIGRATE LEADERBOARD ===
+        print("🔄 Migrating leaderboard from SQLite to MongoDB...")
+        try:
+            rows = cursor.execute('SELECT * FROM leaderboard ORDER BY rank').fetchall()
+            entries = [dict(row) for row in rows]
+            results['leaderboard']['sqlite_count'] = len(entries)
+            
+            if entries:
+                leaderboard_collection.delete_many({})
+                
+                for entry in entries:
+                    mongo_doc = {
+                        'rank': int(entry.get('rank', 0)),
+                        'player': entry.get('player', ''),
+                        'plates': int(entry.get('plates', entry.get('score', 0))),
+                        'score': int(entry.get('plates', entry.get('score', 0))),
+                        'img': entry.get('img', 'https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg'),
+                        'sqlite_id': entry.get('id')
+                    }
+                    leaderboard_collection.insert_one(mongo_doc)
+                
+                results['leaderboard']['mongo_count'] = leaderboard_collection.count_documents({})
+                results['leaderboard']['status'] = 'success'
+                print(f"✅ Migrated {results['leaderboard']['mongo_count']} leaderboard entries")
+            else:
+                results['leaderboard']['status'] = 'no_data'
+                print("ℹ️ No leaderboard entries found in SQLite")
+                
+        except Exception as e:
+            results['leaderboard']['status'] = 'error'
+            results['leaderboard']['error'] = str(e)
+            print(f"❌ Error migrating leaderboard: {e}")
+        
+        conn.close()
+        
+        # Summary
+        total_migrated = (results['meals']['mongo_count'] + 
+                         results['gallery']['mongo_count'] + 
+                         results['leaderboard']['mongo_count'])
+        
+        print(f"\n🎉 Migration complete! Total items migrated: {total_migrated}")
+        
+        return jsonify({
+            'message': f'Migration complete! {total_migrated} items migrated.',
+            'details': results,
+            'note': 'Your data is now in MongoDB. The app will use MongoDB going forward.'
+        })
+        
+    except Exception as e:
+        print(f"❌ Migration failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'error': 'Migration failed',
+            'message': str(e),
+            'details': results
+        }), 500
+
+# === DIAGNOSTIC ENDPOINT: Check database status ===
+@app.route('/api/db_status', methods=['GET'])
+def db_status():
+    """Check the status of both SQLite and MongoDB databases"""
+    status = {
+        'mongodb': {
+            'connected': USE_MONGO,
+            'uri_configured': bool(os.getenv('LEADERBOARD_MONGODB_URI') or os.getenv('MONGODB_URL')),
+            'client': str(mongo_client),
+            'db': str(mongo_db),
+            'meals_collection': str(mongo_meals),
+            'gallery_collection': str(mongo_gallery),
+            'leaderboard_collection': str(leaderboard_collection)
+        },
+        'sqlite': {
+            'db_name': DB_NAME,
+            'exists': os.path.exists(DB_NAME)
+        },
+        'data_counts': {}
+    }
+    
+    # Count data in both databases
+    try:
+        if USE_MONGO and mongo_meals:
+            status['data_counts']['mongodb_meals'] = mongo_meals.count_documents({})
+            status['data_counts']['mongodb_gallery'] = mongo_gallery.count_documents({})
+            status['data_counts']['mongodb_leaderboard'] = leaderboard_collection.count_documents({})
+    except Exception as e:
+        status['data_counts']['mongodb_error'] = str(e)
+    
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        status['data_counts']['sqlite_meals'] = cursor.execute('SELECT COUNT(*) FROM meals').fetchone()[0]
+        status['data_counts']['sqlite_gallery'] = cursor.execute('SELECT COUNT(*) FROM gallery').fetchone()[0]
+        status['data_counts']['sqlite_leaderboard'] = cursor.execute('SELECT COUNT(*) FROM leaderboard').fetchone()[0]
+        conn.close()
+    except Exception as e:
+        status['data_counts']['sqlite_error'] = str(e)
+    
+    return jsonify(status)
 
 # === Run app ===
 if __name__ == '__main__':
