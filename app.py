@@ -7,7 +7,6 @@ import cloudinary.uploader
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from bson.json_util import dumps
 from datetime import datetime
 import json
 
@@ -16,7 +15,7 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')
 
-# Manual CORS handling
+# Manual CORS handling - NO flask_cors needed
 @app.after_request
 def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -114,19 +113,24 @@ def init_db():
 
 init_db()
 
-# === Helper to convert MongoDB documents to JSON-serializable dicts ===
+# === CRITICAL FIX: Helper to convert MongoDB documents to JSON-serializable dicts ===
 def mongo_to_dict(doc):
     """Convert MongoDB document to JSON-serializable dictionary"""
     if doc is None:
         return None
-    result = dict(doc)
-    if '_id' in result:
-        result['id'] = str(result['_id'])
-        del result['_id']
-    # Convert datetime objects to strings
-    for key, value in result.items():
-        if isinstance(value, datetime):
+    result = {}
+    for key, value in doc.items():
+        if key == '_id':
+            # Convert ObjectId to string and rename to 'id'
+            result['id'] = str(value)
+        elif isinstance(value, ObjectId):
+            # Convert any other ObjectId fields
+            result[key] = str(value)
+        elif isinstance(value, datetime):
+            # Convert datetime to ISO string
             result[key] = value.isoformat()
+        else:
+            result[key] = value
     return result
 
 # === Helper functions ===
@@ -134,6 +138,7 @@ def get_all_meals():
     if USE_MONGO and mongo_meals is not None:
         try:
             meals = list(mongo_meals.find().sort("_id", -1))
+            # Convert each document to JSON-serializable dict
             meals = [mongo_to_dict(meal) for meal in meals]
             print(f"📊 MongoDB: Found {len(meals)} meals")
             return meals
@@ -284,7 +289,7 @@ def api_add_meal():
 @app.route('/api/update_meal/<meal_id>', methods=['POST', 'OPTIONS'])
 def api_update_meal(meal_id):
     if request.method == 'OPTIONS':
-        return jsonify({'message': 'OK'}), ({'message': 'OK'}), 200
+        return jsonify({'message': 'OK'}), 200
     
     try:
         data = request.get_json(force=True, silent=True)
