@@ -606,6 +606,16 @@
       </div>
       <div id="debugLogs"></div>
     </div>
+  <!-- Migration Alert - Shows when data needs to be migrated -->
+  <div id="migrationAlert" style="background: #ff9800; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; display: none;">
+    <h3 style="margin-bottom: 10px;">⚠️ Data Migration Required</h3>
+    <p style="margin-bottom: 15px;">Your old meals, gallery, and leaderboard data is in SQLite but the app is now using MongoDB.</p>
+    <button onclick="runMigration()" style="background: white; color: #ff9800; border: none; padding: 15px 30px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer;">
+      🚀 Click Here to Migrate All Data
+    </button>
+    <div id="migrationStatus" style="margin-top: 15px; font-size: 14px; display: none;"></div>
+  </div>
+
     
     <h1><i class="fas fa-cog"></i> Admin Dashboard</h1>
     <p class="subtitle">Manage meals, gallery, and leaderboard</p>
@@ -1414,6 +1424,86 @@
     // Load meals on page load
     debugLog('🔄 Admin page loaded, initializing...', 'info');
     loadMeals();
+
+    // Migration function
+    async function runMigration() {
+      const statusDiv = document.getElementById('migrationStatus');
+      const btn = event.target;
+
+      btn.disabled = true;
+      btn.textContent = 'Migrating... Please wait';
+      statusDiv.style.display = 'block';
+      statusDiv.innerHTML = '<div class="loading"></div> Copying data from SQLite to MongoDB...';
+
+      try {
+        debugLog('🚀 Starting migration...', 'info');
+
+        const res = await fetch('/api/migrate_to_mongodb', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'}
+        });
+
+        const data = await res.json();
+        debugLog('Migration response: ' + JSON.stringify(data), 'info');
+
+        if (res.ok) {
+          statusDiv.innerHTML = `
+            <div style="background: #4caf50; padding: 15px; border-radius: 8px; margin-top: 10px;">
+              <h4>✅ Migration Complete!</h4>
+              <p>Meals: ${data.details.meals.mongo_count || 0}</p>
+              <p>Gallery: ${data.details.gallery.mongo_count || 0}</p>
+              <p>Leaderboard: ${data.details.leaderboard.mongo_count || 0}</p>
+              <p><strong>Refresh the page to see your data!</strong></p>
+            </div>
+          `;
+          btn.textContent = '✅ Migration Complete - Refresh Page';
+          btn.onclick = () => location.reload();
+          btn.disabled = false;
+
+          // Hide the alert after 5 seconds and reload
+          setTimeout(() => {
+            location.reload();
+          }, 3000);
+        } else {
+          statusDiv.innerHTML = `<div style="color: #ff4444;">❌ Error: ${data.error || 'Unknown error'}</div>`;
+          btn.textContent = '❌ Migration Failed - Try Again';
+          btn.disabled = false;
+        }
+      } catch (err) {
+        debugLog('Migration error: ' + err.message, 'error');
+        statusDiv.innerHTML = `<div style="color: #ff4444;">❌ Network Error: ${err.message}</div>`;
+        btn.textContent = '❌ Error - Try Again';
+        btn.disabled = false;
+      }
+    }
+
+    // Check if we need to show migration alert
+    async function checkMigrationNeeded() {
+      try {
+        const res = await fetch('/api/db_status');
+        const data = await res.json();
+
+        const sqliteMeals = data.data_counts?.sqlite_meals || 0;
+        const mongoMeals = data.data_counts?.mongodb_meals || 0;
+
+        debugLog(`DB Status - SQLite meals: ${sqliteMeals}, MongoDB meals: ${mongoMeals}`, 'debug');
+
+        // If SQLite has data but MongoDB doesn't, show migration alert
+        if (sqliteMeals > 0 && mongoMeals === 0) {
+          document.getElementById('migrationAlert').style.display = 'block';
+          debugLog(`⚠️ Migration needed: ${sqliteMeals} meals in SQLite, 0 in MongoDB`, 'warn');
+        } else {
+          document.getElementById('migrationAlert').style.display = 'none';
+          debugLog('✅ No migration needed', 'info');
+        }
+      } catch (err) {
+        debugLog('Failed to check migration status: ' + err.message, 'error');
+      }
+    }
+
+    // Check on page load
+    checkMigrationNeeded();
+
   </script>
 </body>
 </html>
