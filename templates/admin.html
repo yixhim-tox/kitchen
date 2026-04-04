@@ -424,6 +424,15 @@
       font-size: 64px;
       margin-bottom: 16px;
     }
+    
+    /* Current image preview in edit modal */
+    .current-image-preview {
+      width: 100%;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -593,8 +602,20 @@
           <textarea name="description" id="editDescription"></textarea>
         </div>
         <div class="form-group">
-          <label>Image URL</label>
-          <input type="url" name="image" id="editImage">
+          <label>Meal Image</label>
+          <!-- Current image preview -->
+          <img id="editCurrentImage" class="current-image-preview" style="display: none;" alt="Current image">
+          
+          <!-- Image upload option -->
+          <div class="image-upload" id="editImageUpload" onclick="document.getElementById('editImageFile').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Click to upload new image</p>
+            <small>or keep existing image</small>
+            <input type="file" id="editImageFile" accept="image/*" onchange="previewEditImage(this)">
+          </div>
+          
+          <!-- Image URL input -->
+          <input type="url" name="image" id="editImage" placeholder="Or paste image URL here" style="margin-top: 10px;">
         </div>
         <button type="submit" class="btn btn-success" style="width: 100%;">
           <i class="fas fa-save"></i> Save Changes
@@ -622,7 +643,7 @@
       if (tab === 'gallery') loadGallery();
     }
     
-    // Image preview
+    // Image preview for add meal
     function previewImage(input, containerId) {
       const container = document.getElementById(containerId);
       if (input.files && input.files[0]) {
@@ -630,6 +651,23 @@
         reader.onload = function(e) {
           container.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
           container.classList.add('has-image');
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+    
+    // Image preview for edit meal
+    function previewEditImage(input) {
+      const container = document.getElementById('editImageUpload');
+      const currentImage = document.getElementById('editCurrentImage');
+      
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          container.innerHTML = `<img src="${e.target.result}" alt="New Preview">`;
+          container.classList.add('has-image');
+          // Hide current image preview since we're uploading new one
+          currentImage.style.display = 'none';
         };
         reader.readAsDataURL(input.files[0]);
       }
@@ -750,7 +788,7 @@
       }
     }
     
-    // Edit meal
+    // Edit meal - open modal
     async function editMeal(id) {
       try {
         const res = await fetch('/api/meals');
@@ -766,6 +804,24 @@
         document.getElementById('editDescription').value = meal.description || '';
         document.getElementById('editImage').value = meal.image || '';
         
+        // Show current image preview if exists
+        const currentImage = document.getElementById('editCurrentImage');
+        if (meal.image) {
+          currentImage.src = meal.image;
+          currentImage.style.display = 'block';
+        } else {
+          currentImage.style.display = 'none';
+        }
+        
+        // Reset the upload area
+        document.getElementById('editImageUpload').innerHTML = `
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Click to upload new image</p>
+          <small>or keep existing image</small>
+          <input type="file" id="editImageFile" accept="image/*" onchange="previewEditImage(this)">
+        `;
+        document.getElementById('editImageUpload').classList.remove('has-image');
+        
         document.getElementById('editModal').classList.add('active');
       } catch (err) {
         showToast('Error loading meal', 'error');
@@ -775,15 +831,41 @@
     // Update meal
     async function updateMeal(e) {
       e.preventDefault();
-      const formData = new FormData(e.target);
       const id = document.getElementById('editId').value;
+      
+      // Check if new image was uploaded
+      const imageFile = document.getElementById('editImageFile').files[0];
+      const imageUrlInput = document.getElementById('editImage').value;
+      
+      let finalImage = imageUrlInput;
+      
+      // If new file uploaded, upload it first
+      if (imageFile) {
+        const uploadData = new FormData();
+        uploadData.append('image', imageFile);
+        
+        try {
+          showToast('Uploading image...', 'success');
+          const uploadRes = await fetch('/api/upload_image', {
+            method: 'POST',
+            body: uploadData
+          });
+          const uploadResult = await uploadRes.json();
+          if (uploadResult.url) {
+            finalImage = uploadResult.url;
+          }
+        } catch (err) {
+          console.error('Image upload failed:', err);
+          showToast('Image upload failed, using existing image', 'error');
+        }
+      }
       
       const data = {
         name: document.getElementById('editName').value,
         price: parseFloat(document.getElementById('editPrice').value),
         category: document.getElementById('editCategory').value,
         description: document.getElementById('editDescription').value,
-        image: document.getElementById('editImage').value
+        image: finalImage
       };
       
       try {
