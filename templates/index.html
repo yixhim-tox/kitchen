@@ -21,7 +21,79 @@
       background: #fff;
       color: var(--text-dark);
       padding-bottom: 80px;
+      overflow-x: hidden;
     }
+    
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .animate-fadeInUp {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    .animate-fadeIn {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+    
+    .animate-slideInLeft {
+      animation: slideInLeft 0.6s ease-out forwards;
+    }
+    
+    .animate-slideInRight {
+      animation: slideInRight 0.6s ease-out forwards;
+    }
+    
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .delay-3 { animation-delay: 0.3s; opacity: 0; }
+    .delay-4 { animation-delay: 0.4s; opacity: 0; }
+    .delay-5 { animation-delay: 0.5s; opacity: 0; }
     
     /* Header */
     .header {
@@ -36,6 +108,11 @@
       justify-content: space-between;
       z-index: 1000;
       border-bottom: 1px solid #f0f0f0;
+      transition: all 0.3s ease;
+    }
+    
+    .header.scrolled {
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     
     .logo-section {
@@ -49,6 +126,11 @@
       height: 40px;
       border-radius: 50%;
       object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    
+    .logo:hover {
+      transform: rotate(10deg) scale(1.1);
     }
     
     .brand-name {
@@ -66,15 +148,22 @@
     .header-icons i {
       font-size: 22px;
       color: var(--text-dark);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .header-icons i:hover {
+      color: var(--primary-red);
+      transform: scale(1.1);
     }
     
     /* Hero Section */
     .hero {
       margin-top: 64px;
       position: relative;
-      height: 380px;
-      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
-                  url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800') center/cover;
+      height: 450px;
+      background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.6)), 
+                  url('https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg') center/cover;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -82,6 +171,20 @@
       text-align: center;
       padding: 20px;
       color: white;
+      overflow: hidden;
+    }
+    
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg') center/cover;
+      filter: blur(2px);
+      z-index: -1;
+      transform: scale(1.1);
     }
     
     .hero h1 {
@@ -89,12 +192,14 @@
       font-weight: 800;
       margin-bottom: 8px;
       line-height: 1.2;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     }
     
     .hero-subtitle {
       font-size: 14px;
       opacity: 0.9;
       margin-bottom: 20px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
     
     .hero-location {
@@ -108,6 +213,11 @@
       display: flex;
       align-items: center;
       gap: 5px;
+      transition: transform 0.3s ease;
+    }
+    
+    .hero-location span:hover {
+      transform: translateY(-2px);
     }
     
     .hero-buttons {
@@ -127,7 +237,17 @@
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(229, 57, 53, 0.4);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(229, 57, 53, 0.6);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
     }
     
     .btn-secondary {
@@ -141,12 +261,20 @@
       font-weight: 600;
       cursor: pointer;
       text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
     }
     
     /* Search Bar */
     .search-section {
       padding: 16px;
       background: #fff;
+      animation: fadeInUp 0.6s ease-out 0.3s forwards;
+      opacity: 0;
     }
     
     .search-bar {
@@ -155,6 +283,12 @@
       border-radius: 25px;
       overflow: hidden;
       border: 1px solid #e0e0e0;
+      transition: all 0.3s ease;
+    }
+    
+    .search-bar:focus-within {
+      border-color: var(--primary-red);
+      box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1);
     }
     
     .search-bar input {
@@ -173,6 +307,11 @@
       padding: 12px 24px;
       font-weight: 600;
       cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .search-btn:hover {
+      background: #c62828;
     }
     
     /* Popular Dishes */
@@ -197,6 +336,11 @@
       font-size: 14px;
       font-weight: 600;
       text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .view-all:hover {
+      transform: translateX(5px);
     }
     
     .dishes-grid {
@@ -211,12 +355,30 @@
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       border: 1px solid #f0f0f0;
+      transition: all 0.3s ease;
+      opacity: 0;
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    .dish-card:nth-child(1) { animation-delay: 0.1s; }
+    .dish-card:nth-child(2) { animation-delay: 0.2s; }
+    .dish-card:nth-child(3) { animation-delay: 0.3s; }
+    .dish-card:nth-child(4) { animation-delay: 0.4s; }
+    
+    .dish-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
     }
     
     .dish-image {
       width: 100%;
       height: 120px;
       object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    
+    .dish-card:hover .dish-image {
+      transform: scale(1.05);
     }
     
     .dish-info {
@@ -266,6 +428,12 @@
       justify-content: center;
       cursor: pointer;
       font-size: 18px;
+      transition: all 0.3s ease;
+    }
+    
+    .add-btn:hover {
+      transform: scale(1.1) rotate(90deg);
+      box-shadow: 0 4px 10px rgba(229, 57, 53, 0.4);
     }
     
     /* Why Choose Us */
@@ -284,6 +452,18 @@
     .feature-item {
       text-align: center;
       padding: 16px;
+      transition: all 0.3s ease;
+      opacity: 0;
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    .feature-item:nth-child(1) { animation-delay: 0.1s; }
+    .feature-item:nth-child(2) { animation-delay: 0.2s; }
+    .feature-item:nth-child(3) { animation-delay: 0.3s; }
+    .feature-item:nth-child(4) { animation-delay: 0.4s; }
+    
+    .feature-item:hover {
+      transform: translateY(-5px);
     }
     
     .feature-icon {
@@ -297,6 +477,13 @@
       margin: 0 auto 12px;
       color: var(--primary-red);
       font-size: 24px;
+      transition: all 0.3s ease;
+    }
+    
+    .feature-item:hover .feature-icon {
+      transform: scale(1.1) rotate(5deg);
+      background: var(--primary-red);
+      color: white;
     }
     
     .feature-title {
@@ -315,6 +502,8 @@
     .cta-section {
       padding: 32px 16px;
       text-align: center;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out forwards;
     }
     
     .cta-section h2 {
@@ -336,6 +525,13 @@
       max-width: 400px;
       border-radius: 16px;
       margin-bottom: 20px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .cta-image:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }
     
     /* Events Section */
@@ -343,6 +539,8 @@
       background: var(--light-pink);
       padding: 32px 16px;
       text-align: center;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out forwards;
     }
     
     .events-section h2 {
@@ -403,6 +601,12 @@
       color: #ccc;
       text-decoration: none;
       font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    
+    .footer-links a:hover {
+      color: var(--primary-red);
+      padding-left: 5px;
     }
     
     .footer-contact {
@@ -416,6 +620,12 @@
       margin-bottom: 12px;
       color: #ccc;
       font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    
+    .footer-contact-item:hover {
+      color: white;
+      transform: translateX(5px);
     }
     
     .social-icons {
@@ -427,6 +637,12 @@
     .social-icons a {
       color: white;
       font-size: 20px;
+      transition: all 0.3s ease;
+    }
+    
+    .social-icons a:hover {
+      color: var(--primary-red);
+      transform: translateY(-3px);
     }
     
     .copyright {
@@ -450,6 +666,7 @@
       padding: 8px 0;
       border-top: 1px solid #f0f0f0;
       z-index: 1000;
+      transition: all 0.3s ease;
     }
     
     .nav-item {
@@ -461,14 +678,43 @@
       color: var(--text-gray);
       font-size: 11px;
       padding: 4px 12px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .nav-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      width: 30px;
+      height: 3px;
+      background: var(--primary-red);
+      border-radius: 0 0 10px 10px;
+      transition: all 0.3s ease;
     }
     
     .nav-item.active {
       color: var(--primary-red);
     }
     
+    .nav-item.active::before {
+      transform: translateX(-50%) scale(1);
+    }
+    
+    .nav-item:hover {
+      color: var(--primary-red);
+      transform: translateY(-2px);
+    }
+    
     .nav-item i {
       font-size: 22px;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-item:hover i {
+      transform: scale(1.1);
     }
     
     /* Loading State */
@@ -482,11 +728,23 @@
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
+    
+    /* Scroll animations */
+    .scroll-animate {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease-out;
+    }
+    
+    .scroll-animate.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body>
   <!-- Header -->
-  <header class="header">
+  <header class="header" id="header">
     <div class="logo-section">
       <img src="https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg" alt="TG's Kitchen" class="logo">
       <span class="brand-name">TG's Kitchen</span>
@@ -499,13 +757,13 @@
 
   <!-- Hero Section -->
   <section class="hero">
-    <h1>Freshly Made Meals<br>Delivered to Your Doorstep</h1>
-    <p class="hero-subtitle">New Menu Every Day • Available for Events & Occasions</p>
-    <div class="hero-location">
+    <h1 class="animate-fadeInUp">Freshly Made Meals<br>Delivered to Your Doorstep</h1>
+    <p class="hero-subtitle animate-fadeInUp delay-1">New Menu Every Day • Available for Events & Occasions</p>
+    <div class="hero-location animate-fadeInUp delay-2">
       <span><i class="fas fa-map-marker-alt"></i> Asaba</span>
       <span><i class="fas fa-truck"></i> We Deliver</span>
     </div>
-    <div class="hero-buttons">
+    <div class="hero-buttons animate-fadeInUp delay-3">
       <button class="btn-primary" onclick="window.location.href='/menu'">Order Now</button>
       <a href="/menu" class="btn-secondary">View Menu</a>
     </div>
@@ -520,10 +778,10 @@
   </section>
 
   <!-- Popular Dishes -->
-  <section class="section">
+  <section class="section scroll-animate">
     <div class="section-header">
       <h2 class="section-title">Popular Dishes</h2>
-      <a href="/menu" class="view-all">View All</a>
+      <a href="/menu" class="view-all">View All →</a>
     </div>
     <div class="dishes-grid" id="popularDishes">
       <!-- Loaded dynamically -->
@@ -531,7 +789,7 @@
   </section>
 
   <!-- Why Choose Us -->
-  <section class="features-section">
+  <section class="features-section scroll-animate">
     <h2 class="section-title" style="text-align: center;">Why Choose TG's Kitchen</h2>
     <div class="features-grid">
       <div class="feature-item">
@@ -558,7 +816,7 @@
   </section>
 
   <!-- CTA Section -->
-  <section class="cta-section">
+  <section class="cta-section scroll-animate">
     <h2>Everything you crave, delivered.</h2>
     <p>From our kitchen to your table — enjoy restaurant-quality meals without leaving your home. Every dish is made with fresh ingredients and packed with care for the perfect delivery experience.</p>
     <img src="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=600" alt="Delicious food" class="cta-image">
@@ -566,7 +824,7 @@
   </section>
 
   <!-- Taste Section -->
-  <section class="section" style="background: #fafafa;">
+  <section class="section scroll-animate" style="background: #fafafa;">
     <h2 class="section-title">Taste the difference, every single bite.</h2>
     <p style="color: var(--text-gray); font-size: 14px; line-height: 1.6; margin-top: 12px;">
       We don't just cook food — we craft experiences. Every plate tells a story of passion, quality ingredients, and a commitment to making your meals extraordinary.
@@ -575,7 +833,7 @@
   </section>
 
   <!-- Events Section -->
-  <section class="events-section">
+  <section class="events-section scroll-animate">
     <h2>Available for Events & Special Occasions</h2>
     <p>From intimate dinners to large celebrations — let TG's Kitchen handle the food so you can enjoy the moment.</p>
     <button class="btn-primary" onclick="bookEvent()">Book Now</button>
@@ -645,14 +903,42 @@
       <i class="fas fa-shopping-bag"></i>
       <span>Cart</span>
     </a>
-    <a href="/account" class="nav-item">
-      <i class="fas fa-user"></i>
-      <span>Account</span>
+    <a href="/leaderboard" class="nav-item">
+      <i class="fas fa-trophy"></i>
+      <span>Leaderboard</span>
     </a>
   </nav>
 
   <script>
     let allMeals = [];
+    
+    // Header scroll effect
+    window.addEventListener('scroll', () => {
+      const header = document.getElementById('header');
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+    
+    // Scroll animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, observerOptions);
+    
+    document.querySelectorAll('.scroll-animate').forEach(el => {
+      observer.observe(el);
+    });
     
     async function loadPopularDishes() {
       try {
@@ -663,8 +949,8 @@
         const popular = allMeals.slice(0, 4);
         const container = document.getElementById('popularDishes');
         
-        container.innerHTML = popular.map(meal => `
-          <div class="dish-card">
+        container.innerHTML = popular.map((meal, index) => `
+          <div class="dish-card" style="animation-delay: ${index * 0.1}s">
             <img src="${meal.image || 'https://via.placeholder.com/300x200?text=No+Image'}" 
                  alt="${meal.name}" class="dish-image" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
             <div class="dish-info">
@@ -679,6 +965,12 @@
         `).join('');
       } catch (e) {
         console.error('Failed to load meals:', e);
+        document.getElementById('popularDishes').innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">
+            <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 16px;"></i>
+            <p>Failed to load meals. Please refresh.</p>
+          </div>
+        `;
       }
     }
     
@@ -697,7 +989,11 @@
       // Show feedback
       const btn = event.target;
       btn.innerHTML = '<i class="fas fa-check"></i>';
-      setTimeout(() => btn.innerHTML = '+', 1000);
+      btn.style.background = '#4caf50';
+      setTimeout(() => {
+        btn.innerHTML = '+';
+        btn.style.background = '';
+      }, 1000);
     }
     
     function searchMeals() {
@@ -713,7 +1009,6 @@
     }
     
     function toggleMenu() {
-      // Simple alert for now, can be expanded to a full menu
       const options = confirm('Go to Admin Panel?');
       if (options) window.location.href = '/admin';
     }
