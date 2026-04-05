@@ -23,6 +23,99 @@
       padding-bottom: 80px;
     }
     
+    /* Loading Screen */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #fff 0%, var(--light-pink) 100%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    
+    .loading-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    
+    .loading-logo {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 24px;
+      animation: pulse 1.5s ease-in-out infinite;
+      box-shadow: 0 8px 32px rgba(229, 57, 53, 0.3);
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #f0f0f0;
+      border-top-color: var(--primary-red);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary-red);
+      animation: fadeInOut 1.5s ease-in-out infinite;
+    }
+    
+    .loading-subtext {
+      font-size: 14px;
+      color: var(--text-gray);
+      margin-top: 8px;
+    }
+    
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    
+    /* Loading dots animation */
+    .loading-dots {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    
+    .loading-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--primary-red);
+      border-radius: 50%;
+      animation: bounce 1.4s ease-in-out infinite both;
+    }
+    
+    .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+    .loading-dot:nth-child(3) { animation-delay: 0s; }
+    
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+    
     /* Header */
     .header {
       position: fixed;
@@ -60,6 +153,14 @@
     .main-content {
       margin-top: 64px;
       padding: 16px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    
+    .main-content.loaded {
+      opacity: 1;
+      transform: translateY(0);
     }
     
     .page-title {
@@ -96,6 +197,20 @@
       aspect-ratio: 1;
       cursor: pointer;
       transition: transform 0.3s;
+      opacity: 0;
+      animation: fadeInUp 0.5s ease forwards;
+    }
+    
+    .gallery-item:nth-child(1) { animation-delay: 0.1s; }
+    .gallery-item:nth-child(2) { animation-delay: 0.15s; }
+    .gallery-item:nth-child(3) { animation-delay: 0.2s; }
+    .gallery-item:nth-child(4) { animation-delay: 0.25s; }
+    .gallery-item:nth-child(5) { animation-delay: 0.3s; }
+    .gallery-item:nth-child(6) { animation-delay: 0.35s; }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     
     .gallery-item:active {
@@ -236,6 +351,7 @@
       color: var(--text-gray);
       font-size: 11px;
       padding: 4px 12px;
+      transition: all 0.3s ease;
     }
     
     .nav-item.active {
@@ -248,6 +364,19 @@
   </style>
 </head>
 <body>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <img src="https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg" alt="TG's Kitchen" class="loading-logo">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Preparing Your Gallery</div>
+    <div class="loading-subtext">Delicious moments loading...</div>
+    <div class="loading-dots">
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+    </div>
+  </div>
+
   <!-- Header -->
   <header class="header">
     <div class="logo-section">
@@ -257,7 +386,7 @@
   </header>
 
   <!-- Main Content -->
-  <main class="main-content">
+  <main class="main-content" id="mainContent">
     <h1 class="page-title">Food Gallery</h1>
     <p class="page-subtitle">A visual feast of our culinary creations</p>
     
@@ -280,17 +409,18 @@
       </div>
     </div>
   </div>
+  
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
     <a href="/" class="nav-item">
       <i class="fas fa-home"></i>
       <span>Home</span>
     </a>
-    <a href="/menu" class="nav-item active">
+    <a href="/menu" class="nav-item">
       <i class="fas fa-utensils"></i>
       <span>Menu</span>
     </a>
-    <a href="/gallery" class="nav-item">
+    <a href="/gallery" class="nav-item active">
       <i class="fas fa-images"></i>
       <span>Gallery</span>
     </a>
@@ -303,7 +433,6 @@
       <span>Leaderboard</span>
     </a>
   </nav>
-
 
   <script>
     async function loadGallery() {
@@ -321,21 +450,27 @@
               <p>Check back soon for delicious photos!</p>
             </div>
           `;
-          return;
-        }
-        
-        container.innerHTML = images.map((img, index) => `
-          <div class="gallery-item" onclick="openLightbox(${index})">
-            <img src="${img.image_url}" alt="${img.title}" loading="lazy">
-            <div class="gallery-overlay">
-              <div class="gallery-title">${img.title}</div>
-              <div class="gallery-category">${img.category || 'Featured'}</div>
+        } else {
+          container.innerHTML = images.map((img, index) => `
+            <div class="gallery-item" onclick="openLightbox(${index})" style="animation-delay: ${index * 0.05}s">
+              <img src="${img.image_url}" alt="${img.title}" loading="lazy">
+              <div class="gallery-overlay">
+                <div class="gallery-title">${img.title}</div>
+                <div class="gallery-category">${img.category || 'Featured'}</div>
+              </div>
             </div>
-          </div>
-        `).join('');
+          `).join('');
+        }
         
         // Store for lightbox
         window.galleryImages = images;
+        
+        // Hide loading screen and show content
+        setTimeout(() => {
+          document.getElementById('loadingScreen').classList.add('hidden');
+          document.getElementById('mainContent').classList.add('loaded');
+        }, 800);
+        
       } catch (e) {
         console.error('Failed to load gallery:', e);
         document.getElementById('galleryGrid').innerHTML = `
@@ -344,6 +479,8 @@
             <p>Failed to load gallery. Please try again.</p>
           </div>
         `;
+        document.getElementById('loadingScreen').classList.add('hidden');
+        document.getElementById('mainContent').classList.add('loaded');
       }
     }
     
