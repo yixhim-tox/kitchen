@@ -121,47 +121,80 @@ def mongo_to_dict(doc):
             result[key] = value
     return result
 
-# === Helper functions ===
+# === Helper functions - FIXED to read from BOTH databases ===
 def get_all_meals():
+    all_meals = []
+    seen_names = set()
+    
+    # Get from MongoDB first
     if USE_MONGO and mongo_meals is not None:
         try:
-            meals = list(mongo_meals.find().sort("_id", -1))
-            meals = [mongo_to_dict(meal) for meal in meals]
-            print(f"📊 MongoDB: Found {len(meals)} meals")
-            return meals
+            mongo_meals_list = list(mongo_meals.find().sort("_id", -1))
+            for meal in mongo_meals_list:
+                meal_dict = mongo_to_dict(meal)
+                all_meals.append(meal_dict)
+                seen_names.add(meal_dict.get('name'))
+            print(f"📊 MongoDB: Found {len(mongo_meals_list)} meals")
         except Exception as e:
-            print("MongoDB query failed, falling back to SQLite:", e)
+            print("MongoDB query failed:", e)
     
+    # Get from SQLite and add any missing meals
     try:
         conn = sqlite3.connect(DB_NAME)
         conn.row_factory = sqlite3.Row
-        meals = conn.execute('SELECT * FROM meals ORDER BY id DESC').fetchall()
+        sqlite_meals = conn.execute('SELECT * FROM meals ORDER BY id DESC').fetchall()
         conn.close()
-        result = [dict(meal) for meal in meals]
-        print(f"📊 SQLite: Found {len(result)} meals")
-        return result
+        
+        sqlite_count = 0
+        for meal in sqlite_meals:
+            meal_dict = dict(meal)
+            if meal_dict.get('name') not in seen_names:
+                all_meals.append(meal_dict)
+                seen_names.add(meal_dict.get('name'))
+                sqlite_count += 1
+        print(f"📊 SQLite: Found {len(sqlite_meals)} meals, added {sqlite_count} new ones")
     except Exception as e:
         print("SQLite error:", e)
-        return []
+    
+    print(f"📊 Total combined meals: {len(all_meals)}")
+    return all_meals
 
 def get_all_gallery():
+    all_images = []
+    seen_titles = set()
+    
+    # Get from MongoDB first
     if USE_MONGO and mongo_gallery is not None:
         try:
-            images = list(mongo_gallery.find().sort("created_at", -1))
-            images = [mongo_to_dict(img) for img in images]
-            return images
+            mongo_images = list(mongo_gallery.find().sort("created_at", -1))
+            for img in mongo_images:
+                img_dict = mongo_to_dict(img)
+                all_images.append(img_dict)
+                seen_titles.add(img_dict.get('title'))
+            print(f"📊 MongoDB: Found {len(mongo_images)} gallery images")
         except Exception as e:
             print("MongoDB gallery query failed:", e)
     
+    # Get from SQLite and add any missing images
     try:
         conn = sqlite3.connect(DB_NAME)
         conn.row_factory = sqlite3.Row
-        images = conn.execute('SELECT * FROM gallery ORDER BY created_at DESC').fetchall()
+        sqlite_images = conn.execute('SELECT * FROM gallery ORDER BY created_at DESC').fetchall()
         conn.close()
-        return [dict(img) for img in images]
+        
+        sqlite_count = 0
+        for img in sqlite_images:
+            img_dict = dict(img)
+            if img_dict.get('title') not in seen_titles:
+                all_images.append(img_dict)
+                seen_titles.add(img_dict.get('title'))
+                sqlite_count += 1
+        print(f"📊 SQLite: Found {len(sqlite_images)} gallery images, added {sqlite_count} new ones")
     except Exception as e:
         print("SQLite gallery error:", e)
-        return []
+    
+    print(f"📊 Total combined gallery images: {len(all_images)}")
+    return all_images
 
 # === Page Routes ===
 @app.route('/')
@@ -487,30 +520,51 @@ def upload_image():
         print("Upload error:", e)
         return jsonify({'error': str(e)}), 500
 
-# === API Routes - Leaderboard (same DB as meals/gallery) ===
+# === API Routes - Leaderboard (FIXED to read from BOTH databases) ===
 @app.route('/api/leaderboard', methods=['GET'])
 def get_leaderboard():
     try:
-        if leaderboard_collection is not None:
-            data = list(leaderboard_collection.find())
-            data = [mongo_to_dict(d) for d in data]
-            for d in data:
-                d['plates'] = d.get('plates', d.get('score', 0))
-                d['score'] = d.get('score', d.get('plates', 0))
-            return jsonify(data)
+        all_entries = []
+        seen_players = set()
         
-        # Fallback to SQLite
-        conn = sqlite3.connect(DB_NAME)
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute('SELECT * FROM leaderboard ORDER BY rank').fetchall()
-        conn.close()
-        result = []
-        for row in rows:
-            d = dict(row)
-            d['plates'] = d.get('plates', d.get('score', 0))
-            d['score'] = d.get('score', d.get('plates', 0))
-            result.append(d)
-        return jsonify(result)
+        # Get from MongoDB first
+        if leaderboard_collection is not None:
+            try:
+                mongo_data = list(leaderboard_collection.find())
+                for entry in mongo_data:
+                    entry_dict = mongo_to_dict(entry)
+                    entry_dict['plates'] = entry_dict.get('plates', entry_dict.get('score', 0))
+                    entry_dict['score'] = entry_dict.get('score', entry_dict.get('plates', 0))
+                    all_entries.append(entry_dict)
+                    seen_players.add(entry_dict.get('player'))
+                print(f"📊 MongoDB: Found {len(mongo_data)} leaderboard entries")
+            except Exception as e:
+                print("MongoDB leaderboard query failed:", e)
+        
+        # Get from SQLite and add any missing entries
+        try:
+            conn = sqlite3.connect(DB_NAME)
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute('SELECT * FROM leaderboard ORDER BY rank').fetchall()
+            conn.close()
+            
+            sqlite_count = 0
+            for row in rows:
+                entry_dict = dict(row)
+                entry_dict['plates'] = entry_dict.get('plates', entry_dict.get('score', 0))
+                entry_dict['score'] = entry_dict.get('score', entry_dict.get('plates', 0))
+                if entry_dict.get('player') not in seen_players:
+                    all_entries.append(entry_dict)
+                    seen_players.add(entry_dict.get('player'))
+                    sqlite_count += 1
+            print(f"📊 SQLite: Found {len(rows)} leaderboard entries, added {sqlite_count} new ones")
+        except Exception as e:
+            print("SQLite leaderboard error:", e)
+        
+        # Sort by rank
+        all_entries.sort(key=lambda x: x.get('rank', 999))
+        print(f"📊 Total combined leaderboard entries: {len(all_entries)}")
+        return jsonify(all_entries)
     except Exception as e:
         print("Error fetching leaderboard:", e)
         return jsonify([]), 200
@@ -580,6 +634,7 @@ def remove_from_cart(meal_id):
     cart.pop(str(meal_id), None)
     session['cart'] = cart
     return redirect(url_for('cart'))
+
 # === MIGRATION ENDPOINT: Copy data from SQLite to MongoDB ===
 @app.route('/api/migrate_to_mongodb', methods=['POST', 'OPTIONS'])
 def migrate_to_mongodb():
