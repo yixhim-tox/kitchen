@@ -24,20 +24,10 @@
       overflow-x: hidden;
     }
 
-    body.menu-open {
-      overflow: hidden;
-    }
-
     /* Animations */
     @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes fadeIn {
@@ -45,54 +35,13 @@
       to { opacity: 1; }
     }
 
-    @keyframes slideInLeft {
-      from {
-        opacity: 0;
-        transform: translateX(-30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-
-    @keyframes slideInRight {
-      from {
-        opacity: 0;
-        transform: translateX(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-
     .animate-fadeInUp {
       animation: fadeInUp 0.6s ease-out forwards;
-    }
-
-    .animate-fadeIn {
-      animation: fadeIn 0.8s ease-out forwards;
-    }
-
-    .animate-slideInLeft {
-      animation: slideInLeft 0.6s ease-out forwards;
-    }
-
-    .animate-slideInRight {
-      animation: slideInRight 0.6s ease-out forwards;
     }
 
     .delay-1 { animation-delay: 0.1s; opacity: 0; }
     .delay-2 { animation-delay: 0.2s; opacity: 0; }
     .delay-3 { animation-delay: 0.3s; opacity: 0; }
-    .delay-4 { animation-delay: 0.4s; opacity: 0; }
-    .delay-5 { animation-delay: 0.5s; opacity: 0; }
 
     /* Header */
     .header {
@@ -107,11 +56,6 @@
       justify-content: space-between;
       z-index: 1000;
       border-bottom: 1px solid #f0f0f0;
-      transition: all 0.3s ease;
-    }
-
-    .header.scrolled {
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
     .logo-section {
@@ -125,11 +69,6 @@
       height: 40px;
       border-radius: 50%;
       object-fit: cover;
-      transition: transform 0.3s ease;
-    }
-
-    .logo:hover {
-      transform: rotate(10deg) scale(1.1);
     }
 
     .brand-name {
@@ -142,195 +81,98 @@
       display: flex;
       gap: 16px;
       align-items: center;
+      position: relative;
     }
 
-    .header-icons i {
+    .menu-btn {
       font-size: 22px;
       color: var(--text-dark);
       cursor: pointer;
+      padding: 8px;
+      background: none;
+      border: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    /* DROPDOWN MENU - NEW STYLE */
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 8px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      min-width: 200px;
+      z-index: 1001;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
       transition: all 0.3s ease;
+      border: 1px solid #f0f0f0;
     }
 
-    .header-icons i:hover {
+    .dropdown-menu.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      text-decoration: none;
+      color: var(--text-dark);
+      border-bottom: 1px solid #f5f5f5;
+      transition: all 0.2s ease;
+    }
+
+    .dropdown-item:first-child {
+      border-radius: 12px 12px 0 0;
+    }
+
+    .dropdown-item:last-child {
+      border-bottom: none;
+      border-radius: 0 0 12px 12px;
+    }
+
+    .dropdown-item:hover, .dropdown-item:active {
+      background: var(--light-pink);
       color: var(--primary-red);
-      transform: scale(1.1);
     }
 
-    /* Slide-out Menu */
-    .menu-overlay {
+    .dropdown-item i {
+      font-size: 18px;
+      width: 24px;
+      text-align: center;
+    }
+
+    .dropdown-item span {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* Overlay for closing dropdown */
+    .dropdown-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 2000;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
+      z-index: 999;
+      display: none;
     }
 
-    .menu-overlay.active {
-      opacity: 1;
-      visibility: visible;
+    .dropdown-overlay.active {
+      display: block;
     }
 
-    .side-menu {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 280px;
-      height: 100%;
-      background: #fff;
-      z-index: 2001;
-      transform: translateX(-100%);
-      transition: transform 0.3s ease;
-      box-shadow: 2px 0 20px rgba(0,0,0,0.2);
-      overflow-y: auto;
-    }
-
-    .side-menu.active {
-      transform: translateX(0);
-    }
-
-    .menu-header {
-      background: var(--primary-red);
-      padding: 24px 20px;
-      color: white;
-      position: relative;
-    }
-
-    .menu-close {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 32px;
-      height: 32px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .menu-close:hover {
-      background: rgba(255,255,255,0.3);
-      transform: rotate(90deg);
-    }
-
-    .menu-close i {
-      font-size: 16px;
-      color: white;
-    }
-
-    .menu-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .menu-logo {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid rgba(255,255,255,0.3);
-    }
-
-    .menu-brand-text h3 {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .menu-brand-text p {
-      font-size: 12px;
-      opacity: 0.9;
-    }
-
-    .menu-nav {
-      padding: 20px 0;
-    }
-
-    .menu-item {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 16px 20px;
-      text-decoration: none;
-      color: var(--text-dark);
-      transition: all 0.3s ease;
-      border-left: 3px solid transparent;
-    }
-
-    .menu-item:hover {
-      background: var(--light-pink);
-      border-left-color: var(--primary-red);
-      color: var(--primary-red);
-    }
-
-    .menu-item i {
-      font-size: 20px;
-      width: 24px;
-      text-align: center;
-    }
-
-    .menu-item span {
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    .menu-divider {
-      height: 1px;
-      background: #f0f0f0;
-      margin: 8px 20px;
-    }
-
-    .menu-social {
-      padding: 20px;
-    }
-
-    .menu-social-title {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #888;
-      margin-bottom: 16px;
-    }
-
-    .menu-social-links {
-      display: flex;
-      gap: 12px;
-    }
-
-    .menu-social-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      color: white;
-      font-size: 18px;
-      transition: all 0.3s ease;
-    }
-
-    .menu-social-btn:hover {
-      transform: translateY(-3px);
-    }
-
-    .menu-whatsapp { background: #25D366; }
-    .menu-tiktok { background: #000; }
-    .menu-instagram { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
-
-    /* Hero Section */
+    /* Hero */
     .hero {
       margin-top: 64px;
-      position: relative;
       height: 450px;
       background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.6)), 
                   url('https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg') center/cover;
@@ -341,20 +183,6 @@
       text-align: center;
       padding: 20px;
       color: white;
-      overflow: hidden;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: url('https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg') center/cover;
-      filter: blur(2px);
-      z-index: -1;
-      transform: scale(1.1);
     }
 
     .hero h1 {
@@ -369,7 +197,6 @@
       font-size: 14px;
       opacity: 0.9;
       margin-bottom: 20px;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
 
     .hero-location {
@@ -383,11 +210,6 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      transition: transform 0.3s ease;
-    }
-
-    .hero-location span:hover {
-      transform: translateY(-2px);
     }
 
     .hero-buttons {
@@ -407,44 +229,23 @@
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(229, 57, 53, 0.4);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(229, 57, 53, 0.6);
-    }
-
-    .btn-primary:active {
-      transform: translateY(0);
     }
 
     .btn-secondary {
       background: rgba(255,255,255,0.2);
-      backdrop-filter: blur(10px);
       color: white;
       border: 1px solid rgba(255,255,255,0.3);
       padding: 14px 24px;
       border-radius: 25px;
       font-size: 16px;
       font-weight: 600;
-      cursor: pointer;
       text-decoration: none;
-      transition: all 0.3s ease;
     }
 
-    .btn-secondary:hover {
-      background: rgba(255,255,255,0.3);
-      transform: translateY(-2px);
-    }
-
-    /* Search Bar */
+    /* Search */
     .search-section {
       padding: 16px;
       background: #fff;
-      animation: fadeInUp 0.6s ease-out 0.3s forwards;
-      opacity: 0;
     }
 
     .search-bar {
@@ -453,12 +254,6 @@
       border-radius: 25px;
       overflow: hidden;
       border: 1px solid #e0e0e0;
-      transition: all 0.3s ease;
-    }
-
-    .search-bar:focus-within {
-      border-color: var(--primary-red);
-      box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1);
     }
 
     .search-bar input {
@@ -477,17 +272,10 @@
       padding: 12px 24px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s ease;
     }
 
-    .search-btn:hover {
-      background: #c62828;
-    }
-
-    /* Popular Dishes */
-    .section {
-      padding: 20px 16px;
-    }
+    /* Sections */
+    .section { padding: 20px 16px; }
 
     .section-header {
       display: flex;
@@ -496,21 +284,13 @@
       margin-bottom: 16px;
     }
 
-    .section-title {
-      font-size: 22px;
-      font-weight: 700;
-    }
+    .section-title { font-size: 22px; font-weight: 700; }
 
     .view-all {
       color: var(--primary-red);
       font-size: 14px;
       font-weight: 600;
       text-decoration: none;
-      transition: all 0.3s ease;
-    }
-
-    .view-all:hover {
-      transform: translateX(5px);
     }
 
     .dishes-grid {
@@ -525,35 +305,15 @@
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       border: 1px solid #f0f0f0;
-      transition: all 0.3s ease;
-      opacity: 0;
-      animation: fadeInUp 0.6s ease-out forwards;
-    }
-
-    .dish-card:nth-child(1) { animation-delay: 0.1s; }
-    .dish-card:nth-child(2) { animation-delay: 0.2s; }
-    .dish-card:nth-child(3) { animation-delay: 0.3s; }
-    .dish-card:nth-child(4) { animation-delay: 0.4s; }
-
-    .dish-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
     }
 
     .dish-image {
       width: 100%;
       height: 120px;
       object-fit: cover;
-      transition: transform 0.3s ease;
     }
 
-    .dish-card:hover .dish-image {
-      transform: scale(1.05);
-    }
-
-    .dish-info {
-      padding: 12px;
-    }
+    .dish-info { padding: 12px; }
 
     .dish-name {
       font-size: 14px;
@@ -569,10 +329,6 @@
       color: var(--text-gray);
       margin-bottom: 8px;
       line-height: 1.3;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
     }
 
     .dish-footer {
@@ -581,10 +337,7 @@
       align-items: center;
     }
 
-    .dish-price {
-      font-size: 15px;
-      font-weight: 700;
-    }
+    .dish-price { font-size: 15px; font-weight: 700; }
 
     .add-btn {
       width: 32px;
@@ -598,15 +351,9 @@
       justify-content: center;
       cursor: pointer;
       font-size: 18px;
-      transition: all 0.3s ease;
     }
 
-    .add-btn:hover {
-      transform: scale(1.1) rotate(90deg);
-      box-shadow: 0 4px 10px rgba(229, 57, 53, 0.4);
-    }
-
-    /* Why Choose Us */
+    /* Features */
     .features-section {
       background: #fafafa;
       padding: 24px 16px;
@@ -622,18 +369,6 @@
     .feature-item {
       text-align: center;
       padding: 16px;
-      transition: all 0.3s ease;
-      opacity: 0;
-      animation: fadeInUp 0.6s ease-out forwards;
-    }
-
-    .feature-item:nth-child(1) { animation-delay: 0.1s; }
-    .feature-item:nth-child(2) { animation-delay: 0.2s; }
-    .feature-item:nth-child(3) { animation-delay: 0.3s; }
-    .feature-item:nth-child(4) { animation-delay: 0.4s; }
-
-    .feature-item:hover {
-      transform: translateY(-5px);
     }
 
     .feature-icon {
@@ -647,13 +382,6 @@
       margin: 0 auto 12px;
       color: var(--primary-red);
       font-size: 24px;
-      transition: all 0.3s ease;
-    }
-
-    .feature-item:hover .feature-icon {
-      transform: scale(1.1) rotate(5deg);
-      background: var(--primary-red);
-      color: white;
     }
 
     .feature-title {
@@ -668,19 +396,16 @@
       line-height: 1.4;
     }
 
-    /* CTA Section */
+    /* CTA */
     .cta-section {
       padding: 32px 16px;
       text-align: center;
-      opacity: 0;
-      animation: fadeInUp 0.8s ease-out forwards;
     }
 
     .cta-section h2 {
       font-size: 24px;
       font-weight: 700;
       margin-bottom: 12px;
-      line-height: 1.3;
     }
 
     .cta-section p {
@@ -695,22 +420,13 @@
       max-width: 400px;
       border-radius: 16px;
       margin-bottom: 20px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
 
-    .cta-image:hover {
-      transform: scale(1.02);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    }
-
-    /* Events Section */
+    /* Events */
     .events-section {
       background: var(--light-pink);
       padding: 32px 16px;
       text-align: center;
-      opacity: 0;
-      animation: fadeInUp 0.8s ease-out forwards;
     }
 
     .events-section h2 {
@@ -760,12 +476,6 @@
       text-decoration: none;
       color: white;
       text-align: center;
-      transition: all 0.3s ease;
-    }
-
-    .quick-link:hover {
-      background: var(--primary-red);
-      transform: translateY(-2px);
     }
 
     .quick-link i {
@@ -779,9 +489,7 @@
       font-weight: 500;
     }
 
-    .social-section {
-      margin-bottom: 24px;
-    }
+    .social-section { margin-bottom: 24px; }
 
     .social-title {
       font-size: 12px;
@@ -808,29 +516,12 @@
       text-decoration: none;
       font-weight: 600;
       font-size: 14px;
-      transition: all 0.3s ease;
-    }
-
-    .social-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    }
-
-    .whatsapp-btn {
-      background: #25D366;
       color: white;
     }
 
-    .tiktok-btn {
-      background: #000;
-      color: white;
-      border: 1px solid #333;
-    }
-
-    .instagram-btn {
-      background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-      color: white;
-    }
+    .whatsapp-btn { background: #25D366; }
+    .tiktok-btn { background: #000; border: 1px solid #333; }
+    .instagram-btn { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
 
     .footer-contact {
       margin-top: 20px;
@@ -845,13 +536,7 @@
       margin-bottom: 12px;
       color: #ccc;
       font-size: 14px;
-      transition: all 0.3s ease;
       text-decoration: none;
-    }
-
-    .footer-contact-item:hover {
-      color: white;
-      transform: translateX(5px);
     }
 
     .copyright {
@@ -863,7 +548,7 @@
       border-top: 1px solid #333;
     }
 
-    /* Bottom Navigation */
+    /* Bottom Nav */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -875,7 +560,6 @@
       padding: 8px 0;
       border-top: 1px solid #f0f0f0;
       z-index: 1000;
-      transition: all 0.3s ease;
     }
 
     .nav-item {
@@ -887,128 +571,16 @@
       color: var(--text-gray);
       font-size: 11px;
       padding: 4px 12px;
-      transition: all 0.3s ease;
-      position: relative;
     }
 
-    .nav-item::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%) scale(0);
-      width: 30px;
-      height: 3px;
-      background: var(--primary-red);
-      border-radius: 0 0 10px 10px;
-      transition: all 0.3s ease;
-    }
+    .nav-item.active { color: var(--primary-red); }
 
-    .nav-item.active {
-      color: var(--primary-red);
-    }
-
-    .nav-item.active::before {
-      transform: translateX(-50%) scale(1);
-    }
-
-    .nav-item:hover {
-      color: var(--primary-red);
-      transform: translateY(-2px);
-    }
-
-    .nav-item i {
-      font-size: 22px;
-      transition: all 0.3s ease;
-    }
-
-    .nav-item:hover i {
-      transform: scale(1.1);
-    }
-
-    /* Scroll animations */
-    .scroll-animate {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: all 0.6s ease-out;
-    }
-
-    .scroll-animate.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .nav-item i { font-size: 22px; }
   </style>
 </head>
 <body>
-  <!-- Slide-out Menu Overlay -->
-  <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
-
-  <!-- Slide-out Menu -->
-  <nav class="side-menu" id="sideMenu">
-    <div class="menu-header">
-      <div class="menu-close" onclick="closeMenu()">
-        <i class="fas fa-times"></i>
-      </div>
-      <div class="menu-brand">
-        <img src="https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg" alt="TG's Kitchen" class="menu-logo">
-        <div class="menu-brand-text">
-          <h3>TG's Kitchen</h3>
-          <p>Freshly Made Daily</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="menu-nav">
-      <a href="/" class="menu-item" onclick="closeMenu()">
-        <i class="fas fa-home"></i>
-        <span>Home</span>
-      </a>
-      <a href="/menu" class="menu-item" onclick="closeMenu()">
-        <i class="fas fa-utensils"></i>
-        <span>Menu</span>
-      </a>
-      <a href="/gallery" class="menu-item" onclick="closeMenu()">
-        <i class="fas fa-images"></i>
-        <span>Gallery</span>
-      </a>
-      <a href="/cart" class="menu-item" onclick="closeMenu()">
-        <i class="fas fa-shopping-bag"></i>
-        <span>Cart</span>
-      </a>
-      <a href="/leaderboard" class="menu-item" onclick="closeMenu()">
-        <i class="fas fa-trophy"></i>
-        <span>Leaderboard</span>
-      </a>
-
-      <div class="menu-divider"></div>
-
-      <a href="/about" class="menu-item" onclick="closeMenu()">
-        <i class="fas fa-info-circle"></i>
-        <span>About Us</span>
-      </a>
-      <a href="/contact" class="menu-item" onclick="closeMenu()">
-        <i class="fas fa-phone"></i>
-        <span>Contact Us</span>
-      </a>
-
-      
-    </div>
-
-    <div class="menu-social">
-      <div class="menu-social-title">Follow Us</div>
-      <div class="menu-social-links">
-        <a href="https://wa.me/2349061120754" class="menu-social-btn menu-whatsapp" target="_blank">
-          <i class="fab fa-whatsapp"></i>
-        </a>
-        <a href="https://www.tiktok.com/@tgs_kitchen_._?_r=1&_t=ZS-95Hh78V1EiD" class="menu-social-btn menu-tiktok" target="_blank">
-          <i class="fab fa-tiktok"></i>
-        </a>
-        <a href="https://www.instagram.com/tgs_kitchen_._?igsh=MXF1Y2Q4ZGp5b2x4cQ==" class="menu-social-btn menu-instagram" target="_blank">
-          <i class="fab fa-instagram"></i>
-        </a>
-      </div>
-    </div>
-  </nav>
+  <!-- Overlay for closing dropdown -->
+  <div class="dropdown-overlay" id="dropdownOverlay" onclick="closeDropdown()"></div>
 
   <!-- Header -->
   <header class="header" id="header">
@@ -1017,20 +589,44 @@
       <span class="brand-name">TG's Kitchen</span>
     </div>
     <div class="header-icons">
-      <a href="/cart" style="color: inherit;"><i class="fas fa-shopping-bag"></i></a>
-      <i class="fas fa-bars" onclick="openMenu()"></i>
+      <a href="/cart" style="color: inherit; font-size: 22px; padding: 8px;">
+        <i class="fas fa-shopping-bag"></i>
+      </a>
+      <button class="menu-btn" id="menuBtn" onclick="toggleDropdown()" aria-label="Open menu">
+        <i class="fas fa-bars"></i>
+      </button>
+
+      <!-- DROPDOWN MENU -->
+      <div class="dropdown-menu" id="dropdownMenu">
+        <a href="/leaderboard" class="dropdown-item" onclick="closeDropdown()">
+          <i class="fas fa-trophy"></i>
+          <span>Leaderboard</span>
+        </a>
+        <a href="/gallery" class="dropdown-item" onclick="closeDropdown()">
+          <i class="fas fa-images"></i>
+          <span>Gallery</span>
+        </a>
+        <a href="/about" class="dropdown-item" onclick="closeDropdown()">
+          <i class="fas fa-info-circle"></i>
+          <span>About Us</span>
+        </a>
+        <a href="/contact" class="dropdown-item" onclick="closeDropdown()">
+          <i class="fas fa-phone"></i>
+          <span>Contact Us</span>
+        </a>
+      </div>
     </div>
   </header>
 
   <!-- Hero Section -->
   <section class="hero">
     <h1 class="animate-fadeInUp">Freshly Made Meals<br>Delivered to Your Doorstep</h1>
-    <p class="hero-subtitle animate-fadeInUp delay-1">New Menu Every Day • Available for Events & Occasions</p>
-    <div class="hero-location animate-fadeInUp delay-2">
+    <p class="hero-subtitle delay-1">New Menu Every Day • Available for Events & Occasions</p>
+    <div class="hero-location delay-2">
       <span><i class="fas fa-map-marker-alt"></i> Asaba</span>
       <span><i class="fas fa-truck"></i> We Deliver</span>
     </div>
-    <div class="hero-buttons animate-fadeInUp delay-3">
+    <div class="hero-buttons delay-3">
       <button class="btn-primary" onclick="window.location.href='/menu'">Order Now</button>
       <a href="/menu" class="btn-secondary">View Menu</a>
     </div>
@@ -1045,18 +641,16 @@
   </section>
 
   <!-- Popular Dishes -->
-  <section class="section scroll-animate">
+  <section class="section">
     <div class="section-header">
       <h2 class="section-title">Popular Dishes</h2>
       <a href="/menu" class="view-all">View All →</a>
     </div>
-    <div class="dishes-grid" id="popularDishes">
-      <!-- Loaded dynamically -->
-    </div>
+    <div class="dishes-grid" id="popularDishes"></div>
   </section>
 
   <!-- Why Choose Us -->
-  <section class="features-section scroll-animate">
+  <section class="features-section">
     <h2 class="section-title" style="text-align: center;">Why Choose TG's Kitchen</h2>
     <div class="features-grid">
       <div class="feature-item">
@@ -1083,26 +677,26 @@
   </section>
 
   <!-- CTA Section -->
-  <section class="cta-section scroll-animate">
+  <section class="cta-section">
     <h2>Everything you crave, delivered.</h2>
-    <p>From our kitchen to your table — enjoy restaurant-quality meals without leaving your home. Every dish is made with fresh ingredients and packed with care for the perfect delivery experience.</p>
+    <p>From our kitchen to your table — enjoy restaurant-quality meals without leaving your home.</p>
     <img src="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=600" alt="Delicious food" class="cta-image">
     <button class="btn-primary" onclick="window.location.href='/menu'" style="width: 200px;">Order Now</button>
   </section>
 
   <!-- Taste Section -->
-  <section class="section scroll-animate" style="background: #fafafa;">
+  <section class="section" style="background: #fafafa;">
     <h2 class="section-title">Taste the difference, every single bite.</h2>
     <p style="color: var(--text-gray); font-size: 14px; line-height: 1.6; margin-top: 12px;">
-      We don't just cook food — we craft experiences. Every plate tells a story of passion, quality ingredients, and a commitment to making your meals extraordinary.
+      We don't just cook food — we craft experiences. Every plate tells a story of passion and quality.
     </p>
     <button class="btn-primary" onclick="window.location.href='/menu'" style="margin-top: 20px; width: 180px;">Explore Menu</button>
   </section>
 
   <!-- Events Section -->
-  <section class="events-section scroll-animate">
+  <section class="events-section">
     <h2>Available for Events & Special Occasions</h2>
-    <p>From intimate dinners to large celebrations — let TG's Kitchen handle the food so you can enjoy the moment.</p>
+    <p>From intimate dinners to large celebrations — let TG's Kitchen handle the food.</p>
     <button class="btn-primary" onclick="bookEvent()">Book Now</button>
   </section>
 
@@ -1112,140 +706,91 @@
     <div class="footer-tagline">Eat with satisfaction. Freshly made meals delivered daily to your doorstep.</div>
 
     <div class="quick-links-grid">
-      <a href="/menu" class="quick-link">
-        <i class="fas fa-utensils"></i>
-        <span>Menu</span>
-      </a>
-      <a href="/gallery" class="quick-link">
-        <i class="fas fa-images"></i>
-        <span>Gallery</span>
-      </a>
-      <a href="/leaderboard" class="quick-link">
-        <i class="fas fa-trophy"></i>
-        <span>Leaderboard</span>
-      </a>
-      <a href="/about" class="quick-link">
-        <i class="fas fa-info-circle"></i>
-        <span>About Us</span>
-      </a>
+      <a href="/menu" class="quick-link"><i class="fas fa-utensils"></i><span>Menu</span></a>
+      <a href="/gallery" class="quick-link"><i class="fas fa-images"></i><span>Gallery</span></a>
+      <a href="/leaderboard" class="quick-link"><i class="fas fa-trophy"></i><span>Leaderboard</span></a>
+      <a href="/about" class="quick-link"><i class="fas fa-info-circle"></i><span>About Us</span></a>
     </div>
 
     <div class="social-section">
       <div class="social-title">Connect With Us</div>
       <div class="social-buttons">
         <a href="https://wa.me/2349061120754" class="social-btn whatsapp-btn" target="_blank">
-          <i class="fab fa-whatsapp"></i>
-          <span>Chat on WhatsApp</span>
+          <i class="fab fa-whatsapp"></i><span>Chat on WhatsApp</span>
         </a>
-
         <a href="https://www.tiktok.com/@tgs_kitchen_._?_r=1&_t=ZS-95Hh78V1EiD" class="social-btn tiktok-btn" target="_blank">
-          <i class="fab fa-tiktok"></i>
-          <span>Follow on TikTok</span>
+          <i class="fab fa-tiktok"></i><span>Follow on TikTok</span>
         </a>
-
         <a href="https://www.instagram.com/tgs_kitchen_._?igsh=MXF1Y2Q4ZGp5b2x4cQ==" class="social-btn instagram-btn" target="_blank">
-          <i class="fab fa-instagram"></i>
-          <span>Follow on Instagram</span>
+          <i class="fab fa-instagram"></i><span>Follow on Instagram</span>
         </a>
       </div>
     </div>
 
     <div class="footer-contact">
       <a href="tel:+2349061120754" class="footer-contact-item">
-        <i class="fas fa-phone"></i>
-        <span>+234 906 112 0754</span>
+        <i class="fas fa-phone"></i><span>+234 906 112 0754</span>
       </a>
       <div class="footer-contact-item">
-        <i class="fas fa-map-marker-alt"></i>
-        <span>Asaba, Delta State</span>
+        <i class="fas fa-map-marker-alt"></i><span>Asaba, Delta State</span>
       </div>
     </div>
 
-    <div class="copyright">
-      © 2026 TG's Kitchen. All rights reserved.
-    </div>
+    <div class="copyright">© 2026 TG's Kitchen. All rights reserved.</div>
   </footer>
 
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
-    <a href="/" class="nav-item active">
-      <i class="fas fa-home"></i>
-      <span>Home</span>
-    </a>
-    <a href="/menu" class="nav-item">
-      <i class="fas fa-utensils"></i>
-      <span>Menu</span>
-    </a>
-    <a href="/gallery" class="nav-item">
-      <i class="fas fa-images"></i>
-      <span>Gallery</span>
-    </a>
-    <a href="/cart" class="nav-item">
-      <i class="fas fa-shopping-bag"></i>
-      <span>Cart</span>
-    </a>
-    <a href="/leaderboard" class="nav-item">
-      <i class="fas fa-trophy"></i>
-      <span>Leaderboard</span>
-    </a>
+    <a href="/" class="nav-item active"><i class="fas fa-home"></i><span>Home</span></a>
+    <a href="/menu" class="nav-item"><i class="fas fa-utensils"></i><span>Menu</span></a>
+    <a href="/gallery" class="nav-item"><i class="fas fa-images"></i><span>Gallery</span></a>
+    <a href="/cart" class="nav-item"><i class="fas fa-shopping-bag"></i><span>Cart</span></a>
+    <a href="/leaderboard" class="nav-item"><i class="fas fa-trophy"></i><span>Leaderboard</span></a>
   </nav>
 
   <script>
-    let allMeals = [];
+    // Dropdown Menu Functions
+    function toggleDropdown() {
+      const dropdown = document.getElementById('dropdownMenu');
+      const overlay = document.getElementById('dropdownOverlay');
 
-    // Menu Functions
-    function openMenu() {
-      document.getElementById('sideMenu').classList.add('active');
-      document.getElementById('menuOverlay').classList.add('active');
-      document.body.classList.add('menu-open');
-    }
-
-    function closeMenu() {
-      document.getElementById('sideMenu').classList.remove('active');
-      document.getElementById('menuOverlay').classList.remove('active');
-      document.body.classList.remove('menu-open');
-    }
-
-    // Header scroll effect
-    window.addEventListener('scroll', () => {
-      const header = document.getElementById('header');
-      if (window.scrollY > 50) {
-        header.classList.add('scrolled');
+      if (dropdown.classList.contains('active')) {
+        closeDropdown();
       } else {
-        header.classList.remove('scrolled');
+        dropdown.classList.add('active');
+        overlay.classList.add('active');
+      }
+    }
+
+    function closeDropdown() {
+      const dropdown = document.getElementById('dropdownMenu');
+      const overlay = document.getElementById('dropdownOverlay');
+
+      dropdown.classList.remove('active');
+      overlay.classList.remove('active');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      const menuBtn = document.getElementById('menuBtn');
+      const dropdown = document.getElementById('dropdownMenu');
+
+      if (!menuBtn.contains(event.target) && !dropdown.contains(event.target)) {
+        closeDropdown();
       }
     });
 
-    // Scroll animations
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, observerOptions);
-
-    document.querySelectorAll('.scroll-animate').forEach(el => {
-      observer.observe(el);
-    });
-
+    // Load meals
     async function loadPopularDishes() {
       try {
         const res = await fetch('/api/meals');
-        allMeals = await res.json();
-
+        const allMeals = await res.json();
         const popular = allMeals.slice(0, 4);
         const container = document.getElementById('popularDishes');
 
-        container.innerHTML = popular.map((meal, index) => `
-          <div class="dish-card" style="animation-delay: ${index * 0.1}s">
-            <img src="${meal.image || 'https://via.placeholder.com/300x200?text=No+Image'}" 
-                 alt="${meal.name}" class="dish-image" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+        container.innerHTML = popular.map((meal) => `
+          <div class="dish-card">
+            <img src="${meal.image || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${meal.name}" class="dish-image">
             <div class="dish-info">
               <div class="dish-name">${meal.name}</div>
               <div class="dish-desc">${meal.description || 'Delicious meal'}</div>
@@ -1258,34 +803,21 @@
         `).join('');
       } catch (e) {
         console.error('Failed to load meals:', e);
-        document.getElementById('popularDishes').innerHTML = `
-          <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">
-            <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 16px;"></i>
-            <p>Failed to load meals. Please refresh.</p>
-          </div>
-        `;
       }
     }
 
     function addToCart(id, name, price, image) {
       let cart = JSON.parse(localStorage.getItem('cart')) || [];
       const existing = cart.find(item => item.id === id);
-
       if (existing) {
         existing.quantity = Math.min(existing.quantity + 1, 10);
       } else {
         cart.push({ id, name, price, image, quantity: 1 });
       }
-
       localStorage.setItem('cart', JSON.stringify(cart));
-
       const btn = event.target;
       btn.innerHTML = '<i class="fas fa-check"></i>';
-      btn.style.background = '#4caf50';
-      setTimeout(() => {
-        btn.innerHTML = '+';
-        btn.style.background = '';
-      }, 1000);
+      setTimeout(() => btn.innerHTML = '+', 1000);
     }
 
     function searchMeals() {
@@ -1296,7 +828,7 @@
     }
 
     function bookEvent() {
-      const message = encodeURIComponent('Hello TG's Kitchen, I want to book catering for an event.');
+      const message = encodeURIComponent("Hello TG's Kitchen, I want to book catering for an event.");
       window.open(`https://wa.me/2349061120754?text=${message}`, '_blank');
     }
 
