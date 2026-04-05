@@ -87,7 +87,7 @@ def init_db():
                 description TEXT,
                 image_url TEXT NOT NULL,
                 category TEXT DEFAULT 'Featured',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at https://www.tgkitchen.online DEFAULT CURRENT_TIMESTAMP
             )
         ''')
         c.execute('''
@@ -220,6 +220,14 @@ def checkout():
 @app.route('/leaderboard')
 def leaderboard():
     return render_template('leaderboard.html')
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
 
 @app.route('/leaderboardad')
 def leaderboard_admin():
