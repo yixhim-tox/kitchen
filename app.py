@@ -68,39 +68,50 @@ except Exception as e:
 
 # === SQLite setup (fallback if MongoDB fails) ===
 def init_db():
-    with sqlite3.connect(DB_NAME) as conn:
-        c = conn.cursor()
-        c.execute('''
-            CREATE TABLE IF NOT EXISTS meals (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                description TEXT,
-                price REAL NOT NULL,
-                image TEXT,
-                category TEXT
-            )
-        ''')
-        c.execute('''
-            CREATE TABLE IF NOT EXISTS gallery (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT NOT NULL,
-                description TEXT,
-                image_url TEXT NOT NULL,
-                category TEXT DEFAULT 'Featured',
-                created_at https://www.tgkitchen.online DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        c.execute('''
-            CREATE TABLE IF NOT EXISTS leaderboard (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                rank INTEGER,
-                player TEXT,
-                plates INTEGER,
-                img TEXT
-            )
-        ''')
-        conn.commit()
-        print("✅ SQLite database initialized as fallback")
+    try:
+        with sqlite3.connect(DB_NAME) as conn:
+            c = conn.cursor()
+
+            # Meals table
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS meals (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    description TEXT,
+                    price REAL NOT NULL,
+                    image TEXT,
+                    category TEXT
+                )
+            """)
+
+            # Gallery table - FIXED syntax
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS gallery (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT NOT NULL,
+                    description TEXT,
+                    image_url TEXT NOT NULL,
+                    category TEXT DEFAULT 'Featured',
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            # Leaderboard table
+            c.execute("""
+                CREATE TABLE IF NOT EXISTS leaderboard (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    rank INTEGER,
+                    player TEXT,
+                    plates INTEGER,
+                    img TEXT
+                )
+            """)
+
+            conn.commit()
+            print("✅ SQLite database initialized as fallback")
+    except Exception as e:
+        print("❌ Error initializing SQLite:", e)
+        raise
 
 init_db()
 
@@ -125,7 +136,7 @@ def mongo_to_dict(doc):
 def get_all_meals():
     all_meals = []
     seen_names = set()
-    
+
     # Get from MongoDB first
     if USE_MONGO and mongo_meals is not None:
         try:
@@ -137,14 +148,14 @@ def get_all_meals():
             print(f"📊 MongoDB: Found {len(mongo_meals_list)} meals")
         except Exception as e:
             print("MongoDB query failed:", e)
-    
+
     # Get from SQLite and add any missing meals
     try:
         conn = sqlite3.connect(DB_NAME)
         conn.row_factory = sqlite3.Row
         sqlite_meals = conn.execute('SELECT * FROM meals ORDER BY id DESC').fetchall()
         conn.close()
-        
+
         sqlite_count = 0
         for meal in sqlite_meals:
             meal_dict = dict(meal)
@@ -155,14 +166,14 @@ def get_all_meals():
         print(f"📊 SQLite: Found {len(sqlite_meals)} meals, added {sqlite_count} new ones")
     except Exception as e:
         print("SQLite error:", e)
-    
+
     print(f"📊 Total combined meals: {len(all_meals)}")
     return all_meals
 
 def get_all_gallery():
     all_images = []
     seen_titles = set()
-    
+
     # Get from MongoDB first
     if USE_MONGO and mongo_gallery is not None:
         try:
@@ -174,14 +185,14 @@ def get_all_gallery():
             print(f"📊 MongoDB: Found {len(mongo_images)} gallery images")
         except Exception as e:
             print("MongoDB gallery query failed:", e)
-    
+
     # Get from SQLite and add any missing images
     try:
         conn = sqlite3.connect(DB_NAME)
         conn.row_factory = sqlite3.Row
         sqlite_images = conn.execute('SELECT * FROM gallery ORDER BY created_at DESC').fetchall()
         conn.close()
-        
+
         sqlite_count = 0
         for img in sqlite_images:
             img_dict = dict(img)
@@ -192,7 +203,7 @@ def get_all_gallery():
         print(f"📊 SQLite: Found {len(sqlite_images)} gallery images, added {sqlite_count} new ones")
     except Exception as e:
         print("SQLite gallery error:", e)
-    
+
     print(f"📊 Total combined gallery images: {len(all_images)}")
     return all_images
 
@@ -221,6 +232,10 @@ def checkout():
 def leaderboard():
     return render_template('leaderboard.html')
 
+@app.route('/leaderboardad')
+def leaderboard_admin():
+    return render_template('leaderboardad.html')
+
 @app.route('/about')
 def about():
     return render_template('about.html')
@@ -228,10 +243,6 @@ def about():
 @app.route('/contact')
 def contact():
     return render_template('contact.html')
-
-@app.route('/leaderboardad')
-def leaderboard_admin():
-    return render_template('leaderboardad.html')
 
 @app.route('/admin')
 def admin():
@@ -251,43 +262,43 @@ def api_meals():
 def api_add_meal():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'OK'}), 200
-    
+
     try:
         print("📝 Adding new meal...")
-        
+
         data = request.get_json(force=True, silent=True)
         if not data:
             print("❌ No JSON data received")
             return jsonify({'error': 'No data received'}), 400
-        
+
         print("Received data:", {k: v[:50] + '...' if k == 'image' and len(str(v)) > 50 else v for k, v in data.items()})
-        
+
         name = data.get('name')
         description = data.get('description', '')
         price = data.get('price')
         image = data.get('image', '')
         category = data.get('category', 'Pasta')
-        
+
         # Validation
         if not name:
             return jsonify({'error': 'Name is required'}), 400
         if not price:
             return jsonify({'error': 'Price is required'}), 400
-        
+
         try:
             price = float(price)
         except:
             return jsonify({'error': 'Price must be a number'}), 400
-        
+
         # Handle base64 image size check
         if image and image.startswith('data:image'):
             size_kb = len(image) / 1024
             print(f"📸 Base64 image size: {size_kb:.1f}KB")
             if size_kb > 500:  # 500KB limit for base64
                 return jsonify({'error': 'Image too large. Max 500KB for base64 images.'}), 400
-        
+
         print(f"Validated: name={name}, price={price}, category={category}")
-        
+
         # Try MongoDB first (same DB as leaderboard)
         if USE_MONGO and mongo_meals is not None:
             try:
@@ -303,7 +314,7 @@ def api_add_meal():
                 return jsonify({'message': 'Meal added', 'id': str(result.inserted_id)})
             except Exception as mongo_err:
                 print("MongoDB insert failed, trying SQLite:", mongo_err)
-        
+
         # Fallback to SQLite
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
@@ -314,7 +325,7 @@ def api_add_meal():
         conn.close()
         print(f"✅ Meal added to SQLite with ID: {meal_id}")
         return jsonify({'message': 'Meal added', 'id': meal_id})
-        
+
     except Exception as e:
         print("❌ Error adding meal:", str(e))
         import traceback
@@ -325,19 +336,19 @@ def api_add_meal():
 def api_update_meal(meal_id):
     if request.method == 'OPTIONS':
         return jsonify({'message': 'OK'}), 200
-    
+
     try:
         data = request.get_json(force=True, silent=True)
         if not data:
             return jsonify({'error': 'No data received'}), 400
-        
+
         # Handle base64 image size check
         image = data.get('image', '')
         if image and image.startswith('data:image'):
             size_kb = len(image) / 1024
             if size_kb > 500:
                 return jsonify({'error': 'Image too large. Max 500KB for base64 images.'}), 400
-        
+
         if USE_MONGO and mongo_meals is not None:
             try:
                 mongo_meals.update_one(
@@ -354,7 +365,7 @@ def api_update_meal(meal_id):
                 return jsonify({'message': 'Meal updated'})
             except Exception as mongo_err:
                 print("MongoDB update failed:", mongo_err)
-        
+
         # SQLite fallback
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
@@ -372,7 +383,7 @@ def api_update_meal(meal_id):
 def api_delete_meal(meal_id):
     if request.method == 'OPTIONS':
         return jsonify({'message': 'OK'}), 200
-    
+
     try:
         if USE_MONGO and mongo_meals is not None:
             try:
@@ -380,7 +391,7 @@ def api_delete_meal(meal_id):
                 return jsonify({'message': 'Meal deleted'})
             except Exception as mongo_err:
                 print("MongoDB delete failed:", mongo_err)
-        
+
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
         c.execute('DELETE FROM meals WHERE id=?', (meal_id,))
@@ -405,26 +416,26 @@ def api_gallery():
 def api_add_gallery():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'OK'}), 200
-    
+
     try:
         data = request.get_json(force=True, silent=True)
         if not data:
             return jsonify({'error': 'No data received'}), 400
-            
+
         title = data.get('title')
         description = data.get('description', '')
         image_url = data.get('image_url')
         category = data.get('category', 'Featured')
-        
+
         if not title or not image_url:
             return jsonify({'error': 'Title and image URL are required'}), 400
-        
+
         # Handle base64 image size check
         if image_url and image_url.startswith('data:image'):
             size_kb = len(image_url) / 1024
             if size_kb > 500:
                 return jsonify({'error': 'Image too large. Max 500KB for base64 images.'}), 400
-        
+
         if USE_MONGO and mongo_gallery is not None:
             try:
                 result = mongo_gallery.insert_one({
@@ -437,7 +448,7 @@ def api_add_gallery():
                 return jsonify({'message': 'Image added', 'id': str(result.inserted_id)})
             except Exception as mongo_err:
                 print("MongoDB gallery insert failed:", mongo_err)
-        
+
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
         c.execute('''INSERT INTO gallery (title, description, image_url, category) VALUES (?, ?, ?, ?)''',
@@ -454,7 +465,7 @@ def api_add_gallery():
 def api_delete_gallery(img_id):
     if request.method == 'OPTIONS':
         return jsonify({'message': 'OK'}), 200
-    
+
     try:
         if USE_MONGO and mongo_gallery is not None:
             try:
@@ -462,7 +473,7 @@ def api_delete_gallery(img_id):
                 return jsonify({'message': 'Image deleted'})
             except Exception as mongo_err:
                 print("MongoDB gallery delete failed:", mongo_err)
-        
+
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
         c.execute('DELETE FROM gallery WHERE id=?', (img_id,))
@@ -478,7 +489,7 @@ def api_delete_gallery(img_id):
 def upload_image():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'OK'}), 200
-    
+
     try:
         # Check if this is a base64 upload (from leaderboard-style crop)
         if request.is_json:
@@ -493,15 +504,15 @@ def upload_image():
                     'public_id': 'base64',
                     'format': 'base64'
                 })
-        
+
         # File upload to Cloudinary (original behavior)
         if 'image' not in request.files:
             return jsonify({'error': 'No image provided'}), 400
-            
+
         file = request.files['image']
         if file.filename == '':
             return jsonify({'error': 'No file selected'}), 400
-        
+
         # Check if Cloudinary is configured
         if not os.getenv('CLOUDINARY_CLOUD_NAME'):
             print("⚠️ Cloudinary not configured, returning placeholder")
@@ -509,7 +520,7 @@ def upload_image():
                 'url': 'https://via.placeholder.com/800x600?text=Upload+Disabled',
                 'public_id': 'placeholder'
             })
-        
+
         upload_result = cloudinary.uploader.upload(
             file,
             folder="tgs_kitchen",
@@ -518,12 +529,12 @@ def upload_image():
                 {'quality': 'auto:good'}
             ]
         )
-        
+
         return jsonify({
             'url': upload_result['secure_url'],
             'public_id': upload_result['public_id']
         })
-        
+
     except Exception as e:
         print("Upload error:", e)
         return jsonify({'error': str(e)}), 500
@@ -534,7 +545,7 @@ def get_leaderboard():
     try:
         all_entries = []
         seen_players = set()
-        
+
         # Get from MongoDB first
         if leaderboard_collection is not None:
             try:
@@ -548,14 +559,14 @@ def get_leaderboard():
                 print(f"📊 MongoDB: Found {len(mongo_data)} leaderboard entries")
             except Exception as e:
                 print("MongoDB leaderboard query failed:", e)
-        
+
         # Get from SQLite and add any missing entries
         try:
             conn = sqlite3.connect(DB_NAME)
             conn.row_factory = sqlite3.Row
             rows = conn.execute('SELECT * FROM leaderboard ORDER BY rank').fetchall()
             conn.close()
-            
+
             sqlite_count = 0
             for row in rows:
                 entry_dict = dict(row)
@@ -568,7 +579,7 @@ def get_leaderboard():
             print(f"📊 SQLite: Found {len(rows)} leaderboard entries, added {sqlite_count} new ones")
         except Exception as e:
             print("SQLite leaderboard error:", e)
-        
+
         # Sort by rank
         all_entries.sort(key=lambda x: x.get('rank', 999))
         print(f"📊 Total combined leaderboard entries: {len(all_entries)}")
@@ -581,13 +592,13 @@ def get_leaderboard():
 def save_leaderboard():
     if request.method == 'OPTIONS':
         return jsonify({'message': 'OK'}), 200
-    
+
     try:
         data = request.get_json(force=True, silent=True)
-        
+
         if not data or not isinstance(data, list):
             return jsonify({'error': 'No data or invalid format'}), 400
-        
+
         # Check for oversized images and compress/convert to URLs if needed
         processed_data = []
         for entry in data:
@@ -595,7 +606,7 @@ def save_leaderboard():
             # If base64 image is too large, use default URL
             if img and img.startswith('data:image') and len(img) > 500000:
                 img = 'https://i.postimg.cc/RFQyqcrR/IMG-20260222-WA0018.jpg'
-            
+
             processed_data.append({
                 'rank': int(entry.get('rank', 0)),
                 'player': entry.get('player') or '',
@@ -603,13 +614,13 @@ def save_leaderboard():
                 'score': int(entry.get('plates', entry.get('score', 0))),
                 'img': img
             })
-        
+
         if leaderboard_collection is not None:
             leaderboard_collection.delete_many({})
-            
+
             for entry in processed_data:
                 leaderboard_collection.insert_one(entry)
-            
+
             return jsonify({'message': 'Leaderboard saved to MongoDB'})
         else:
             # Fallback to SQLite
@@ -652,7 +663,7 @@ def migrate_to_mongodb():
     """
     if request.method == 'OPTIONS':
         return jsonify({'message': 'OK'}), 200
-    
+
     # Only allow migration if MongoDB is available
     if not USE_MONGO or mongo_db is None:
         return jsonify({
@@ -660,19 +671,19 @@ def migrate_to_mongodb():
             'mongodb_connected': USE_MONGO,
             'mongo_db': str(mongo_db)
         }), 400
-    
+
     results = {
         'meals': {'sqlite_count': 0, 'mongo_count': 0, 'status': 'pending'},
         'gallery': {'sqlite_count': 0, 'mongo_count': 0, 'status': 'pending'},
         'leaderboard': {'sqlite_count': 0, 'mongo_count': 0, 'status': 'pending'}
     }
-    
+
     try:
         # Connect to SQLite
         conn = sqlite3.connect(DB_NAME)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        
+
         # === MIGRATE MEALS ===
         print("🔄 Migrating meals from SQLite to MongoDB...")
         try:
@@ -680,11 +691,11 @@ def migrate_to_mongodb():
             rows = cursor.execute('SELECT * FROM meals ORDER BY id').fetchall()
             meals = [dict(row) for row in rows]
             results['meals']['sqlite_count'] = len(meals)
-            
+
             if meals:
                 # Clear existing MongoDB meals
                 mongo_meals.delete_many({})
-                
+
                 # Convert and insert
                 for meal in meals:
                     mongo_doc = {
@@ -697,29 +708,29 @@ def migrate_to_mongodb():
                         'sqlite_id': meal.get('id')  # Keep reference
                     }
                     mongo_meals.insert_one(mongo_doc)
-                
+
                 results['meals']['mongo_count'] = mongo_meals.count_documents({})
                 results['meals']['status'] = 'success'
                 print(f"✅ Migrated {results['meals']['mongo_count']} meals")
             else:
                 results['meals']['status'] = 'no_data'
                 print("ℹ️ No meals found in SQLite")
-                
+
         except Exception as e:
             results['meals']['status'] = 'error'
             results['meals']['error'] = str(e)
             print(f"❌ Error migrating meals: {e}")
-        
+
         # === MIGRATE GALLERY ===
         print("🔄 Migrating gallery from SQLite to MongoDB...")
         try:
             rows = cursor.execute('SELECT * FROM gallery ORDER BY id').fetchall()
             images = [dict(row) for row in rows]
             results['gallery']['sqlite_count'] = len(images)
-            
+
             if images:
                 mongo_gallery.delete_many({})
-                
+
                 for img in images:
                     mongo_doc = {
                         'title': img.get('title', ''),
@@ -730,29 +741,29 @@ def migrate_to_mongodb():
                         'sqlite_id': img.get('id')
                     }
                     mongo_gallery.insert_one(mongo_doc)
-                
+
                 results['gallery']['mongo_count'] = mongo_gallery.count_documents({})
                 results['gallery']['status'] = 'success'
                 print(f"✅ Migrated {results['gallery']['mongo_count']} gallery images")
             else:
                 results['gallery']['status'] = 'no_data'
                 print("ℹ️ No gallery images found in SQLite")
-                
+
         except Exception as e:
             results['gallery']['status'] = 'error'
             results['gallery']['error'] = str(e)
             print(f"❌ Error migrating gallery: {e}")
-        
+
         # === MIGRATE LEADERBOARD ===
         print("🔄 Migrating leaderboard from SQLite to MongoDB...")
         try:
             rows = cursor.execute('SELECT * FROM leaderboard ORDER BY rank').fetchall()
             entries = [dict(row) for row in rows]
             results['leaderboard']['sqlite_count'] = len(entries)
-            
+
             if entries:
                 leaderboard_collection.delete_many({})
-                
+
                 for entry in entries:
                     mongo_doc = {
                         'rank': int(entry.get('rank', 0)),
@@ -763,34 +774,35 @@ def migrate_to_mongodb():
                         'sqlite_id': entry.get('id')
                     }
                     leaderboard_collection.insert_one(mongo_doc)
-                
+
                 results['leaderboard']['mongo_count'] = leaderboard_collection.count_documents({})
                 results['leaderboard']['status'] = 'success'
                 print(f"✅ Migrated {results['leaderboard']['mongo_count']} leaderboard entries")
             else:
                 results['leaderboard']['status'] = 'no_data'
                 print("ℹ️ No leaderboard entries found in SQLite")
-                
+
         except Exception as e:
             results['leaderboard']['status'] = 'error'
             results['leaderboard']['error'] = str(e)
             print(f"❌ Error migrating leaderboard: {e}")
-        
+
         conn.close()
-        
+
         # Summary
         total_migrated = (results['meals']['mongo_count'] + 
                          results['gallery']['mongo_count'] + 
                          results['leaderboard']['mongo_count'])
-        
-        print(f"\n🎉 Migration complete! Total items migrated: {total_migrated}")
-        
+
+        print(f"
+🎉 Migration complete! Total items migrated: {total_migrated}")
+
         return jsonify({
             'message': f'Migration complete! {total_migrated} items migrated.',
             'details': results,
             'note': 'Your data is now in MongoDB. The app will use MongoDB going forward.'
         })
-        
+
     except Exception as e:
         print(f"❌ Migration failed: {e}")
         import traceback
@@ -821,7 +833,7 @@ def db_status():
         },
         'data_counts': {}
     }
-    
+
     # Count data in both databases
     try:
         if USE_MONGO and mongo_meals:
@@ -830,7 +842,7 @@ def db_status():
             status['data_counts']['mongodb_leaderboard'] = leaderboard_collection.count_documents({})
     except Exception as e:
         status['data_counts']['mongodb_error'] = str(e)
-    
+
     try:
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
@@ -840,7 +852,7 @@ def db_status():
         conn.close()
     except Exception as e:
         status['data_counts']['sqlite_error'] = str(e)
-    
+
     return jsonify(status)
 
 # === Run app ===
