@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>About Us - TG's Kitchen</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary-red: #E53935;
+      --dark-bg: #1a1a1a;
+      --light-pink: #FFEBEE;
+      --text-dark: #212121;
+      --text-gray: #757575;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fff;
+      color: var(--text-dark);
+      padding-bottom: 80px;
+      overflow-x: hidden;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .animate-fadeInUp {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .animate-fadeIn {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .delay-3 { animation-delay: 0.3s; opacity: 0; }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1000;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .brand-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .header-icons {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .header-icons i {
+      font-size: 22px;
+      color: var(--text-dark);
+      cursor: pointer;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-top: 64px;
+      padding: 24px 16px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 24px;
+      color: var(--text-dark);
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    /* About Section */
+    .about-section {
+      background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+      border-radius: 20px;
+      padding: 28px 20px;
+      margin-bottom: 24px;
+      border: 1px solid #f0f0f0;
+      animation: fadeInUp 0.6s ease-out 0.1s forwards;
+      opacity: 0;
+    }
+
+    .about-section h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--primary-red);
+    }
+
+    .about-section p {
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--text-gray);
+      margin-bottom: 16px;
+    }
+
+    /* Mission Cards */
+    .mission-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .mission-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px 20px;
+      border: 1px solid #f0f0f0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      animation: fadeInUp 0.6s ease-out forwards;
+      opacity: 0;
+    }
+
+    .mission-card:nth-child(1) { animation-delay: 0.2s; }
+    .mission-card:nth-child(2) { animation-delay: 0.3s; }
+    .mission-card:nth-child(3) { animation-delay: 0.4s; }
+
+    .mission-icon {
+      width: 56px;
+      height: 56px;
+      background: var(--light-pink);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      color: var(--primary-red);
+      font-size: 24px;
+    }
+
+    .mission-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .mission-card p {
+      font-size: 14px;
+      color: var(--text-gray);
+      line-height: 1.6;
+    }
+
+    /* Values Section */
+    .values-section {
+      background: var(--light-pink);
+      border-radius: 20px;
+      padding: 28px 20px;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.6s ease-out 0.5s forwards;
+      opacity: 0;
+    }
+
+    .values-section h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .values-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .value-item {
+      background: #fff;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .value-item i {
+      display: block;
+      font-size: 20px;
+      color: var(--primary-red);
+      margin-bottom: 8px;
+    }
+
+    /* Social Connect Section */
+    .social-section {
+      background: var(--dark-bg);
+      border-radius: 20px;
+      padding: 28px 20px;
+      text-align: center;
+      color: white;
+      animation: fadeInUp 0.6s ease-out 0.6s forwards;
+      opacity: 0;
+    }
+
+    .social-section h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .social-section p {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 24px;
+    }
+
+    .social-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .social-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .social-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .whatsapp-btn {
+      background: #25D366;
+      color: white;
+    }
+
+    .tiktok-btn {
+      background: #000;
+      color: white;
+      border: 1px solid #333;
+    }
+
+    .instagram-btn {
+      background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+      color: white;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      border-top: 1px solid #f0f0f0;
+      z-index: 1000;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: var(--text-gray);
+      font-size: 11px;
+      padding: 4px 12px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .nav-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      width: 30px;
+      height: 3px;
+      background: var(--primary-red);
+      border-radius: 0 0 10px 10px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-item.active {
+      color: var(--primary-red);
+    }
+
+    .nav-item.active::before {
+      transform: translateX(-50%) scale(1);
+    }
+
+    .nav-item i {
+      font-size: 22px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-section">
+      <img src="https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg" alt="TG's Kitchen" class="logo">
+      <span class="brand-name">TG's Kitchen</span>
+    </div>
+    <div class="header-icons">
+      <a href="/cart" style="color: inherit;"><i class="fas fa-shopping-bag"></i></a>
+      <i class="fas fa-bars" onclick="toggleMenu()"></i>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <h1 class="page-title">About Us</h1>
+
+    <!-- About Section -->
+    <section class="about-section">
+      <h2>Our Story</h2>
+      <p>
+        TG's Kitchen was born from a passion for creating delicious, freshly made meals that bring people together. 
+        What started as a small kitchen in Asaba has grown into a beloved food destination, serving hundreds of 
+        satisfied customers daily.
+      </p>
+      <p>
+        We believe that great food should be accessible to everyone. That's why we prepare a new menu every day, 
+        using only the freshest ingredients sourced from local suppliers. From hearty family dinners to special 
+        event catering, we're here to make every meal memorable.
+      </p>
+    </section>
+
+    <!-- Mission Cards -->
+    <div class="mission-grid">
+      <div class="mission-card">
+        <div class="mission-icon"><i class="fas fa-heart"></i></div>
+        <h3>Made with Love</h3>
+        <p>Every dish is prepared with care and attention to detail, ensuring you taste the difference in every bite.</p>
+      </div>
+
+      <div class="mission-card">
+        <div class="mission-icon"><i class="fas fa-leaf"></i></div>
+        <h3>Fresh Ingredients</h3>
+        <p>We source the best local ingredients daily to ensure maximum freshness and flavor in every meal we serve.</p>
+      </div>
+
+      <div class="mission-card">
+        <div class="mission-icon"><i class="fas fa-shipping-fast"></i></div>
+        <h3>Fast Delivery</h3>
+        <p>Hot meals delivered quickly to your doorstep in Asaba and surrounding areas. Satisfaction guaranteed.</p>
+      </div>
+    </div>
+
+    <!-- Values Section -->
+    <section class="values-section">
+      <h2>What We Stand For</h2>
+      <div class="values-list">
+        <div class="value-item">
+          <i class="fas fa-star"></i>
+          Quality First
+        </div>
+        <div class="value-item">
+          <i class="fas fa-clock"></i>
+          Always Fresh
+        </div>
+        <div class="value-item">
+          <i class="fas fa-smile"></i>
+          Customer Happy
+        </div>
+        <div class="value-item">
+          <i class="fas fa-handshake"></i>
+          Reliable Service
+        </div>
+      </div>
+    </section>
+
+    <!-- Social Connect -->
+    <section class="social-section">
+      <h2>Connect With Us</h2>
+      <p>Follow us on social media for daily menu updates, behind-the-scenes content, and special offers!</p>
+
+      <div class="social-buttons">
+        <a href="https://wa.me/2349061120754" class="social-btn whatsapp-btn" target="_blank">
+          <i class="fab fa-whatsapp"></i>
+          Chat on WhatsApp
+        </a>
+
+        <a href="https://www.tiktok.com/@tgs_kitchen_._?_r=1&_t=ZS-95Hh78V1EiD" class="social-btn tiktok-btn" target="_blank">
+          <i class="fab fa-tiktok"></i>
+          Follow on TikTok
+        </a>
+
+        <a href="https://www.instagram.com/tgs_kitchen_._?igsh=MXF1Y2Q4ZGp5b2x4cQ==" class="social-btn instagram-btn" target="_blank">
+          <i class="fab fa-instagram"></i>
+          Follow on Instagram
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="/" class="nav-item">
+      <i class="fas fa-home"></i>
+      <span>Home</span>
+    </a>
+    <a href="/menu" class="nav-item">
+      <i class="fas fa-utensils"></i>
+      <span>Menu</span>
+    </a>
+    <a href="/gallery" class="nav-item">
+      <i class="fas fa-images"></i>
+      <span>Gallery</span>
+    </a>
+    <a href="/cart" class="nav-item">
+      <i class="fas fa-shopping-bag"></i>
+      <span>Cart</span>
+    </a>
+    <a href="/leaderboard" class="nav-item">
+      <i class="fas fa-trophy"></i>
+      <span>Leaderboard</span>
+    </a>
+  </nav>
+
+  <script>
+    function toggleMenu() {
+      const options = confirm('Go to Admin Panel?');
+      if (options) window.location.href = '/admin';
+    }
+  </script>
+</body>
+</html>

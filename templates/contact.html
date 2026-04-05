@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Contact Us - TG's Kitchen</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary-red: #E53935;
+      --dark-bg: #1a1a1a;
+      --light-pink: #FFEBEE;
+      --text-dark: #212121;
+      --text-gray: #757575;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fff;
+      color: var(--text-dark);
+      padding-bottom: 80px;
+      overflow-x: hidden;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .animate-fadeInUp {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1000;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .brand-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .header-icons {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .header-icons i {
+      font-size: 22px;
+      color: var(--text-dark);
+      cursor: pointer;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-top: 64px;
+      padding: 24px 16px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: var(--text-dark);
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-gray);
+      margin-bottom: 24px;
+      animation: fadeInUp 0.6s ease-out 0.1s forwards;
+      opacity: 0;
+    }
+
+    /* Contact Cards */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .contact-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid #f0f0f0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      transition: all 0.3s ease;
+      animation: fadeInUp 0.6s ease-out forwards;
+      opacity: 0;
+    }
+
+    .contact-card:nth-child(1) { animation-delay: 0.1s; }
+    .contact-card:nth-child(2) { animation-delay: 0.2s; }
+    .contact-card:nth-child(3) { animation-delay: 0.3s; }
+
+    .contact-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+
+    .contact-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .whatsapp-icon { background: #25D366; color: white; }
+    .instagram-icon { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white; }
+    .tiktok-icon { background: #000; color: white; }
+    .phone-icon { background: var(--light-pink); color: var(--primary-red); }
+    .location-icon { background: #e3f2fd; color: #1976d2; }
+
+    .contact-info h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .contact-info p {
+      font-size: 13px;
+      color: var(--text-gray);
+    }
+
+    .contact-arrow {
+      margin-left: auto;
+      color: var(--text-gray);
+      font-size: 14px;
+    }
+
+    /* Quick Links Section */
+    .quick-links-section {
+      background: var(--dark-bg);
+      border-radius: 20px;
+      padding: 28px 20px;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.6s ease-out 0.4s forwards;
+      opacity: 0;
+    }
+
+    .quick-links-section h2 {
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .quick-links-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .quick-link {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 16px;
+      text-decoration: none;
+      color: white;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .quick-link:hover {
+      background: var(--primary-red);
+      transform: translateY(-2px);
+    }
+
+    .quick-link i {
+      display: block;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .quick-link span {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* Info Section */
+    .info-section {
+      background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+      border-radius: 20px;
+      padding: 28px 20px;
+      border: 1px solid #f0f0f0;
+      animation: fadeInUp 0.6s ease-out 0.5s forwards;
+      opacity: 0;
+    }
+
+    .info-section h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--primary-red);
+    }
+
+    .info-section p {
+      font-size: 14px;
+      color: var(--text-gray);
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+
+    .hours-list {
+      margin-top: 16px;
+    }
+
+    .hours-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 14px;
+    }
+
+    .hours-item:last-child {
+      border-bottom: none;
+    }
+
+    .hours-day {
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .hours-time {
+      color: var(--text-gray);
+    }
+
+    /* CTA Section */
+    .cta-section {
+      background: var(--primary-red);
+      border-radius: 20px;
+      padding: 28px 20px;
+      text-align: center;
+      color: white;
+      margin-top: 24px;
+      animation: fadeInUp 0.6s ease-out 0.6s forwards;
+      opacity: 0;
+    }
+
+    .cta-section h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .cta-section p {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .cta-btn {
+      background: white;
+      color: var(--primary-red);
+      border: none;
+      padding: 14px 32px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite;
+    }
+
+    .cta-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      border-top: 1px solid #f0f0f0;
+      z-index: 1000;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: var(--text-gray);
+      font-size: 11px;
+      padding: 4px 12px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .nav-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      width: 30px;
+      height: 3px;
+      background: var(--primary-red);
+      border-radius: 0 0 10px 10px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-item.active {
+      color: var(--primary-red);
+    }
+
+    .nav-item.active::before {
+      transform: translateX(-50%) scale(1);
+    }
+
+    .nav-item i {
+      font-size: 22px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-section">
+      <img src="https://i.postimg.cc/hGWTVJhG/IMG-20250725-135828.jpg" alt="TG's Kitchen" class="logo">
+      <span class="brand-name">TG's Kitchen</span>
+    </div>
+    <div class="header-icons">
+      <a href="/cart" style="color: inherit;"><i class="fas fa-shopping-bag"></i></a>
+      <i class="fas fa-bars" onclick="toggleMenu()"></i>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <h1 class="page-title">Get in Touch</h1>
+    <p class="page-subtitle">We'd love to hear from you! Reach out through any of these channels.</p>
+
+    <!-- Contact Methods -->
+    <div class="contact-grid">
+      <!-- WhatsApp -->
+      <a href="https://wa.me/2349061120754" class="contact-card" target="_blank">
+        <div class="contact-icon whatsapp-icon">
+          <i class="fab fa-whatsapp"></i>
+        </div>
+        <div class="contact-info">
+          <h3>WhatsApp</h3>
+          <p>+234 906 112 0754</p>
+        </div>
+        <i class="fas fa-chevron-right contact-arrow"></i>
+      </a>
+
+      <!-- Instagram -->
+      <a href="https://www.instagram.com/tgs_kitchen_._?igsh=MXF1Y2Q4ZGp5b2x4cQ==" class="contact-card" target="_blank">
+        <div class="contact-icon instagram-icon">
+          <i class="fab fa-instagram"></i>
+        </div>
+        <div class="contact-info">
+          <h3>Instagram</h3>
+          <p>@tgs_kitchen_._</p>
+        </div>
+        <i class="fas fa-chevron-right contact-arrow"></i>
+      </a>
+
+      <!-- TikTok -->
+      <a href="https://www.tiktok.com/@tgs_kitchen_._?_r=1&_t=ZS-95Hh78V1EiD" class="contact-card" target="_blank">
+        <div class="contact-icon tiktok-icon">
+          <i class="fab fa-tiktok"></i>
+        </div>
+        <div class="contact-info">
+          <h3>TikTok</h3>
+          <p>@tgs_kitchen_._</p>
+        </div>
+        <i class="fas fa-chevron-right contact-arrow"></i>
+      </a>
+
+      <!-- Phone -->
+      <a href="tel:+2349061120754" class="contact-card">
+        <div class="contact-icon phone-icon">
+          <i class="fas fa-phone"></i>
+        </div>
+        <div class="contact-info">
+          <h3>Call Us</h3>
+          <p>+234 906 112 0754</p>
+        </div>
+        <i class="fas fa-chevron-right contact-arrow"></i>
+      </a>
+
+      <!-- Location -->
+      <div class="contact-card" style="cursor: default;">
+        <div class="contact-icon location-icon">
+          <i class="fas fa-map-marker-alt"></i>
+        </div>
+        <div class="contact-info">
+          <h3>Location</h3>
+          <p>Asaba, Delta State, Nigeria</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <section class="quick-links-section">
+      <h2>Quick Links</h2>
+      <div class="quick-links-grid">
+        <a href="/menu" class="quick-link">
+          <i class="fas fa-utensils"></i>
+          <span>Menu</span>
+        </a>
+        <a href="/gallery" class="quick-link">
+          <i class="fas fa-images"></i>
+          <span>Gallery</span>
+        </a>
+        <a href="/leaderboard" class="quick-link">
+          <i class="fas fa-trophy"></i>
+          <span>Leaderboard</span>
+        </a>
+        <a href="/about" class="quick-link">
+          <i class="fas fa-info-circle"></i>
+          <span>About Us</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Business Info -->
+    <section class="info-section">
+      <h2>About Our Service</h2>
+      <p>
+        TG's Kitchen is your go-to destination for freshly made meals delivered daily to your doorstep in Asaba. 
+        We specialize in creating delicious, home-style cooking that brings comfort and satisfaction with every bite.
+      </p>
+      <p>
+        Whether you're craving a quick lunch, planning a family dinner, or need catering for a special event, 
+        we've got you covered. Our menu changes daily to keep things exciting!
+      </p>
+
+      <div class="hours-list">
+        <div class="hours-item">
+          <span class="hours-day">Monday - Friday</span>
+          <span class="hours-time">8:00 AM - 8:00 PM</span>
+        </div>
+        <div class="hours-item">
+          <span class="hours-day">Saturday</span>
+          <span class="hours-time">9:00 AM - 6:00 PM</span>
+        </div>
+        <div class="hours-item">
+          <span class="hours-day">Sunday</span>
+          <span class="hours-time">10:00 AM - 4:00 PM</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+      <h2>Ready to Order?</h2>
+      <p>Browse our daily menu and get your favorite meals delivered fresh and hot!</p>
+      <a href="/menu" class="cta-btn">View Menu</a>
+    </section>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="/" class="nav-item">
+      <i class="fas fa-home"></i>
+      <span>Home</span>
+    </a>
+    <a href="/menu" class="nav-item">
+      <i class="fas fa-utensils"></i>
+      <span>Menu</span>
+    </a>
+    <a href="/gallery" class="nav-item">
+      <i class="fas fa-images"></i>
+      <span>Gallery</span>
+    </a>
+    <a href="/cart" class="nav-item">
+      <i class="fas fa-shopping-bag"></i>
+      <span>Cart</span>
+    </a>
+    <a href="/leaderboard" class="nav-item">
+      <i class="fas fa-trophy"></i>
+      <span>Leaderboard</span>
+    </a>
+  </nav>
+
+  <script>
+    function toggleMenu() {
+      const options = confirm('Go to Admin Panel?');
+      if (options) window.location.href = '/admin';
+    }
+  </script>
+</body>
+</html>
