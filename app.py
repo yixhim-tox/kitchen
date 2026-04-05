@@ -794,8 +794,7 @@ def migrate_to_mongodb():
                          results['gallery']['mongo_count'] + 
                          results['leaderboard']['mongo_count'])
 
-        print(f"
-🎉 Migration complete! Total items migrated: {total_migrated}")
+        print(f"🎉 Migration complete! Total items migrated: {total_migrated}")
 
         return jsonify({
             'message': f'Migration complete! {total_migrated} items migrated.',
