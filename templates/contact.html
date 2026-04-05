@@ -81,12 +81,93 @@
       display: flex;
       gap: 16px;
       align-items: center;
+      position: relative;
     }
 
-    .header-icons i {
+    .menu-btn {
       font-size: 22px;
       color: var(--text-dark);
       cursor: pointer;
+      padding: 8px;
+      background: none;
+      border: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    /* DROPDOWN MENU */
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 8px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      min-width: 200px;
+      z-index: 1001;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      border: 1px solid #f0f0f0;
+    }
+
+    .dropdown-menu.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      text-decoration: none;
+      color: var(--text-dark);
+      border-bottom: 1px solid #f5f5f5;
+      transition: all 0.2s ease;
+    }
+
+    .dropdown-item:first-child {
+      border-radius: 12px 12px 0 0;
+    }
+
+    .dropdown-item:last-child {
+      border-bottom: none;
+      border-radius: 0 0 12px 12px;
+    }
+
+    .dropdown-item:hover, .dropdown-item:active {
+      background: var(--light-pink);
+      color: var(--primary-red);
+    }
+
+    .dropdown-item i {
+      font-size: 18px;
+      width: 24px;
+      text-align: center;
+    }
+
+    .dropdown-item span {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* Overlay for closing dropdown */
+    .dropdown-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 999;
+      display: none;
+    }
+
+    .dropdown-overlay.active {
+      display: block;
     }
 
     /* Main Content */
@@ -376,6 +457,9 @@
   </style>
 </head>
 <body>
+  <!-- Overlay for closing dropdown -->
+  <div class="dropdown-overlay" id="dropdownOverlay" onclick="closeDropdown()"></div>
+
   <!-- Header -->
   <header class="header">
     <div class="logo-section">
@@ -383,8 +467,32 @@
       <span class="brand-name">TG's Kitchen</span>
     </div>
     <div class="header-icons">
-      <a href="/cart" style="color: inherit;"><i class="fas fa-shopping-bag"></i></a>
-      <i class="fas fa-bars" onclick="toggleMenu()"></i>
+      <a href="/cart" style="color: inherit; font-size: 22px; padding: 8px;">
+        <i class="fas fa-shopping-bag"></i>
+      </a>
+      <button class="menu-btn" id="menuBtn" onclick="toggleDropdown()" aria-label="Open menu">
+        <i class="fas fa-bars"></i>
+      </button>
+
+      <!-- DROPDOWN MENU -->
+      <div class="dropdown-menu" id="dropdownMenu">
+        <a href="/leaderboard" class="dropdown-item" onclick="closeDropdown()">
+          <i class="fas fa-trophy"></i>
+          <span>Leaderboard</span>
+        </a>
+        <a href="/gallery" class="dropdown-item" onclick="closeDropdown()">
+          <i class="fas fa-images"></i>
+          <span>Gallery</span>
+        </a>
+        <a href="/about" class="dropdown-item" onclick="closeDropdown()">
+          <i class="fas fa-info-circle"></i>
+          <span>About Us</span>
+        </a>
+        <a href="/contact" class="dropdown-item" onclick="closeDropdown()">
+          <i class="fas fa-phone"></i>
+          <span>Contact Us</span>
+        </a>
+      </div>
     </div>
   </header>
 
@@ -493,15 +601,15 @@
       <div class="hours-list">
         <div class="hours-item">
           <span class="hours-day">Monday - Friday</span>
-          <span class="hours-time">8:00 AM - 8:00 PM</span>
+          <span class="hours-time">8:00 AM - 4:00 PM</span>
         </div>
         <div class="hours-item">
           <span class="hours-day">Saturday</span>
-          <span class="hours-time">9:00 AM - 6:00 PM</span>
+          <span class="hours-time">9:00 AM - 4:00 PM</span>
         </div>
         <div class="hours-item">
           <span class="hours-day">Sunday</span>
-          <span class="hours-time">10:00 AM - 4:00 PM</span>
+          <span class="hours-time">closed</span>
         </div>
       </div>
     </section>
@@ -539,10 +647,36 @@
   </nav>
 
   <script>
-    function toggleMenu() {
-      const options = confirm('Go to Admin Panel?');
-      if (options) window.location.href = '/admin';
+    // Dropdown Menu Functions
+    function toggleDropdown() {
+      const dropdown = document.getElementById('dropdownMenu');
+      const overlay = document.getElementById('dropdownOverlay');
+
+      if (dropdown.classList.contains('active')) {
+        closeDropdown();
+      } else {
+        dropdown.classList.add('active');
+        overlay.classList.add('active');
+      }
     }
+
+    function closeDropdown() {
+      const dropdown = document.getElementById('dropdownMenu');
+      const overlay = document.getElementById('dropdownOverlay');
+
+      dropdown.classList.remove('active');
+      overlay.classList.remove('active');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      const menuBtn = document.getElementById('menuBtn');
+      const dropdown = document.getElementById('dropdownMenu');
+
+      if (!menuBtn.contains(event.target) && !dropdown.contains(event.target)) {
+        closeDropdown();
+      }
+    });
   </script>
 </body>
 </html>
