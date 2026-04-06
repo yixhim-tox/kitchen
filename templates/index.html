@@ -170,6 +170,132 @@
       display: block;
     }
 
+    /* TIKTOK BROWSER WARNING OVERLAY */
+    .tiktok-warning-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .tiktok-warning-overlay.active {
+      display: flex;
+    }
+
+    .tiktok-warning-content {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 40px 24px;
+      max-width: 400px;
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    .tiktok-icon {
+      font-size: 60px;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    .tiktok-warning-content h2 {
+      color: #fff;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .tiktok-warning-content p {
+      color: #a0a0a0;
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .tiktok-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .tiktok-btn-primary {
+      background: #25d366;
+      color: white;
+      border: none;
+      padding: 16px 24px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .tiktok-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(37, 211, 102, 0.3);
+    }
+
+    .tiktok-btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 16px 24px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+
+    .tiktok-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .tiktok-instructions {
+      margin-top: 20px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      text-align: left;
+    }
+
+    .tiktok-instructions h3 {
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tiktok-instructions ol {
+      color: #a0a0a0;
+      font-size: 13px;
+      padding-left: 20px;
+      line-height: 1.8;
+    }
+
+    .tiktok-instructions li {
+      margin-bottom: 4px;
+    }
+
     /* Hero */
     .hero {
       margin-top: 64px;
@@ -579,6 +705,37 @@
   </style>
 </head>
 <body>
+  <!-- TIKTOK BROWSER WARNING OVERLAY -->
+  <div class="tiktok-warning-overlay" id="tiktokWarning">
+    <div class="tiktok-warning-content">
+      <div class="tiktok-icon">
+        <i class="fab fa-tiktok"></i>
+      </div>
+      <h2>Open in External Browser</h2>
+      <p>TikTok's built-in browser blocks WhatsApp checkout. Please open this link in Chrome, Safari, or your default browser to place your order.</p>
+
+      <div class="tiktok-buttons">
+        <button class="tiktok-btn-primary" onclick="openInExternalBrowser()">
+          <i class="fas fa-external-link-alt"></i>
+          Open in Browser
+        </button>
+        <button class="tiktok-btn-secondary" onclick="copyLink()">
+          <i class="fas fa-copy"></i>
+          Copy Link
+        </button>
+      </div>
+
+      <div class="tiktok-instructions">
+        <h3><i class="fas fa-info-circle"></i> How to open in browser:</h3>
+        <ol>
+          <li>Tap the <strong>three dots (...)</strong> in the top right</li>
+          <li>Select <strong>"Open in Browser"</strong> or <strong>"Open with Chrome/Safari"</strong></li>
+          <li>Or tap <strong>"Copy Link"</strong> above and paste in your browser</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
   <!-- Overlay for closing dropdown -->
   <div class="dropdown-overlay" id="dropdownOverlay" onclick="closeDropdown()"></div>
 
@@ -749,6 +906,142 @@
   </nav>
 
   <script>
+    // TIKTOK BROWSER DETECTION AND HANDLING
+    function isTikTokBrowser() {
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+      // Check for TikTok/ByteDance specific identifiers
+      const tiktokPatterns = [
+        /BytedanceWebview/i,
+        /TikTok/i,
+        /Musical\.ly/i,
+        /musical_ly/i,
+        /ByteDance/i
+      ];
+
+      // Check for WebView indicators
+      const webviewPatterns = [
+        /WebView/i,
+        /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i,
+        /Android.*Version\/\d+\.\d+.*Chrome\/\d+\.\d+.*Mobile/i
+      ];
+
+      const isTikTokUA = tiktokPatterns.some(pattern => pattern.test(ua));
+      const isWebView = webviewPatterns.some(pattern => pattern.test(ua));
+
+      // Additional check: TikTok WebView often has specific characteristics
+      const isLikelyTikTok = isTikTokUA || (
+        isWebView && 
+        !ua.includes('FBAN') && 
+        !ua.includes('FBAV') &&
+        !ua.includes('Instagram')
+      );
+
+      return isLikelyTikTok;
+    }
+
+    // Alternative detection using feature detection
+    function isInAppBrowser() {
+      const ua = navigator.userAgent;
+
+      // Check if it's a WebView without standalone browser features
+      const isStandalone = window.navigator.standalone;
+      const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+      const isChrome = /chrome/i.test(ua) && !/edge|edg/i.test(ua);
+
+      // If it's not clearly a standalone browser, it might be in-app
+      return !isStandalone && !isSafari && !isChrome;
+    }
+
+    // Show TikTok warning overlay
+    function showTikTokWarning() {
+      const warning = document.getElementById('tiktokWarning');
+      if (warning) {
+        warning.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    // Hide TikTok warning (if needed)
+    function hideTikTokWarning() {
+      const warning = document.getElementById('tiktokWarning');
+      if (warning) {
+        warning.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Try to open in external browser
+    function openInExternalBrowser() {
+      const url = 'https://www.tgkitchen.online';
+
+      // Method 1: Try intent scheme for Android
+      if (/Android/i.test(navigator.userAgent)) {
+        try {
+          window.location.href = `intent://${url.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+          return;
+        } catch (e) {
+          console.log('Intent scheme failed');
+        }
+      }
+
+      // Method 2: Try window.open with _system
+      const newWindow = window.open(url, '_system');
+      if (newWindow) {
+        newWindow.focus();
+        return;
+      }
+
+      // Method 3: Show alert with instructions
+      alert('Please tap the three dots (...) in the top right corner of TikTok and select "Open in Browser"');
+    }
+
+    // Copy link to clipboard
+    function copyLink() {
+      const url = 'https://www.tgkitchen.online';
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+          alert('Link copied! Now open Chrome or Safari and paste it in the address bar.');
+        }).catch(() => {
+          fallbackCopy(url);
+        });
+      } else {
+        fallbackCopy(url);
+      }
+    }
+
+    // Fallback copy method
+    function fallbackCopy(text) {
+      const input = document.createElement('input');
+      input.value = text;
+      input.style.position = 'fixed';
+      input.style.left = '-9999px';
+      document.body.appendChild(input);
+      input.select();
+
+      try {
+        document.execCommand('copy');
+        alert('Link copied! Now open Chrome or Safari and paste it in the address bar.');
+      } catch (err) {
+        alert('Could not copy link. Please manually type: ' + text);
+      }
+
+      document.body.removeChild(input);
+    }
+
+    // Initialize TikTok detection on page load
+    function initTikTokDetection() {
+      // Check if URL has a parameter to bypass warning (for testing)
+      const urlParams = new URLSearchParams(window.location.search);
+      const bypass = urlParams.get('bypass') === 'true';
+
+      if (!bypass && (isTikTokBrowser() || isInAppBrowser())) {
+        // Small delay to ensure DOM is ready
+        setTimeout(showTikTokWarning, 100);
+      }
+    }
+
     // Dropdown Menu Functions
     function toggleDropdown() {
       const dropdown = document.getElementById('dropdownMenu');
@@ -775,7 +1068,7 @@
       const menuBtn = document.getElementById('menuBtn');
       const dropdown = document.getElementById('dropdownMenu');
 
-      if (!menuBtn.contains(event.target) && !dropdown.contains(event.target)) {
+      if (menuBtn && dropdown && !menuBtn.contains(event.target) && !dropdown.contains(event.target)) {
         closeDropdown();
       }
     });
@@ -832,8 +1125,11 @@
       window.open(`https://wa.me/2349061120754?text=${message}`, '_blank');
     }
 
-    // Load on page load
-    loadPopularDishes();
+    // Initialize everything on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      initTikTokDetection();
+      loadPopularDishes();
+    });
   </script>
 </body>
 </html>
