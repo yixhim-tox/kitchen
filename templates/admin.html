@@ -242,6 +242,10 @@
       color: white;
     }
     
+    .btn-success:hover {
+      background: #45a049;
+    }
+    
     .btn-danger {
       background: #f44336;
       color: white;
@@ -362,6 +366,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 10;
     }
     
     /* Modal */
@@ -692,6 +697,86 @@
     </div>
   </div>
   
+    <!-- NEW: Move to Menu Modal for Gallery Items -->
+    <div class="modal" id="moveToMenuModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Move to Menu</h3>
+          <button class="modal-close" onclick="closeMoveToMenuModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form id="moveToMenuForm" onsubmit="confirmMoveToMenu(event)">
+          <input type="hidden" id="moveToMenuId">
+          <div class="form-group">
+            <label>Item Name</label>
+            <input type="text" id="moveToMenuName" readonly style="background: #f5f5f5;">
+          </div>
+          <div class="form-group">
+            <label>Price (₦) *</label>
+            <input type="number" id="moveToMenuPrice" required placeholder="Enter price" min="0">
+          </div>
+          <div class="form-group">
+            <label>Category *</label>
+            <select id="moveToMenuCategory" required>
+              <option value="Pasta">Pasta</option>
+              <option value="Rice">Rice</option>
+              <option value="Noodles">Noodles</option>
+              <option value="Specials" selected>Specials</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Preview</label>
+            <img id="moveToMenuPreview" class="current-image-preview" style="display: none;" alt="Preview">
+          </div>
+          <button type="submit" class="btn btn-success" style="width: 100%;">
+            <i class="fas fa-utensils"></i> Move to Menu
+          </button>
+          <p style="margin-top: 10px; font-size: 12px; color: #666; text-align: center;">
+            This will create a new menu item from this gallery image
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <!-- NEW: Move to Gallery Modal for Meal Items -->
+    <div class="modal" id="moveToGalleryModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Move to Gallery</h3>
+          <button class="modal-close" onclick="closeMoveToGalleryModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form id="moveToGalleryForm" onsubmit="confirmMoveToGallery(event)">
+          <input type="hidden" id="moveToGalleryId">
+          <div class="form-group">
+            <label>Item Name</label>
+            <input type="text" id="moveToGalleryName" readonly style="background: #f5f5f5;">
+          </div>
+          <div class="form-group">
+            <label>Gallery Category</label>
+            <select id="moveToGalleryCategory">
+              <option value="Featured" selected>Featured</option>
+              <option value="Events">Events</option>
+              <option value="Daily Specials">Daily Specials</option>
+              <option value="Behind the Scenes">Behind the Scenes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Preview</label>
+            <img id="moveToGalleryPreview" class="current-image-preview" style="display: none;" alt="Preview">
+          </div>
+          <button type="submit" class="btn btn-success" style="width: 100%;">
+            <i class="fas fa-images"></i> Move to Gallery
+          </button>
+          <p style="margin-top: 10px; font-size: 12px; color: #666; text-align: center;">
+            This will add this meal to the featured gallery
+          </p>
+        </form>
+      </div>
+    </div>
+
   <!-- Edit Meal Modal -->
   <div class="modal" id="editModal">
     <div class="modal-content">
@@ -762,7 +847,7 @@
       // Create log entry
       const entry = document.createElement('div');
       entry.className = 'debug-entry ' + type;
-      entry.textContent = `[${timestamp}] ${message}`;
+      entry.textContent = '[' + timestamp + '] ' + message;
       
       logs.appendChild(entry);
       panel.scrollTop = panel.scrollHeight;
@@ -771,7 +856,7 @@
       const consoleColor = type === 'error' ? 'color: #ff4444' : 
                           type === 'warn' ? 'color: #ffaa00' : 
                           type === 'debug' ? 'color: #66ccff' : 'color: #00ff00';
-      console.log(`%c[${type.toUpperCase()}] ${message}`, consoleColor);
+      console.log('%c[' + type.toUpperCase() + '] ' + message, consoleColor);
     }
     
         // === SIMPLE PHOTO HANDLING (No Crop) ===
@@ -798,7 +883,7 @@
         return;
       }
 
-      debugLog(`Processing ${type} photo: ${file.name}, Size: ${Math.round(file.size/1024)}KB`, 'debug');
+      debugLog('Processing ' + type + ' photo: ' + file.name + ', Size: ' + Math.round(file.size/1024) + 'KB', 'debug');
 
       if (file.size > 5 * 1024 * 1024) {
         debugLog('Photo too large! Max 5MB.', 'error');
@@ -840,7 +925,7 @@
           // Compress to JPEG 0.8 quality
           const finalData = canvas.toDataURL('image/jpeg', 0.8);
 
-          debugLog(`Photo processed: ${width}x${height}, size: ${Math.round(finalData.length/1024)}KB`, 'debug');
+          debugLog('Photo processed: ' + width + 'x' + height + ', size: ' + Math.round(finalData.length/1024) + 'KB', 'debug');
 
           // Update appropriate form
           if (type === 'meal') {
@@ -905,7 +990,7 @@
       // Debug: Log all form data
       debugLog('📋 Form data entries:', 'debug');
       for (let [key, value] of formData.entries()) {
-        debugLog(`  ${key}: ${value ? (value.length > 50 ? value.substring(0,50) + '...' : value) : 'empty'}`, 'debug');
+        debugLog('  ' + key + ': ' + (value ? (value.length > 50 ? value.substring(0,50) + '...' : value) : 'empty'), 'debug');
       }
       
       const data = {
@@ -916,8 +1001,8 @@
         image: document.getElementById('mealImageUrl').value || 'https://via.placeholder.com/300x200?text=No+Image'
       };
       
-      debugLog(`📦 Data prepared: name="${data.name}", price=${data.price}, category=${data.category}`, 'debug');
-      debugLog(`🖼️ Image: ${data.image ? (data.image.substring(0,50) + '... [' + data.image.length + ' chars]') : 'none'}`, 'debug');
+      debugLog('📦 Data prepared: name="' + data.name + '", price=' + data.price + ', category=' + data.category, 'debug');
+      debugLog('🖼️ Image: ' + (data.image ? (data.image.substring(0,50) + '... [' + data.image.length + ' chars]') : 'none'), 'debug');
       
       // Validation checks
       if (!data.name) {
@@ -927,7 +1012,7 @@
       }
       
       if (!data.price || isNaN(data.price)) {
-        debugLog(`❌ Validation failed: Price is invalid (${formData.get('price')})`, 'error');
+        debugLog('❌ Validation failed: Price is invalid (' + formData.get('price') + ')', 'error');
         showToast('Valid price is required', 'error');
         return;
       }
@@ -941,10 +1026,10 @@
       // Check image size
       if (data.image && data.image.startsWith('data:image')) {
         const sizeKB = Math.round(data.image.length / 1024);
-        debugLog(`🖼️ Base64 image size: ${sizeKB}KB`, 'debug');
+        debugLog('🖼️ Base64 image size: ' + sizeKB + 'KB', 'debug');
         if (data.image.length > 500000) {
-          debugLog(`❌ Image too large: ${sizeKB}KB (max 500KB)`, 'error');
-          showToast(`Image too large! Max 500KB. Your image is ${sizeKB}KB`, 'error');
+          debugLog('❌ Image too large: ' + sizeKB + 'KB (max 500KB)', 'error');
+          showToast('Image too large! Max 500KB. Your image is ' + sizeKB + 'KB', 'error');
           return;
         }
       }
@@ -959,18 +1044,18 @@
           body: JSON.stringify(data)
         });
         
-        debugLog(`📡 Response status: ${res.status} ${res.statusText}`, res.ok ? 'info' : 'warn');
+        debugLog('📡 Response status: ' + res.status + ' ' + res.statusText, res.ok ? 'info' : 'warn');
         
         const responseText = await res.text();
-        debugLog(`📡 Raw response: ${responseText.substring(0, 200)}${responseText.length > 200 ? '...' : ''}`, 'debug');
+        debugLog('📡 Raw response: ' + responseText.substring(0, 200) + (responseText.length > 200 ? '...' : ''), 'debug');
         
         let result;
         try {
           result = JSON.parse(responseText);
-          debugLog(`✅ Parsed response: ${JSON.stringify(result)}`, 'info');
+          debugLog('✅ Parsed response: ' + JSON.stringify(result), 'info');
         } catch (parseErr) {
-          debugLog(`❌ JSON parse error: ${parseErr.message}`, 'error');
-          debugLog(`Raw response was: ${responseText}`, 'error');
+          debugLog('❌ JSON parse error: ' + parseErr.message, 'error');
+          debugLog('Raw response was: ' + responseText, 'error');
           showToast('Server returned invalid JSON. Check debug panel.', 'error');
           return;
         }
@@ -985,12 +1070,12 @@
           loadMeals();
         } else {
           const errorMsg = result.error || result.message || 'Failed to add meal';
-          debugLog(`❌ Server error: ${errorMsg}`, 'error');
+          debugLog('❌ Server error: ' + errorMsg, 'error');
           showToast('Error: ' + errorMsg, 'error');
         }
       } catch (err) {
-        debugLog(`❌ Network/Fetch error: ${err.message}`, 'error');
-        debugLog(`Stack: ${err.stack}`, 'error');
+        debugLog('❌ Network/Fetch error: ' + err.message, 'error');
+        debugLog('Stack: ' + err.stack, 'error');
         showToast('Network Error: ' + err.message, 'error');
       }
     }
@@ -1000,10 +1085,10 @@
       debugLog('📡 Loading meals from /api/meals...', 'info');
       try {
         const res = await fetch('/api/meals');
-        debugLog(`📡 Meals response: ${res.status} ${res.statusText}`, res.ok ? 'info' : 'warn');
+        debugLog('📡 Meals response: ' + res.status + ' ' + res.statusText, res.ok ? 'info' : 'warn');
         
         const meals = await res.json();
-        debugLog(`✅ Loaded ${meals.length} meals`, 'info');
+        debugLog('✅ Loaded ' + meals.length + ' meals', 'info');
         
         const container = document.getElementById('mealsList');
         
@@ -1034,25 +1119,28 @@
                   <i class="fas fa-trash"></i> Delete
                 </button>
               </div>
+              <button class="btn btn-success" onclick="openMoveToGalleryModal('${meal.id}', '${meal.name.replace(/'/g, "\\'")}', '${meal.image || ''}')" style="width: 100%; margin-top: 8px;">
+                <i class="fas fa-images"></i> Move to Gallery
+              </button>
             </div>
           </div>
         `).join('');
       } catch (err) {
-        debugLog(`❌ Failed to load meals: ${err.message}`, 'error');
+        debugLog('❌ Failed to load meals: ' + err.message, 'error');
         console.error('Failed to load meals:', err);
       }
     }
     
     // Edit meal - open modal
     async function editMeal(id) {
-      debugLog(`✏️ Editing meal: ${id}`, 'info');
+      debugLog('✏️ Editing meal: ' + id, 'info');
       try {
         const res = await fetch('/api/meals');
         const meals = await res.json();
         const meal = meals.find(m => m.id === id);
         
         if (!meal) {
-          debugLog(`❌ Meal not found: ${id}`, 'error');
+          debugLog('❌ Meal not found: ' + id, 'error');
           return;
         }
         
@@ -1077,7 +1165,7 @@
         
         document.getElementById('editModal').classList.add('active');
       } catch (err) {
-        debugLog(`❌ Error loading meal: ${err.message}`, 'error');
+        debugLog('❌ Error loading meal: ' + err.message, 'error');
         showToast('Error loading meal', 'error');
       }
     }
@@ -1086,7 +1174,7 @@
     async function updateMeal(e) {
       e.preventDefault();
       const id = document.getElementById('editId').value;
-      debugLog(`📝 Updating meal: ${id}`, 'info');
+      debugLog('📝 Updating meal: ' + id, 'info');
       
       const data = {
         name: document.getElementById('editName').value,
@@ -1098,19 +1186,19 @@
       
       // Check image size
       if (data.image.startsWith('data:image') && data.image.length > 500000) {
-        debugLog(`❌ Update image too large: ${Math.round(data.image.length/1024)}KB`, 'error');
+        debugLog('❌ Update image too large: ' + Math.round(data.image.length/1024) + 'KB', 'error');
         showToast('Image too large! Max 500KB.', 'error');
         return;
       }
       
       try {
-        const res = await fetch(`/api/update_meal/${id}`, {
+        const res = await fetch('/api/update_meal/' + id, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
         
-        debugLog(`📡 Update response: ${res.status}`, res.ok ? 'info' : 'warn');
+        debugLog('📡 Update response: ' + res.status, res.ok ? 'info' : 'warn');
         
         if (res.ok) {
           showToast('Meal updated successfully!');
@@ -1118,11 +1206,11 @@
           loadMeals();
         } else {
           const result = await res.json().catch(() => ({}));
-          debugLog(`❌ Update failed: ${result.error || 'Unknown error'}`, 'error');
+          debugLog('❌ Update failed: ' + (result.error || 'Unknown error'), 'error');
           showToast('Failed to update meal', 'error');
         }
       } catch (err) {
-        debugLog(`❌ Update error: ${err.message}`, 'error');
+        debugLog('❌ Update error: ' + err.message, 'error');
         showToast('Error: ' + err.message, 'error');
       }
     }
@@ -1130,25 +1218,25 @@
     // Delete meal - WITH DEBUG
     async function deleteMeal(id) {
       if (!confirm('Are you sure you want to delete this meal?')) return;
-      debugLog(`🗑️ Deleting meal: ${id}`, 'info');
+      debugLog('🗑️ Deleting meal: ' + id, 'info');
       
       try {
-        const res = await fetch(`/api/delete_meal/${id}`, {
+        const res = await fetch('/api/delete_meal/' + id, {
           method: 'DELETE'
         });
         
-        debugLog(`📡 Delete response: ${res.status}`, res.ok ? 'info' : 'warn');
+        debugLog('📡 Delete response: ' + res.status, res.ok ? 'info' : 'warn');
         
         if (res.ok) {
           showToast('Meal deleted successfully!');
           loadMeals();
         } else {
           const result = await res.json().catch(() => ({}));
-          debugLog(`❌ Delete failed: ${result.error || 'Unknown error'}`, 'error');
+          debugLog('❌ Delete failed: ' + (result.error || 'Unknown error'), 'error');
           showToast('Failed to delete meal', 'error');
         }
       } catch (err) {
-        debugLog(`❌ Delete error: ${err.message}`, 'error');
+        debugLog('❌ Delete error: ' + err.message, 'error');
         showToast('Error: ' + err.message, 'error');
       }
     }
@@ -1176,9 +1264,9 @@
       // Check image size
       if (imageData.startsWith('data:image')) {
         const sizeKB = Math.round(imageData.length / 1024);
-        debugLog(`🖼️ Gallery image size: ${sizeKB}KB`, 'debug');
+        debugLog('🖼️ Gallery image size: ' + sizeKB + 'KB', 'debug');
         if (imageData.length > 500000) {
-          debugLog(`❌ Gallery image too large: ${sizeKB}KB`, 'error');
+          debugLog('❌ Gallery image too large: ' + sizeKB + 'KB', 'error');
           showToast('Image too large! Max 500KB.', 'error');
           return;
         }
@@ -1191,7 +1279,7 @@
         image_url: imageData
       };
       
-      debugLog(`📦 Gallery data: ${JSON.stringify({...data, image_url: data.image_url.substring(0,50) + '...'})}`, 'debug');
+      debugLog('📦 Gallery data: ' + JSON.stringify({...data, image_url: data.image_url.substring(0,50) + '...'}), 'debug');
       
       try {
         debugLog('📡 Sending POST to /api/gallery', 'info');
@@ -1201,7 +1289,7 @@
           body: JSON.stringify(data)
         });
         
-        debugLog(`📡 Gallery response: ${res.status}`, res.ok ? 'info' : 'warn');
+        debugLog('📡 Gallery response: ' + res.status, res.ok ? 'info' : 'warn');
         
         if (res.ok) {
           showToast('Image added to gallery!');
@@ -1212,11 +1300,11 @@
           loadGallery();
         } else {
           const result = await res.json().catch(() => ({}));
-          debugLog(`❌ Gallery add failed: ${result.error || 'Unknown error'}`, 'error');
+          debugLog('❌ Gallery add failed: ' + (result.error || 'Unknown error'), 'error');
           showToast('Failed to add to gallery', 'error');
         }
       } catch (err) {
-        debugLog(`❌ Gallery error: ${err.message}`, 'error');
+        debugLog('❌ Gallery error: ' + err.message, 'error');
         showToast('Error: ' + err.message, 'error');
       }
     }
@@ -1226,10 +1314,10 @@
       debugLog('📡 Loading gallery from /api/gallery...', 'info');
       try {
         const res = await fetch('/api/gallery');
-        debugLog(`📡 Gallery response: ${res.status}`, res.ok ? 'info' : 'warn');
+        debugLog('📡 Gallery response: ' + res.status, res.ok ? 'info' : 'warn');
         
         const images = await res.json();
-        debugLog(`✅ Loaded ${images.length} gallery images`, 'info');
+        debugLog('✅ Loaded ' + images.length + ' gallery images', 'info');
         
         const container = document.getElementById('galleryList');
         
@@ -1244,10 +1332,15 @@
         }
         
         container.innerHTML = images.map(img => `
-          <div class="gallery-item">
+          <div class="gallery-item" style="position: relative;">
             <img src="${img.image_url}" alt="${img.title}">
-            <button class="gallery-delete" onclick="deleteGalleryImage('${img.id}')">
+            <button class="gallery-delete" onclick="deleteGalleryImage('${img.id}')" style="top: 40px;">
               <i class="fas fa-trash"></i>
+            </button>
+            <button onclick="openMoveToMenuModal('${img.id}', '${img.title.replace(/'/g, "\\'")}', '${img.image_url || ''}')" 
+                    style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; background: rgba(76, 175, 80, 0.9); color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10;" 
+                    title="Move to Menu">
+              <i class="fas fa-utensils"></i>
             </button>
             <div class="gallery-overlay">
               <div class="gallery-title">${img.title}</div>
@@ -1256,7 +1349,7 @@
           </div>
         `).join('');
       } catch (err) {
-        debugLog(`❌ Failed to load gallery: ${err.message}`, 'error');
+        debugLog('❌ Failed to load gallery: ' + err.message, 'error');
         console.error('Failed to load gallery:', err);
       }
     }
@@ -1264,25 +1357,25 @@
     // Delete gallery image - WITH DEBUG
     async function deleteGalleryImage(id) {
       if (!confirm('Delete this gallery image?')) return;
-      debugLog(`🗑️ Deleting gallery image: ${id}`, 'info');
+      debugLog('🗑️ Deleting gallery image: ' + id, 'info');
       
       try {
-        const res = await fetch(`/api/gallery/${id}`, {
+        const res = await fetch('/api/gallery/' + id, {
           method: 'DELETE'
         });
         
-        debugLog(`📡 Delete gallery response: ${res.status}`, res.ok ? 'info' : 'warn');
+        debugLog('📡 Delete gallery response: ' + res.status, res.ok ? 'info' : 'warn');
         
         if (res.ok) {
           showToast('Image deleted!');
           loadGallery();
         } else {
           const result = await res.json().catch(() => ({}));
-          debugLog(`❌ Gallery delete failed: ${result.error || 'Unknown error'}`, 'error');
+          debugLog('❌ Gallery delete failed: ' + (result.error || 'Unknown error'), 'error');
           showToast('Failed to delete', 'error');
         }
       } catch (err) {
-        debugLog(`❌ Gallery delete error: ${err.message}`, 'error');
+        debugLog('❌ Gallery delete error: ' + err.message, 'error');
         showToast('Error: ' + err.message, 'error');
       }
     }
@@ -1331,13 +1424,13 @@
             location.reload();
           }, 3000);
         } else {
-          statusDiv.innerHTML = `<div style="color: #ff4444;">❌ Error: ${data.error || 'Unknown error'}</div>`;
+          statusDiv.innerHTML = '<div style="color: #ff4444;">❌ Error: ' + (data.error || 'Unknown error') + '</div>';
           btn.textContent = '❌ Migration Failed - Try Again';
           btn.disabled = false;
         }
       } catch (err) {
         debugLog('Migration error: ' + err.message, 'error');
-        statusDiv.innerHTML = `<div style="color: #ff4444;">❌ Network Error: ${err.message}</div>`;
+        statusDiv.innerHTML = '<div style="color: #ff4444;">❌ Network Error: ' + err.message + '</div>';
         btn.textContent = '❌ Error - Try Again';
         btn.disabled = false;
       }
@@ -1360,23 +1453,23 @@
         const mongoLeaderboard = data.data_counts?.mongodb_leaderboard || 0;
         const totalMongo = mongoMeals + mongoGallery + mongoLeaderboard;
 
-        debugLog(`DB Status - SQLite: ${sqliteMeals} meals, ${sqliteGallery} gallery, ${sqliteLeaderboard} leaderboard`, 'debug');
-        debugLog(`DB Status - MongoDB: ${mongoMeals} meals, ${mongoGallery} gallery, ${mongoLeaderboard} leaderboard`, 'debug');
+        debugLog('DB Status - SQLite: ' + sqliteMeals + ' meals, ' + sqliteGallery + ' gallery, ' + sqliteLeaderboard + ' leaderboard', 'debug');
+        debugLog('DB Status - MongoDB: ' + mongoMeals + ' meals, ' + mongoGallery + ' gallery, ' + mongoLeaderboard + ' leaderboard', 'debug');
 
         // If SQLite has ANY data but MongoDB is empty, show migration alert
         if (totalSQLite > 0 && totalMongo === 0) {
           document.getElementById('migrationAlert').style.display = 'block';
-          debugLog(`⚠️ Migration needed: ${totalSQLite} total items in SQLite, 0 in MongoDB`, 'warn');
+          debugLog('⚠️ Migration needed: ' + totalSQLite + ' total items in SQLite, 0 in MongoDB', 'warn');
 
           // Update the alert message to show what data is waiting
           const details = [];
-          if (sqliteMeals > 0) details.push(`${sqliteMeals} meals`);
-          if (sqliteGallery > 0) details.push(`${sqliteGallery} gallery`);
-          if (sqliteLeaderboard > 0) details.push(`${sqliteLeaderboard} leaderboard entries`);
+          if (sqliteMeals > 0) details.push(sqliteMeals + ' meals');
+          if (sqliteGallery > 0) details.push(sqliteGallery + ' gallery');
+          if (sqliteLeaderboard > 0) details.push(sqliteLeaderboard + ' leaderboard entries');
 
           const alertMsg = document.querySelector('#migrationAlert p');
           if (alertMsg && details.length > 0) {
-            alertMsg.innerHTML = `Found <strong>${details.join(', ')}</strong> in SQLite that need to be migrated to MongoDB.`;
+            alertMsg.innerHTML = 'Found <strong>' + details.join(', ') + '</strong> in SQLite that need to be migrated to MongoDB.';
           }
         } else {
           document.getElementById('migrationAlert').style.display = 'none';
@@ -1389,6 +1482,117 @@
 
     // Check on page load
     checkMigrationNeeded();
+
+    // === MOVE TO MENU FUNCTIONS ===
+    function openMoveToMenuModal(imgId, title, imageUrl) {
+      document.getElementById('moveToMenuId').value = imgId;
+      document.getElementById('moveToMenuName').value = title;
+      document.getElementById('moveToMenuPrice').value = '';
+      document.getElementById('moveToMenuCategory').value = 'Specials';
+      
+      const preview = document.getElementById('moveToMenuPreview');
+      if (imageUrl) {
+        preview.src = imageUrl;
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+      }
+      
+      document.getElementById('moveToMenuModal').classList.add('active');
+      debugLog('Opened Move to Menu modal for: ' + title, 'info');
+    }
+
+    function closeMoveToMenuModal() {
+      document.getElementById('moveToMenuModal').classList.remove('active');
+    }
+
+    async function confirmMoveToMenu(e) {
+      e.preventDefault();
+      const imgId = document.getElementById('moveToMenuId').value;
+      const price = document.getElementById('moveToMenuPrice').value;
+      const category = document.getElementById('moveToMenuCategory').value;
+      
+      if (!price || price <= 0) {
+        showToast('Please enter a valid price', 'error');
+        return;
+      }
+      
+      debugLog('Moving gallery item ' + imgId + ' to menu with price ₦' + price, 'info');
+      
+      try {
+        const res = await fetch('/api/gallery_to_meal/' + imgId, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ price: parseFloat(price), category: category })
+        });
+        
+        const result = await res.json();
+        debugLog('Move to menu response: ' + JSON.stringify(result), res.ok ? 'info' : 'error');
+        
+        if (res.ok) {
+          showToast('Item moved to menu successfully!');
+          closeMoveToMenuModal();
+          loadGallery(); // Refresh gallery
+        } else {
+          showToast('Error: ' + (result.error || 'Failed to move item'), 'error');
+        }
+      } catch (err) {
+        debugLog('Move to menu error: ' + err.message, 'error');
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+
+    // === MOVE TO GALLERY FUNCTIONS ===
+    function openMoveToGalleryModal(mealId, name, imageUrl) {
+      document.getElementById('moveToGalleryId').value = mealId;
+      document.getElementById('moveToGalleryName').value = name;
+      document.getElementById('moveToGalleryCategory').value = 'Featured';
+      
+      const preview = document.getElementById('moveToGalleryPreview');
+      if (imageUrl) {
+        preview.src = imageUrl;
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+      }
+      
+      document.getElementById('moveToGalleryModal').classList.add('active');
+      debugLog('Opened Move to Gallery modal for: ' + name, 'info');
+    }
+
+    function closeMoveToGalleryModal() {
+      document.getElementById('moveToGalleryModal').classList.remove('active');
+    }
+
+    async function confirmMoveToGallery(e) {
+      e.preventDefault();
+      const mealId = document.getElementById('moveToGalleryId').value;
+      const category = document.getElementById('moveToGalleryCategory').value;
+      
+      debugLog('Moving meal ' + mealId + ' to gallery with category: ' + category, 'info');
+      
+      try {
+        const res = await fetch('/api/meal_to_gallery/' + mealId, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category: category })
+        });
+        
+        const result = await res.json();
+        debugLog('Move to gallery response: ' + JSON.stringify(result), res.ok ? 'info' : 'error');
+        
+        if (res.ok) {
+          showToast('Item moved to gallery successfully!');
+          closeMoveToGalleryModal();
+          loadMeals(); // Refresh meals
+        } else {
+          showToast('Error: ' + (result.error || 'Failed to move item'), 'error');
+        }
+      } catch (err) {
+        debugLog('Move to gallery error: ' + err.message, 'error');
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
 
   </script>
 </body>
