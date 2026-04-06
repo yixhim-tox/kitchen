@@ -940,6 +940,17 @@
       return isLikelyTikTok;
     }
 
+    // Detect iOS specifically
+    function isIOS() {
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    }
+
+    // Detect Android
+    function isAndroid() {
+      return /Android/i.test(navigator.userAgent);
+    }
+
     // Alternative detection using feature detection
     function isInAppBrowser() {
       const ua = navigator.userAgent;
@@ -959,6 +970,9 @@
       if (warning) {
         warning.classList.add('active');
         document.body.style.overflow = 'hidden';
+        
+        // Update UI based on platform
+        updateWarningUI();
       }
     }
 
@@ -971,29 +985,90 @@
       }
     }
 
-    // Try to open in external browser
+    // Update warning UI based on iOS or Android
+    function updateWarningUI() {
+      const isIOSDevice = isIOS();
+      const instructionsTitle = document.querySelector('.tiktok-instructions h3');
+      const instructionsList = document.querySelector('.tiktok-instructions ol');
+      const primaryBtn = document.querySelector('.tiktok-btn-primary');
+      
+      if (isIOSDevice) {
+        // iOS-specific UI adjustments
+        instructionsTitle.innerHTML = '<i class="fas fa-info-circle"></i> iOS Instructions:';
+        instructionsList.innerHTML = `
+          <li>Tap <strong>"Copy Link"</strong> button below</li>
+          <li>Open <strong>Safari</strong> app manually</li>
+          <li>Paste the URL in address bar & go</li>
+        `;
+        // Update primary button text for iOS
+        if (primaryBtn) {
+          primaryBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Link & Open Safari';
+        }
+      } else {
+        // Android instructions
+        instructionsTitle.innerHTML = '<i class="fas fa-info-circle"></i> Android Instructions:';
+        instructionsList.innerHTML = `
+          <li>Tap <strong>"Open in Browser"</strong> button below</li>
+          <li>Or tap three dots (⋯) → "Open in Chrome"</li>
+        `;
+      }
+    }
+
+    // Try to open in external browser - PLATFORM SPECIFIC
     function openInExternalBrowser() {
       const url = 'https://www.tgkitchen.online';
-
-      // Method 1: Try intent scheme for Android
-      if (/Android/i.test(navigator.userAgent)) {
+      
+      if (isAndroid()) {
+        // Android: Try intent scheme first
         try {
           window.location.href = `intent://${url.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
           return;
         } catch (e) {
-          console.log('Intent scheme failed');
+          console.log('Intent scheme failed, trying fallback');
         }
+        
+        // Fallback for Android
+        window.open(url, '_system');
+        
+      } else if (isIOS()) {
+        // iOS: Try x-safari- scheme (works in some WebViews)
+        try {
+          const safariUrl = `x-safari-${url}`;
+          window.location.href = safariUrl;
+          
+          // Check if it worked after short delay
+          setTimeout(() => {
+            // If still here, it didn't work - copy link instead
+            copyLinkAndPrompt();
+          }, 500);
+          
+        } catch (e) {
+          copyLinkAndPrompt();
+        }
+        
+      } else {
+        // Unknown platform - try generic approach
+        window.open(url, '_blank');
       }
+    }
 
-      // Method 2: Try window.open with _system
-      const newWindow = window.open(url, '_system');
-      if (newWindow) {
-        newWindow.focus();
-        return;
+    // Copy link and prompt user to open browser
+    function copyLinkAndPrompt() {
+      const url = 'https://www.tgkitchen.online';
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+          alert('✅ Link copied! Safari will open automatically. Paste the URL in the address bar.');
+          // Try to open Safari app
+          setTimeout(() => {
+            window.location.href = 'x-safari-https://www.tgkitchen.online';
+          }, 500);
+        }).catch(() => {
+          fallbackCopy(url);
+        });
+      } else {
+        fallbackCopy(url);
       }
-
-      // Method 3: Show alert with instructions
-      alert('Please tap the three dots (...) in the top right corner of TikTok and select "Open in Browser"');
     }
 
     // Copy link to clipboard
@@ -1002,13 +1077,21 @@
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(url).then(() => {
-          alert('Link copied! Now open Chrome or Safari and paste it in the address bar.');
+          showCopySuccess();
         }).catch(() => {
           fallbackCopy(url);
         });
       } else {
         fallbackCopy(url);
       }
+    }
+
+    // Show copy success message
+    function showCopySuccess() {
+      const isIOSDevice = isIOS();
+      const browserName = isIOSDevice ? 'Safari' : 'Chrome';
+      
+      alert(`✅ Link copied! Now open ${browserName} and paste it in the address bar.`);
     }
 
     // Fallback copy method
@@ -1019,12 +1102,14 @@
       input.style.left = '-9999px';
       document.body.appendChild(input);
       input.select();
+      input.setSelectionRange(0, 99999); // For mobile devices
 
       try {
         document.execCommand('copy');
-        alert('Link copied! Now open Chrome or Safari and paste it in the address bar.');
+        showCopySuccess();
       } catch (err) {
-        alert('Could not copy link. Please manually type: ' + text);
+        // If copy fails, show the URL for manual copying
+        prompt('Please copy this URL manually:', text);
       }
 
       document.body.removeChild(input);
@@ -1130,6 +1215,7 @@
       initTikTokDetection();
       loadPopularDishes();
     });
+
   </script>
 </body>
 </html>
