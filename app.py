@@ -639,6 +639,335 @@ def save_leaderboard():
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
+# === NEW API ENDPOINTS: Move between Gallery and Menu ===
+
+@app.route('/api/gallery_to_meal/<img_id>', methods=['POST', 'OPTIONS'])
+def convert_gallery_to_meal(img_id):
+    """Convert a gallery image to a menu meal item"""
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'OK'}), 200
+
+    try:
+        # Get additional data from request
+        data = request.get_json(force=True, silent=True) or {}
+        price = data.get('price', 0)
+        category = data.get('category', 'Specials')
+
+        # Find the gallery item
+        gallery_item = None
+
+        # Try MongoDB first
+        if USE_MONGO and mongo_gallery is not None:
+            try:
+                gallery_item = mongo_gallery.find_one({'_id': ObjectId(img_id)})
+                if gallery_item:
+                    # Create meal from gallery item
+                    meal_data = {
+                        'name': gallery_item.get('title', 'Gallery Item'),
+                        'description': gallery_item.get('description', ''),
+                        'price': float(price),
+                        'image': gallery_item.get('image_url', ''),
+                        'category': category,
+                        'created_at': datetime.now()
+                    }
+                    result = mongo_meals.insert_one(meal_data)
+
+                    return jsonify({
+                        'message': 'Gallery item converted to meal',
+                        'meal_id': str(result.inserted_id),
+                        'gallery_item': mongo_to_dict(gallery_item)
+                    })
+            except Exception as mongo_err:
+                print("MongoDB gallery_to_meal failed:", mongo_err)
+
+        # SQLite fallback
+        conn = sqlite3.connect(DB_NAME)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        # Get gallery item
+        cursor.execute('SELECT * FROM gallery WHERE id = ?', (img_id,))
+        gallery_item = cursor.fetchone()
+
+        if not gallery_item:
+            conn.close()
+            return jsonify({'error': 'Gallery item not found'}), 404
+
+        gallery_dict = dict(gallery_item)
+
+        # Insert as meal
+        cursor.execute(
+            "INSERT INTO meals (name, description, price, image, category) VALUES (?, ?, ?, ?, ?)",
+            (
+                gallery_dict.get('title', 'Gallery Item'),
+                gallery_dict.get('description', ''),
+                float(price),
+                gallery_dict.get('image_url', ''),
+                category
+            )
+        )
+
+        meal_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            'message': 'Gallery item converted to meal',
+            'meal_id': meal_id,
+            'gallery_item': gallery_dict
+        })
+
+    except Exception as e:
+        print("Error converting gallery to meal:", e)
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/meal_to_gallery/<meal_id>', methods=['POST', 'OPTIONS'])
+def convert_meal_to_gallery(meal_id):
+    """Convert a menu meal item to a gallery image"""
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'OK'}), 200
+
+    try:
+        # Get additional data from request
+        data = request.get_json(force=True, silent=True) or {}
+        category = data.get('category', 'Featured')
+
+        # Find the meal
+        meal_item = None
+
+        # Try MongoDB first
+        if USE_MONGO and mongo_meals is not None:
+            try:
+                meal_item = mongo_meals.find_one({'_id': ObjectId(meal_id)})
+                if meal_item:
+                    # Create gallery item from meal
+                    gallery_data = {
+                        'title': meal_item.get('name', 'Meal Item'),
+                        'description': meal_item.get('description', ''),
+                        'image_url': meal_item.get('image', ''),
+                        'category': category,
+                        'created_at': datetime.now()
+                    }
+                    result = mongo_gallery.insert_one(gallery_data)
+
+                    return jsonify({
+                        'message': 'Meal converted to gallery item',
+                        'gallery_id': str(result.inserted_id),
+                        'meal_item': mongo_to_dict(meal_item)
+                    })
+            except Exception as mongo_err:
+                print("MongoDB meal_to_gallery failed:", mongo_err)
+
+        # SQLite fallback
+        conn = sqlite3.connect(DB_NAME)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        # Get meal
+        cursor.execute('SELECT * FROM meals WHERE id = ?', (meal_id,))
+        meal_item = cursor.fetchone()
+
+        if not meal_item:
+            conn.close()
+            return jsonify({'error': 'Meal not found'}), 404
+
+        meal_dict = dict(meal_item)
+
+        # Insert as gallery
+        cursor.execute(
+            "INSERT INTO gallery (title, description, image_url, category) VALUES (?, ?, ?, ?)",
+            (
+                meal_dict.get('name', 'Meal Item'),
+                meal_dict.get('description', ''),
+                meal_dict.get('image', ''),
+                category
+            )
+        )
+
+        gallery_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            'message': 'Meal converted to gallery item',
+            'gallery_id': gallery_id,
+            'meal_item': meal_dict
+        })
+
+    except Exception as e:
+        print("Error converting meal to gallery:", e)
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+# === NEW API ENDPOINTS: Move between Gallery and Menu ===
+
+@app.route('/api/gallery_to_meal/<img_id>', methods=['POST', 'OPTIONS'])
+def convert_gallery_to_meal(img_id):
+    """Convert a gallery image to a menu meal item"""
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'OK'}), 200
+    
+    try:
+        # Get additional data from request
+        data = request.get_json(force=True, silent=True) or {}
+        price = data.get('price', 0)
+        category = data.get('category', 'Specials')
+        
+        # Find the gallery item
+        gallery_item = None
+        
+        # Try MongoDB first
+        if USE_MONGO and mongo_gallery is not None:
+            try:
+                gallery_item = mongo_gallery.find_one({'_id': ObjectId(img_id)})
+                if gallery_item:
+                    # Create meal from gallery item
+                    meal_data = {
+                        'name': gallery_item.get('title', 'Gallery Item'),
+                        'description': gallery_item.get('description', ''),
+                        'price': float(price),
+                        'image': gallery_item.get('image_url', ''),
+                        'category': category,
+                        'created_at': datetime.now()
+                    }
+                    result = mongo_meals.insert_one(meal_data)
+                    
+                    return jsonify({
+                        'message': 'Gallery item converted to meal',
+                        'meal_id': str(result.inserted_id),
+                        'gallery_item': mongo_to_dict(gallery_item)
+                    })
+            except Exception as mongo_err:
+                print("MongoDB gallery_to_meal failed:", mongo_err)
+        
+        # SQLite fallback
+        conn = sqlite3.connect(DB_NAME)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # Get gallery item
+        cursor.execute('SELECT * FROM gallery WHERE id = ?', (img_id,))
+        gallery_item = cursor.fetchone()
+        
+        if not gallery_item:
+            conn.close()
+            return jsonify({'error': 'Gallery item not found'}), 404
+        
+        gallery_dict = dict(gallery_item)
+        
+        # Insert as meal
+        cursor.execute(
+            "INSERT INTO meals (name, description, price, image, category) VALUES (?, ?, ?, ?, ?)",
+            (
+                gallery_dict.get('title', 'Gallery Item'),
+                gallery_dict.get('description', ''),
+                float(price),
+                gallery_dict.get('image_url', ''),
+                category
+            )
+        )
+        
+        meal_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'message': 'Gallery item converted to meal',
+            'meal_id': meal_id,
+            'gallery_item': gallery_dict
+        })
+        
+    except Exception as e:
+        print("Error converting gallery to meal:", e)
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/meal_to_gallery/<meal_id>', methods=['POST', 'OPTIONS'])
+def convert_meal_to_gallery(meal_id):
+    """Convert a menu meal item to a gallery image"""
+    if request.method == 'OPTIONS':
+        return jsonify({'message': 'OK'}), 200
+    
+    try:
+        # Get additional data from request
+        data = request.get_json(force=True, silent=True) or {}
+        category = data.get('category', 'Featured')
+        
+        # Find the meal
+        meal_item = None
+        
+        # Try MongoDB first
+        if USE_MONGO and mongo_meals is not None:
+            try:
+                meal_item = mongo_meals.find_one({'_id': ObjectId(meal_id)})
+                if meal_item:
+                    # Create gallery item from meal
+                    gallery_data = {
+                        'title': meal_item.get('name', 'Meal Item'),
+                        'description': meal_item.get('description', ''),
+                        'image_url': meal_item.get('image', ''),
+                        'category': category,
+                        'created_at': datetime.now()
+                    }
+                    result = mongo_gallery.insert_one(gallery_data)
+                    
+                    return jsonify({
+                        'message': 'Meal converted to gallery item',
+                        'gallery_id': str(result.inserted_id),
+                        'meal_item': mongo_to_dict(meal_item)
+                    })
+            except Exception as mongo_err:
+                print("MongoDB meal_to_gallery failed:", mongo_err)
+        
+        # SQLite fallback
+        conn = sqlite3.connect(DB_NAME)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # Get meal
+        cursor.execute('SELECT * FROM meals WHERE id = ?', (meal_id,))
+        meal_item = cursor.fetchone()
+        
+        if not meal_item:
+            conn.close()
+            return jsonify({'error': 'Meal not found'}), 404
+        
+        meal_dict = dict(meal_item)
+        
+        # Insert as gallery
+        cursor.execute(
+            "INSERT INTO gallery (title, description, image_url, category) VALUES (?, ?, ?, ?)",
+            (
+                meal_dict.get('name', 'Meal Item'),
+                meal_dict.get('description', ''),
+                meal_dict.get('image', ''),
+                category
+            )
+        )
+        
+        gallery_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'message': 'Meal converted to gallery item',
+            'gallery_id': gallery_id,
+            'meal_item': meal_dict
+        })
+        
+    except Exception as e:
+        print("Error converting meal to gallery:", e)
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+
 # === Legacy Routes ===
 @app.route('/add_to_cart/<meal_id>')
 def add_to_cart(meal_id):
