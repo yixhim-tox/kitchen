@@ -237,6 +237,101 @@
       color: white;
     }
     
+    /* Premium Meat Section - NEW STYLING */
+    .premium-meat-section {
+      margin-bottom: 24px;
+      padding: 20px;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .premium-meat-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--primary-red), #ff6b6b, var(--primary-red));
+    }
+    
+    .premium-meat-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+    }
+    
+    .premium-meat-subtitle {
+      font-size: 13px;
+      color: #aaa;
+      margin-bottom: 16px;
+    }
+    
+    .premium-meat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    .premium-meat-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 20px 16px;
+      text-align: center;
+      transition: all 0.3s;
+      border: 1px solid rgba(255,255,255,0.1);
+      position: relative;
+    }
+    
+    .premium-meat-card:hover, .premium-meat-card:active {
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-2px);
+      border-color: var(--primary-red);
+    }
+    
+    .premium-meat-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--primary-red);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      color: white;
+      font-size: 24px;
+    }
+    
+    .premium-meat-name {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+    
+    .premium-meat-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary-red);
+      margin-bottom: 4px;
+    }
+    
+    .premium-meat-badge {
+      display: inline-block;
+      background: rgba(229, 57, 53, 0.2);
+      color: #ff6b6b;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+    
     /* Dishes Grid */
     .dishes-grid {
       display: grid;
@@ -364,6 +459,13 @@
       color: #ddd;
     }
     
+    /* Section Divider */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
+      margin: 24px 0;
+    }
+    
     /* Bottom Navigation */
     .bottom-nav {
       position: fixed;
@@ -418,6 +520,24 @@
     .nav-item {
       position: relative;
     }
+    
+    /* Loading overlay for dishes */
+    .dishes-loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      grid-column: 1 / -1;
+    }
+    
+    .dishes-loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #f0f0f0;
+      border-top-color: var(--primary-red);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
   </style>
 </head>
 <body>
@@ -459,17 +579,68 @@
       <i class="fas fa-search" style="padding: 10px 16px; color: var(--text-gray);"></i>
     </div>
     
-    <!-- Categories -->
+    <!-- Categories - NEW ORDER: All, Pasta, Beef, Rice, Noodles, Meat, Drinks, Specials -->
     <div class="categories" id="categories">
       <button class="category-btn active" data-category="all">All</button>
       <button class="category-btn" data-category="Pasta">Pasta</button>
+      <button class="category-btn" data-category="Beef">Beef</button>
       <button class="category-btn" data-category="Rice">Rice</button>
       <button class="category-btn" data-category="Noodles">Noodles</button>
+      <button class="category-btn" data-category="Meat">Meat</button>
+      <button class="category-btn" data-category="Drinks">Drinks</button>
       <button class="category-btn" data-category="Specials">Specials</button>
     </div>
     
+    <!-- Premium Meat Section - ONLY SHOWS WHEN NOT "All" -->
+    <div class="premium-meat-section" id="meatSection" style="display: none;">
+      <div class="premium-meat-title">
+        <i class="fas fa-fire"></i>
+        Premium Meat Add-ons
+      </div>
+      <div class="premium-meat-subtitle">Upgrade your meal with fresh, quality meats</div>
+      <div class="premium-meat-grid">
+        <div class="premium-meat-card" onclick="addToCart('meat-1', 'Turkey', 8000, '')">
+          <div class="premium-meat-icon"><i class="fas fa-drumstick-bite"></i></div>
+          <div class="premium-meat-name">Whole Turkey</div>
+          <div class="premium-meat-price">₦8,000</div>
+          <span class="premium-meat-badge">Fresh & Juicy</span>
+        </div>
+        <div class="premium-meat-card" onclick="addToCart('meat-2', 'Chicken', 6500, '')">
+          <div class="premium-meat-icon"><i class="fas fa-drumstick-bite"></i></div>
+          <div class="premium-meat-name">Whole Chicken</div>
+          <div class="premium-meat-price">₦6,500</div>
+          <span class="premium-meat-badge">Crispy Skin</span>
+        </div>
+        <div class="premium-meat-card" onclick="addToCart('meat-3', 'Goat Meat', 1500, '')">
+          <div class="premium-meat-icon"><i class="fas fa-bone"></i></div>
+          <div class="premium-meat-name">Goat Meat</div>
+          <div class="premium-meat-price">₦1,500</div>
+          <span class="premium-meat-badge">Per Piece</span>
+        </div>
+        <div class="premium-meat-card" onclick="addToCart('meat-4', 'Beef', 1500, '')">
+          <div class="premium-meat-icon"><i class="fas fa-bone"></i></div>
+          <div class="premium-meat-name">Beef</div>
+          <div class="premium-meat-price">₦1,500</div>
+          <span class="premium-meat-badge">Per Piece</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section-divider" id="meatDivider" style="display: none;"></div>
+    
+    <!-- Popular Meals Section Title -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h2 style="font-size: 20px; font-weight: 700;">Popular Meals</h2>
+      <span style="color: var(--text-gray); font-size: 14px;">Swipe to explore</span>
+    </div>
+    
+    <!-- Loading State for Dishes -->
+    <div class="dishes-loading" id="dishesLoading">
+      <div class="dishes-loading-spinner"></div>
+    </div>
+    
     <!-- Dishes Grid -->
-    <div class="dishes-grid" id="dishesGrid">
+    <div class="dishes-grid" id="dishesGrid" style="display: none;">
       <!-- Loaded dynamically -->
     </div>
     
@@ -511,8 +682,11 @@
     // Category mapping for display
     const categoryMap = {
       'Pasta': ['Pasta', 'Spaghetti'],
+      'Beef': ['Beef', 'Steak', 'Burger'],
       'Rice': ['Rice'],
       'Noodles': ['Noodles'],
+      'Meat': ['Meat', 'Turkey', 'Chicken', 'Goat'],
+      'Drinks': ['Drink', 'Juice', 'Grape', 'Orange', 'Yellow'],
       'Specials': ['Special', 'Combo']
     };
     
@@ -541,6 +715,8 @@
         
       } catch (e) {
         console.error('Failed to load meals:', e);
+        document.getElementById('dishesLoading').style.display = 'none';
+        document.getElementById('dishesGrid').style.display = 'grid';
         document.getElementById('dishesGrid').innerHTML = `
           <div class="empty-state" style="grid-column: 1/-1;">
             <i class="fas fa-exclamation-circle"></i>
@@ -554,10 +730,16 @@
     
     function renderMeals(meals) {
       const container = document.getElementById('dishesGrid');
+      const loadingSpinner = document.getElementById('dishesLoading');
       const emptyState = document.getElementById('emptyState');
+      
+      // Hide loading, show grid
+      loadingSpinner.style.display = 'none';
+      container.style.display = 'grid';
       
       if (meals.length === 0) {
         container.innerHTML = '';
+        container.style.display = 'none';
         emptyState.style.display = 'block';
         return;
       }
@@ -624,6 +806,20 @@
       renderMeals(filtered);
     }
     
+    function toggleMeatSection() {
+      const meatSection = document.getElementById('meatSection');
+      const meatDivider = document.getElementById('meatDivider');
+      
+      // Show meat section ONLY when NOT "All"
+      if (currentCategory === 'all') {
+        meatSection.style.display = 'none';
+        meatDivider.style.display = 'none';
+      } else {
+        meatSection.style.display = 'block';
+        meatDivider.style.display = 'block';
+      }
+    }
+    
     function addToCart(id, name, price, image) {
       let cart = JSON.parse(localStorage.getItem('cart')) || [];
       const existing = cart.find(item => item.id === id);
@@ -636,12 +832,47 @@
       
       localStorage.setItem('cart', JSON.stringify(cart));
       
-      // Update UI
-      document.getElementById(`add-${id}`).style.display = 'none';
-      document.getElementById(`qty-${id}`).classList.add('show');
-      document.getElementById(`val-${id}`).textContent = existing ? existing.quantity : 1;
+      // Update UI if on menu page with quantity controls
+      const addBtn = document.getElementById(`add-${id}`);
+      const qtyControls = document.getElementById(`qty-${id}`);
+      const valSpan = document.getElementById(`val-${id}`);
       
+      if (addBtn && qtyControls && valSpan) {
+        addBtn.style.display = 'none';
+        qtyControls.classList.add('show');
+        valSpan.textContent = existing ? existing.quantity : 1;
+      }
+      
+      // Show feedback
+      showAddedFeedback(name);
       updateCartBadge();
+    }
+    
+    function showAddedFeedback(itemName) {
+      // Create toast notification
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--primary-red);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-size: 14px;
+        font-weight: 600;
+        z-index: 10000;
+        animation: fadeInUp 0.3s ease;
+        box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
+      `;
+      toast.textContent = `✓ ${itemName} added to cart`;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 2000);
     }
     
     function updateQty(id, change) {
@@ -654,10 +885,15 @@
       
       if (item.quantity <= 0) {
         cart = cart.filter(i => i.id !== id);
-        document.getElementById(`add-${id}`).style.display = 'flex';
-        document.getElementById(`qty-${id}`).classList.remove('show');
+        const addBtn = document.getElementById(`add-${id}`);
+        const qtyControls = document.getElementById(`qty-${id}`);
+        if (addBtn && qtyControls) {
+          addBtn.style.display = 'flex';
+          qtyControls.classList.remove('show');
+        }
       } else {
-        document.getElementById(`val-${id}`).textContent = item.quantity;
+        const valSpan = document.getElementById(`val-${id}`);
+        if (valSpan) valSpan.textContent = item.quantity;
       }
       
       localStorage.setItem('cart', JSON.stringify(cart));
@@ -683,17 +919,42 @@
         document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentCategory = btn.dataset.category;
-        filterMeals(document.getElementById('searchInput').value);
+        
+        // Toggle meat section visibility
+        toggleMeatSection();
+        
+        // Show loading when switching categories
+        document.getElementById('dishesLoading').style.display = 'flex';
+        document.getElementById('dishesGrid').style.display = 'none';
+        
+        setTimeout(() => {
+          filterMeals(document.getElementById('searchInput').value);
+        }, 300);
       });
     });
     
     // Search input
     document.getElementById('searchInput').addEventListener('input', (e) => {
-      filterMeals(e.target.value);
+      document.getElementById('dishesLoading').style.display = 'flex';
+      document.getElementById('dishesGrid').style.display = 'none';
+      
+      setTimeout(() => {
+        filterMeals(e.target.value);
+      }, 300);
     });
     
     // Load on page load
     loadMeals();
+    
+    // Add fadeOut animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeOut {
+        from { opacity: 1; transform: translateX(-50%) translateY(0); }
+        to { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 </body>
 </html>
