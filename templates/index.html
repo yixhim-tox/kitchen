@@ -419,6 +419,74 @@
       text-decoration: none;
     }
 
+    /* Featured Drinks Section - NEW */
+    .featured-drinks-section {
+      margin-bottom: 24px;
+      padding: 20px 16px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 16px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .featured-drinks-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-dark);
+    }
+
+    .featured-drinks-title i {
+      color: var(--primary-red);
+    }
+
+    .drinks-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .drink-card {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      border: 1px solid #f0f0f0;
+      transition: transform 0.2s;
+    }
+
+    .drink-card:active {
+      transform: scale(0.98);
+    }
+
+    .drink-image {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+    }
+
+    .drink-info {
+      padding: 10px;
+      text-align: center;
+    }
+
+    .drink-name {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .drink-price {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary-red);
+    }
+
     .dishes-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -794,6 +862,37 @@
     <div class="search-bar">
       <input type="text" id="searchInput" placeholder="Search for a meal...">
       <button class="search-btn" onclick="searchMeals()">Search</button>
+    </div>
+  </section>
+
+  <!-- Featured Drinks Section - MOVED FROM MENU TO INDEX -->
+  <section class="featured-drinks-section">
+    <div class="featured-drinks-title">
+      <i class="fas fa-glass-whiskey"></i>
+      Featured Drinks
+    </div>
+    <div class="drinks-grid">
+      <div class="drink-card" onclick="addToCart('drink-1', 'zobo Juice', 1500, 'https://i.postimg.cc/TwgTrDG6/IMG_20260406_WA0048.jpg')">
+        <img src="https://i.postimg.cc/TwgTrDG6/IMG_20260406_WA0048.jpg" alt="zobo" class="drink-image">
+        <div class="drink-info">
+          <div class="drink-name">zobo Juice</div>
+          <div class="drink-price">1500</div>
+        </div>
+      </div>
+      <div class="drink-card" onclick="addToCart('drink-2', 'carrot Juice', 3000, 'https://i.postimg.cc/ydc7FZBC/IMG_20260406_WA0049.jpg')">
+        <img src="https://i.postimg.cc/ydc7FZBC/IMG_20260406_WA0049.jpg" alt="carrot Juice" class="drink-image">
+        <div class="drink-info">
+          <div class="drink-name">carrot Juice</div>
+          <div class="drink-price">₦3,000</div>
+        </div>
+      </div>
+      <div class="drink-card" onclick="addToCart('drink-3', 'pineapple Juice', 3000, 'https://i.postimg.cc/HxXTQymq/IMG_20260406_WA0047(1).jpg')">
+        <img src="https://i.postimg.cc/HxXTQymq/IMG_20260406_WA0047(1).jpg" alt="pineapple Juice" class="drink-image">
+        <div class="drink-info">
+          <div class="drink-name">pineapple Juice</div>
+          <div class="drink-price">₦3,000</div>
+        </div>
+      </div>
     </div>
   </section>
 
