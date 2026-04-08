@@ -724,6 +724,9 @@
       document.getElementById('totalDisplay').textContent = `₦${(subtotal + deliveryFee).toLocaleString()}`;
     }
     
+    // ============================================
+    // FIXED placeOrder() FUNCTION - WORKS WITH GALLERY-TO-MENU ITEMS
+    // ============================================
     function placeOrder() {
       const name = document.getElementById('fullName').value.trim();
       const phone = document.getElementById('phoneNumber').value.trim();
@@ -737,31 +740,42 @@
       const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       const total = subtotal + deliveryFee;
       
-      const orderText = cart.map(item => 
-        `• ${item.name} x${item.quantity} = ₦${(item.price * item.quantity).toLocaleString()}`
-      ).join('%0A');
+      // Build message with proper formatting - trim item names to avoid double spaces
+      // This handles items moved from gallery to menu which may have extra whitespace
+      const orderText = cart.map(item => {
+        const itemName = item.name.trim();
+        const itemTotal = (item.price * item.quantity).toLocaleString();
+        return `• ${itemName} x${item.quantity} = ₦${itemTotal}`;
+      }).join('\n');
       
-      const message = `*New Order from TG's Kitchen*%0A%0A` +
-        `*Order Items:*%0A${orderText}%0A%0A` +
-        `*Subtotal:* ₦${subtotal.toLocaleString()}%0A` +
-        `*Delivery (${selectedArea}):* ₦${deliveryFee.toLocaleString()}%0A` +
-        `*Total:* ₦${total.toLocaleString()}%0A%0A` +
-        `*Customer Details:*%0A` +
-        `Name: ${name}%0A` +
-        `Phone: ${phone}%0A` +
+      const message = `*New Order from TG's Kitchen*\n\n` +
+        `*Order Items:*\n${orderText}\n\n` +
+        `*Subtotal:* ₦${subtotal.toLocaleString()}\n` +
+        `*Delivery (${selectedArea}):* ₦${deliveryFee.toLocaleString()}\n` +
+        `*Total:* ₦${total.toLocaleString()}\n\n` +
+        `*Customer Details:*\n` +
+        `Name: ${name}\n` +
+        `Phone: ${phone}\n` +
         `Address: ${address}`;
       
       // Clear cart
       localStorage.removeItem('cart');
       
-      // Open WhatsApp
-      window.open(`https://wa.me/2349061120754?text=${message}`, '_blank');
+      // Open WhatsApp with properly encoded message
+      // encodeURIComponent() properly handles:
+      // - Special characters like ₦ (Naira symbol)
+      // - Apostrophes in "TG's Kitchen"
+      // - Newlines and spaces
+      // - Any characters from gallery item names
+      const encodedMessage = encodeURIComponent(message);
+      window.open(`https://wa.me/2349061120754?text=${encodedMessage}`, '_blank');
       
       // Redirect to home
       setTimeout(() => {
         window.location.href = '/';
       }, 1000);
     }
+    // ============================================
     
     // Load on page load
     loadCheckout();
